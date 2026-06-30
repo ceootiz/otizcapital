@@ -1,0 +1,55 @@
+import { NextResponse } from "next/server";
+import {
+  ALLOCATION_PROOF_STATUSES,
+  ALLOCATION_PROOF_TYPES,
+  serializeAllocationProof,
+  updateAllocationProofRecord,
+  type AllocationProofStatus,
+  type AllocationProofType
+} from "@otiz/database";
+import { verifyAdminCsrfToken } from "@/lib/admin-session";
+
+export const dynamic = "force-dynamic";
+
+function sanitizeString(value: unknown, maxLength = 1000) {
+  if (typeof value !== "string") return "";
+  return value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function isProofType(value: string): value is AllocationProofType {
+  return ALLOCATION_PROOF_TYPES.includes(value as AllocationProofType);
+}
+
+function isProofStatus(value: string): value is AllocationProofStatus {
+  return ALLOCATION_PROOF_STATUSES.includes(value as AllocationProofStatus);
+}
+
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const csrf = verifyAdminCsrfToken(request);
+  if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
+
+  const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!payload) return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 422 });
+
+  const typeValue = typeof payload.type === "string" ? sanitizeString(payload.type, 40) : undefined;
+  const statusValue = typeof payload.status === "string" ? sanitizeString(payload.status, 24) : undefined;
+  const title = typeof payload.title === "string" ? sanitizeString(payload.title, 160) : undefined;
+
+  if (typeValue && !isProofType(typeValue)) return NextResponse.json({ ok: false, error: "Invalid proof type." }, { status: 422 });
+  if (statusValue && !isProofStatus(statusValue)) return NextResponse.json({ ok: false, error: "Invalid proof status." }, { status: 422 });
+  if (title !== undefined && !title) return NextResponse.json({ ok: false, error: "title is required." }, { status: 422 });
+
+  const result = await updateAllocationProofRecord({
+    id: sanitizeString(params.id, 160),
+    type: typeValue as AllocationProofType | undefined,
+    title,
+    description: payload.description === undefined ? undefined : sanitizeString(payload.description, 1000) || null,
+    proofUrl: payload.proofUrl === undefined ? undefined : sanitizeString(payload.proofUrl, 500) || null,
+    status: statusValue as AllocationProofStatus | undefined,
+    actor: csrf.session.actor
+  });
+
+  if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+
+  return NextResponse.json({ ok: true, data: serializeAllocationProof(result.proof) });
+}

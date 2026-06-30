@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { isLocale, type Locale } from "@otiz/lib";
+import { InvestorLoginPage } from "@/components/investor/investor-login-page";
+import { getInvestorSession } from "@/lib/investor-session";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Investor Login | OTIZ CAPITAL",
+  description: "Investor access for OTIZ CAPITAL commerce capital reporting."
+};
+
+export default function InvestorLoginRoute({ params }: { params: { locale: Locale } }) {
+  if (!isLocale(params.locale)) {
+    redirect("/en/investor/login");
+  }
+
+  if (getInvestorSession()) {
+    redirect(`/${params.locale}/investor/dashboard`);
+  }
+
+  return <InvestorLoginPage locale={params.locale} />;
+}

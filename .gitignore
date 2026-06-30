@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js
+.next/
+**/.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Env/local secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local databases / temp
+*.sqlite
+*.sqlite3
+*.db
+tmp/
+temp/

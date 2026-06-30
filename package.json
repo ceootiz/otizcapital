@@ -1,0 +1,28 @@
+{
+  "name": "otiz-capital",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @otiz/web dev",
+    "build": "pnpm --filter @otiz/web build",
+    "lint": "pnpm --filter @otiz/web lint",
+    "typecheck": "pnpm --filter @otiz/web typecheck",
+    "test": "vitest run",
+    "smoke:incidents": "bash scripts/smoke-incident-checkpoint.sh",
+    "verify": "pnpm test && pnpm lint && pnpm typecheck && pnpm build",
+    "verify:quick": "pnpm test && pnpm typecheck",
+    "prisma": "prisma",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.6"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
+  }
+}

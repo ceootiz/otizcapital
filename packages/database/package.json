@@ -1,0 +1,16 @@
+{
+  "name": "@otiz/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@otiz/lib": "workspace:*",
+    "@prisma/client": "^6.19.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

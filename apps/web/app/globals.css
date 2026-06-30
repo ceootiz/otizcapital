@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 216 22% 5%;
+    --foreground: 42 24% 92%;
+    --card: 216 17% 8%;
+    --card-foreground: 42 24% 92%;
+    --popover: 216 17% 8%;
+    --popover-foreground: 42 24% 92%;
+    --primary: 40 56% 62%;
+    --primary-foreground: 216 24% 6%;
+    --secondary: 218 14% 14%;
+    --secondary-foreground: 42 24% 90%;
+    --muted: 218 13% 16%;
+    --muted-foreground: 42 10% 64%;
+    --accent: 40 46% 22%;
+    --accent-foreground: 42 34% 88%;
+    --destructive: 0 66% 48%;
+    --destructive-foreground: 42 24% 94%;
+    --border: 42 18% 18%;
+    --input: 42 18% 18%;
+    --ring: 40 56% 62%;
+    --radius: 1.35rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background: #050607;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 80% -10%, rgba(212, 175, 95, 0.2), transparent 32rem),
+      radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.08), transparent 28rem),
+      linear-gradient(180deg, #050607 0%, #0b0d10 42%, #050607 100%);
+  }
+
+  ::selection {
+    background: rgba(212, 175, 95, 0.32);
+    color: #fff8e1;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: linear-gradient(145deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035));
+    border: 1px solid rgba(229, 211, 166, 0.13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 28px 90px -56px rgba(0,0,0,0.95);
+    backdrop-filter: blur(22px);
+  }
+
+  .gold-line {
+    background: linear-gradient(90deg, transparent, rgba(212,175,95,0.82), transparent);
+  }
+
+  .macro-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at 50% 12%, black, transparent 72%);
+  }
+
+  .micro-noise {
+    position: relative;
+  }
+
+  .micro-noise::after {
+    pointer-events: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

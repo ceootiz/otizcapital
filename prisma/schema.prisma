@@ -1,0 +1,322 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model InvestorApplication {
+  id                      String   @id @default(cuid())
+  investorId              String?
+  fullName                String
+  telegram                String?
+  email                   String?
+  country                 String
+  preferredContactMethod  String
+  plannedAllocationAmount Int
+  preferredDepositMethod  String
+  investorType            String
+  reinvestInterest        String
+  heardFrom               String
+  message                 String?
+  consentAccepted         Boolean
+  managerNotes            String?
+  priority                String   @default("NORMAL")
+  sourceLabel             String?
+  nextAction              String?
+  nextActionAt            DateTime?
+  contactedAt             DateTime?
+  approvedAt              DateTime?
+  rejectedAt              DateTime?
+  status                  String   @default("NEW")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  investor                Investor? @relation(fields: [investorId], references: [id])
+
+  @@index([status])
+  @@index([priority])
+  @@index([sourceLabel])
+  @@index([nextActionAt])
+  @@index([createdAt])
+  @@index([email])
+  @@index([investorId])
+}
+
+model Investor {
+  id                  String                @id @default(cuid())
+  fullName            String
+  email               String                @unique
+  telegram            String?
+  status              String                @default("ACTIVE")
+  sourceApplicationId String?
+  totalCapital        String                @default("0")
+  reinvestEnabled     Boolean               @default(false)
+  lastReportAt        DateTime?
+  notes               String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  applications        InvestorApplication[]
+  allocations         Allocation[]
+  monthlyReports      MonthlyReport[]
+  withdrawalRequests  WithdrawalRequest[]
+  ledgerEntries       LedgerEntry[]
+  operationalIncidents OperationalIncident[]
+
+  @@index([status])
+  @@index([email])
+  @@index([sourceApplicationId])
+}
+
+model WithdrawalRequest {
+  id                 String   @id @default(cuid())
+  investorId         String
+  amount             String
+  currency           String   @default("USD")
+  status             String   @default("REQUESTED")
+  requestedAt        DateTime @default(now())
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  paidAt             DateTime?
+  scheduledFor       DateTime?
+  method             String?
+  destinationMasked  String?
+  adminNote          String?
+  investorNote       String?
+  rejectionReason    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  investor           Investor @relation(fields: [investorId], references: [id])
+
+  @@index([investorId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model MonthlyReport {
+  id               String    @id @default(cuid())
+  investorId       String
+  month            String
+  title            String
+  summary          String
+  performanceNote  String?
+  payoutNote       String?
+  proofSummaryJson String?
+  readinessScore   Int?
+  readinessState   String?
+  readinessSnapshotJson String?
+  readinessEvaluatedAt DateTime?
+  status           String    @default("DRAFT")
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  investor         Investor  @relation(fields: [investorId], references: [id])
+  allocations      MonthlyReportAllocation[]
+  ledgerEntries    LedgerEntry[]
+  operationalIncidents OperationalIncident[]
+
+  @@index([investorId])
+  @@index([status])
+  @@index([month])
+  @@index([publishedAt])
+  @@index([createdAt])
+}
+
+model ReadinessPolicy {
+  id                                      String   @id @default(cuid())
+  name                                    String
+  isActive                                Boolean  @default(false)
+  requiredProofCategoriesJson             String
+  warningProofCategoriesJson              String
+  minimumProofCompletenessScore           Int      @default(50)
+  blockOnUnreviewedCriticalArtifacts      Boolean  @default(true)
+  blockOnHiddenInvestorLeakRisk           Boolean  @default(true)
+  blockOnStaleSnapshot                    Boolean  @default(true)
+  allowPublishWithWarnings                Boolean  @default(true)
+  requireWarningAcknowledgment            Boolean  @default(true)
+  createdAt                               DateTime @default(now())
+  updatedAt                               DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([updatedAt])
+}
+
+model Allocation {
+  id                  String   @id @default(cuid())
+  investorId          String
+  supplyCode          String
+  productName         String
+  marketplace         String?
+  allocationAmount    String
+  currency            String   @default("USD")
+  status              String
+  expectedCycleDays   Int?
+  expectedPayoutAt    DateTime?
+  riskLevel           String   @default("STANDARD")
+  estimatedResult     String?
+  actualProfit        String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  payoutStatus        String   @default("NOT_READY")
+  reinvestDecision    String   @default("UNDECIDED")
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  investor            Investor @relation(fields: [investorId], references: [id])
+  proofs              AllocationProof[]
+  monthlyReports      MonthlyReportAllocation[]
+  ledgerEntries       LedgerEntry[]
+  operationalIncidents OperationalIncident[]
+
+  @@index([investorId])
+  @@index([status])
+  @@index([riskLevel])
+  @@index([expectedPayoutAt])
+  @@index([payoutStatus])
+  @@index([reinvestDecision])
+  @@index([supplyCode])
+  @@index([createdAt])
+}
+
+model MonthlyReportAllocation {
+  id              String        @id @default(cuid())
+  monthlyReportId String
+  allocationId    String
+  includedAt      DateTime      @default(now())
+  includedBy      String
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  monthlyReport   MonthlyReport @relation(fields: [monthlyReportId], references: [id])
+  allocation      Allocation    @relation(fields: [allocationId], references: [id])
+
+  @@unique([monthlyReportId, allocationId])
+  @@index([monthlyReportId])
+  @@index([allocationId])
+}
+
+model AllocationProof {
+  id            String     @id @default(cuid())
+  allocationId  String
+  type          String
+  title         String
+  description   String?
+  proofUrl      String?
+  status        String     @default("PENDING")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  allocation    Allocation @relation(fields: [allocationId], references: [id])
+
+  @@index([allocationId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model LedgerEntry {
+  id              String         @id @default(cuid())
+  ledgerType      String
+  allocationId    String?
+  investorId      String?
+  monthlyReportId String?
+  entryType       String
+  amount          String
+  currency        String         @default("USD")
+  quantity        Int?
+  unitCost        String?
+  occurredAt      DateTime
+  sourceType      String
+  sourceId        String?
+  description     String
+  metadataJson    String?
+  createdBy       String
+  isReversal      Boolean        @default(false)
+  reversesLedgerEntryId String?
+  reversalReason  String?
+  correctedByLedgerEntryId String?
+  voidedAt        DateTime?
+  voidedBy        String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  allocation      Allocation?    @relation(fields: [allocationId], references: [id])
+  investor        Investor?      @relation(fields: [investorId], references: [id])
+  monthlyReport   MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
+
+  @@index([ledgerType])
+  @@index([allocationId])
+  @@index([investorId])
+  @@index([monthlyReportId])
+  @@index([occurredAt])
+  @@index([sourceType, sourceId])
+  @@index([reversesLedgerEntryId])
+  @@index([correctedByLedgerEntryId])
+  @@index([isReversal])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String
+  action     String
+  entityType String
+  entityId   String
+  beforeJson String?
+  afterJson  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model NotificationEvent {
+  id          String    @id @default(cuid())
+  type        String
+  channel     String
+  recipient   String
+  entityType  String
+  entityId    String
+  payloadJson String
+  status      String    @default("PENDING")
+  error       String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model OperationalIncident {
+  id              String   @id @default(cuid())
+  incidentType    String
+  severity        String
+  status          String   @default("OPEN")
+  title           String
+  summary         String
+  allocationId    String?
+  monthlyReportId String?
+  investorId      String?
+  source          String
+  detectedAt      DateTime @default(now())
+  acknowledgedAt  DateTime?
+  acknowledgedBy  String?
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  metadataJson    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  allocation      Allocation? @relation(fields: [allocationId], references: [id])
+  monthlyReport   MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
+  investor        Investor? @relation(fields: [investorId], references: [id])
+
+  @@index([incidentType])
+  @@index([severity])
+  @@index([status])
+  @@index([source])
+  @@index([detectedAt])
+  @@index([allocationId])
+  @@index([monthlyReportId])
+  @@index([investorId])
+  @@index([source, incidentType, status])
+}
