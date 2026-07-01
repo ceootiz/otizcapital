@@ -3,8 +3,24 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Admin-editable website content. Stores per (scope, locale) JSON overrides that
+// are deep-merged over the compiled TypeScript defaults at request time, so the
+// TS content in packages/lib remains the fallback when a row is missing.
+model SiteContent {
+  id        String   @id @default(cuid())
+  scope     String   // "home" | "apply"
+  locale    String   // en | es | de | ru | zh
+  dataJson  String   // JSON object of partial dictionary overrides
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scope, locale])
+  @@index([scope])
 }
 
 model InvestorApplication {
