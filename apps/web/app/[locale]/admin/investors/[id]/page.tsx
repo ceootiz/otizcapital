@@ -7,10 +7,20 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Admin Investor Detail | OTIZ CAPITAL",
-  description: "Protected MVP admin investor profile and allocation management."
-};
+const META = {
+  en: {
+    title: "Admin Investor Detail | OTIZ CAPITAL",
+    description: "Protected MVP admin investor profile and allocation management."
+  },
+  ru: {
+    title: "Профиль инвестора — админ | OTIZ CAPITAL",
+    description: "Защищённый MVP-раздел администратора: профиль инвестора и управление аллокациями."
+  }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  return params.locale === "ru" ? META.ru : META.en;
+}
 
 export default async function AdminInvestorDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
   if (!isLocale(params.locale)) {

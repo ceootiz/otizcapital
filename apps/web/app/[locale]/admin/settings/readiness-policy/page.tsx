@@ -7,10 +7,24 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Readiness Policy | OTIZ CAPITAL",
-  description: "Protected admin settings for monthly report readiness policy."
-};
+const META = {
+  en: {
+    title: "Readiness Policy | OTIZ CAPITAL",
+    description: "Protected admin settings for monthly report readiness policy."
+  },
+  ru: {
+    title: "Политика готовности | OTIZ CAPITAL",
+    description: "Защищённые настройки администратора для политики готовности ежемесячного отчёта."
+  }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
+  return {
+    title: meta.title,
+    description: meta.description
+  };
+}
 
 export default async function AdminReadinessPolicyRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {

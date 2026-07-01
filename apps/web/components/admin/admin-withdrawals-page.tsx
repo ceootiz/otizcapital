@@ -3,9 +3,61 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarClock, Save } from "lucide-react";
-import type { Locale } from "@otiz/lib";
+import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import { AdminNavigation } from "./admin-navigation";
+
+const STRINGS = {
+  en: {
+    eyebrow: "Admin payout schedule",
+    h1: "Withdrawal requests",
+    desc: "Manager-controlled payout requests with masked destinations and audit-backed actions.",
+    visible: "{n} visible",
+    backToInvestors: "Back to investors",
+    metricMethod: "Method",
+    metricDestination: "Destination",
+    metricRequested: "Requested",
+    metricScheduled: "Scheduled",
+    notSet: "Not set",
+    scheduleDate: "Schedule date",
+    adminNote: "Admin note / rejection reason",
+    approve: "Approve",
+    schedule: "Schedule",
+    markPaid: "Mark paid",
+    reject: "Reject",
+    cancel: "Cancel",
+    emptyTitle: "No withdrawal requests",
+    emptyDesc: "Requests will appear here after investor or manager creation.",
+    noticeUpdated: "Withdrawal request updated.",
+    noticeError: "Unable to update withdrawal request."
+  },
+  ru: {
+    eyebrow: "График выплат администратора",
+    h1: "Запросы на вывод средств",
+    desc: "Управляемые менеджером запросы на выплату с маскированными реквизитами и действиями с аудитом.",
+    visible: "Показано: {n}",
+    backToInvestors: "Назад к инвесторам",
+    metricMethod: "Способ",
+    metricDestination: "Реквизиты",
+    metricRequested: "Запрошено",
+    metricScheduled: "Запланировано",
+    notSet: "Не задано",
+    scheduleDate: "Дата планирования",
+    adminNote: "Заметка администратора / причина отклонения",
+    approve: "Одобрить",
+    schedule: "Запланировать",
+    markPaid: "Отметить выплаченным",
+    reject: "Отклонить",
+    cancel: "Отменить",
+    emptyTitle: "Нет запросов на вывод средств",
+    emptyDesc: "Запросы появятся здесь после создания инвестором или менеджером.",
+    noticeUpdated: "Запрос на вывод средств обновлён.",
+    noticeError: "Не удалось обновить запрос на вывод средств."
+  }
+} as const;
+
+type Strings = typeof STRINGS.en;
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -32,8 +84,6 @@ type Withdrawal = {
   investor: { id: string; fullName: string; email: string; telegram: string | null; status: string };
 };
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
-
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
   return document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
@@ -41,12 +91,6 @@ function getCookieValue(name: string) {
 
 function getAdminMutationHeaders() {
   return { "Content-Type": "application/json", [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) };
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : dateFormatter.format(date);
 }
 
 function toDateInputValue(value: string | null) {
@@ -57,6 +101,8 @@ function toDateInputValue(value: string | null) {
 }
 
 export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, initialStatus }: { locale: Locale; withdrawals: Withdrawal[]; initialStatus: string }) {
+  const t = getStrings(locale);
+  const formatters = createAdminFormatters(locale);
   const [withdrawals, setWithdrawals] = React.useState(initialWithdrawals);
   const [filter, setFilter] = React.useState(initialStatus || "ALL");
   const [pendingId, setPendingId] = React.useState<string | null>(null);
@@ -82,11 +128,11 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
         })
       });
       const payload = (await response.json()) as { ok: boolean; data?: Partial<Withdrawal>; error?: string };
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to update withdrawal request.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.noticeError);
       setWithdrawals((current) => current.map((item) => (item.id === withdrawal.id ? { ...item, ...payload.data } : item)));
-      setNotice("Withdrawal request updated.");
+      setNotice(t.noticeUpdated);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to update withdrawal request.");
+      setError(requestError instanceof Error ? requestError.message : t.noticeError);
     } finally {
       setPendingId(null);
     }
@@ -99,18 +145,18 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
       <section className="relative z-10 py-8 sm:py-10">
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Link href={`/${locale}/admin/investors`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Back to investors</Link>
+            <Link href={`/${locale}/admin/investors`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToInvestors}</Link>
             <AdminNavigation locale={locale} activeSection="withdrawals" />
           </div>
 
           <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">Admin payout schedule</p>
-                <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">Withdrawal requests</h1>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">Manager-controlled payout requests with masked destinations and audit-backed actions.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+                <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.h1}</h1>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">{t.desc}</p>
               </div>
-              <Badge variant="secondary">{visibleWithdrawals.length} visible</Badge>
+              <Badge variant="secondary">{t.visible.replace("{n}", String(visibleWithdrawals.length))}</Badge>
             </CardContent>
           </Card>
 
@@ -119,47 +165,47 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
 
           <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.5rem] border border-white/10 bg-black/20 p-2">
             {STATUS_FILTERS.map((status) => (
-              <button key={status} type="button" onClick={() => setFilter(status)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${filter === status ? "bg-gold-200/15 text-gold-100" : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"}`}>{status}</button>
+              <button key={status} type="button" onClick={() => setFilter(status)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${filter === status ? "bg-gold-200/15 text-gold-100" : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"}`}>{enumLabel("withdrawalStatus", status, locale)}</button>
             ))}
           </div>
 
           <div className="grid gap-4">
             {visibleWithdrawals.length === 0 ? (
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">No withdrawal requests</p><p className="mt-2 text-sm text-muted-foreground">Requests will appear here after investor or manager creation.</p></CardContent></Card>
+              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.emptyTitle}</p><p className="mt-2 text-sm text-muted-foreground">{t.emptyDesc}</p></CardContent></Card>
             ) : visibleWithdrawals.map((withdrawal) => (
               <Card key={withdrawal.id} className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle>{withdrawal.currency} {Number(withdrawal.amount || 0).toLocaleString("en-US")}</CardTitle>
+                      <CardTitle>{withdrawal.currency} {formatters.number(Number(withdrawal.amount || 0))}</CardTitle>
                       <CardDescription>{withdrawal.investor.fullName} · {withdrawal.investor.email}</CardDescription>
                     </div>
-                    <Badge>{withdrawal.status}</Badge>
+                    <Badge>{enumLabel("withdrawalStatus", withdrawal.status, locale)}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   <div className="grid gap-3 md:grid-cols-4">
-                    <Metric label="Method" value={withdrawal.method || "Not set"} />
-                    <Metric label="Destination" value={withdrawal.destinationMasked || "Not set"} />
-                    <Metric label="Requested" value={formatDate(withdrawal.requestedAt)} />
-                    <Metric label="Scheduled" value={formatDate(withdrawal.scheduledFor)} />
+                    <Metric label={t.metricMethod} value={withdrawal.method || t.notSet} />
+                    <Metric label={t.metricDestination} value={withdrawal.destinationMasked || t.notSet} />
+                    <Metric label={t.metricRequested} value={formatters.dateTime(withdrawal.requestedAt)} />
+                    <Metric label={t.metricScheduled} value={formatters.dateTime(withdrawal.scheduledFor)} />
                   </div>
                   <Separator />
                   <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                     <label className="grid gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Schedule date</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.scheduleDate}</span>
                       <input type="date" value={scheduledFor[withdrawal.id] || ""} onChange={(event) => setScheduledFor((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" />
                     </label>
                     <label className="grid gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Admin note / rejection reason</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.adminNote}</span>
                       <input value={adminNotes[withdrawal.id] || ""} onChange={(event) => setAdminNotes((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" />
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || withdrawal.status !== "REQUESTED"} onClick={() => runAction(withdrawal, "approve")}>Approve</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "schedule")}>Schedule</Button>
-                      <Button type="button" size="sm" disabled={pendingId === withdrawal.id || !["APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "mark-paid")}><Save data-icon="inline-start" />Mark paid</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "reject")}>Reject</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "cancel")}>Cancel</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || withdrawal.status !== "REQUESTED"} onClick={() => runAction(withdrawal, "approve")}>{t.approve}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "schedule")}>{t.schedule}</Button>
+                      <Button type="button" size="sm" disabled={pendingId === withdrawal.id || !["APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "mark-paid")}><Save data-icon="inline-start" />{t.markPaid}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "reject")}>{t.reject}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "cancel")}>{t.cancel}</Button>
                     </div>
                   </div>
                 </CardContent>

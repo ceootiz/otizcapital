@@ -7,7 +7,33 @@ import { ArrowLeft, LockKeyhole } from "lucide-react";
 import { type Locale } from "@otiz/lib";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
 
+const STRINGS = {
+  en: {
+    heading: "Admin access",
+    description: "Enter the configured admin password to view investor applications.",
+    backToHomepage: "Back to homepage",
+    password: "Password",
+    signIn: "Sign in",
+    signingIn: "Signing in...",
+    unableToLogIn: "Unable to log in."
+  },
+  ru: {
+    heading: "Доступ администратора",
+    description: "Введите заданный пароль администратора для просмотра заявок инвесторов.",
+    backToHomepage: "На главную",
+    password: "Пароль",
+    signIn: "Войти",
+    signingIn: "Вход...",
+    unableToLogIn: "Не удалось войти."
+  }
+};
+
+type Strings = typeof STRINGS.en;
+
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
+
 export function AdminLoginPage({ locale }: { locale: Locale }) {
+  const t = getStrings(locale);
   const router = useRouter();
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -27,13 +53,13 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
       const payload = (await response.json()) as { ok: boolean; error?: string };
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || "Unable to log in.");
+        throw new Error(payload.error || t.unableToLogIn);
       }
 
       router.push(`/${locale}/admin/applications`);
       router.refresh();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to log in.");
+      setError(requestError instanceof Error ? requestError.message : t.unableToLogIn);
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +72,7 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
       <div className="container relative z-10 max-w-xl">
         <Link href={`/${locale}`} className="mb-8 inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
           <ArrowLeft className="size-4" />
-          Back to homepage
+          {t.backToHomepage}
         </Link>
         <Card className="overflow-hidden rounded-[2rem] bg-graphite-900/[0.78]">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
@@ -54,15 +80,15 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
             <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100">
               <LockKeyhole className="size-5" />
             </div>
-            <CardTitle className="text-2xl">Admin access</CardTitle>
-            <CardDescription>Enter the configured admin password to view investor applications.</CardDescription>
+            <CardTitle className="text-2xl">{t.heading}</CardTitle>
+            <CardDescription>{t.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <form className="flex flex-col gap-5" onSubmit={onSubmit}>
               <label className="flex flex-col gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Password</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.password}</span>
                 <input
-                  aria-label="Password"
+                  aria-label={t.password}
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
@@ -71,7 +97,7 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
               </label>
               {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-sm text-gold-100">{error}</p> : null}
               <Button type="submit" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? "Signing in..." : "Sign in"}
+                {isSubmitting ? t.signingIn : t.signIn}
               </Button>
             </form>
           </CardContent>

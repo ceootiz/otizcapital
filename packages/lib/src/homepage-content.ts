@@ -27,6 +27,22 @@ export type FAQItem = {
   answer: string;
 };
 
+export type AllocationRow = {
+  id: string;
+  cycle: string;
+  marketplace: string;
+  capital: string;
+  status: string;
+  progress: number;
+};
+
+export type OperationEvent = {
+  time: string;
+  title: string;
+  detail: string;
+  state: string;
+};
+
 export type HomeDictionary = {
   meta: {
     title: string;
@@ -67,17 +83,42 @@ export type HomeDictionary = {
     subtitle: string;
     items: ProofItem[];
     request: string;
+    proofChain: string;
+    operational: string;
+    qcMedia: string;
+    qcMediaDetail: string;
+    settlement: string;
+    settlementDetail: string;
   };
   live: {
     title: string;
     subtitle: string;
     currentAllocations: string;
     recentOperations: string;
+    allocationsSubtitle: string;
+    activeCount: string;
+    eventsSubtitle: string;
   };
   realCommerce: {
     title: string;
     subtitle: string;
     points: ProofItem[];
+    infrastructureTitle: string;
+    infrastructureBody: string;
+  };
+  dashboard: {
+    liveOps: string;
+    trendLabel: string;
+    trendRange: string;
+    chartCapital: string;
+    chartVolume: string;
+    monthlyValue: string;
+  };
+  commerce: {
+    allocations: AllocationRow[];
+    operations: OperationEvent[];
+    proofSignals: string[];
+    chartMonths: string[];
   };
   investor: {
     title: string;
@@ -171,13 +212,22 @@ const english: HomeDictionary = {
       { title: "Investor stories", body: "Calm operational updates from allocation participants, never hype-led performance claims." },
       { title: "Serial verification", body: "Device-level verification may be requested for applicable inventory batches." }
     ],
-    request: "Serial verification by request"
+    request: "Serial verification by request",
+    proofChain: "Proof chain",
+    operational: "Operational",
+    qcMedia: "QC media",
+    qcMediaDetail: "Warehouse capture",
+    settlement: "Settlement",
+    settlementDetail: "Cycle matched"
   },
   live: {
     title: "Live operations without trading noise.",
     subtitle: "A measured view of current allocations, supply cycles, delivery status, and commerce activity.",
     currentAllocations: "Current allocations",
-    recentOperations: "Recent operations"
+    recentOperations: "Recent operations",
+    allocationsSubtitle: "Defined supply cycles with calm operational status.",
+    activeCount: "36 active",
+    eventsSubtitle: "Proof-oriented events from the current commerce day."
   },
   realCommerce: {
     title: "Real products instead of speculative assets.",
@@ -187,7 +237,10 @@ const english: HomeDictionary = {
       { title: "Tangible electronics", body: "Capital is connected to real devices, accessories, inventory batches, and fulfillment activity." },
       { title: "Short commerce cycles", body: "Allocations are structured around procurement, sale, settlement, reporting, and distribution windows." },
       { title: "Operational transparency", body: "Proof points are tied to product movement and reporting instead of speculative price screens." }
-    ]
+    ],
+    infrastructureTitle: "Commerce infrastructure",
+    infrastructureBody:
+      "Real inventory creates visible proof: purchase orders, shipment events, marketplace settlements, payout records, and cycle reporting."
   },
   investor: {
     title: "A private, reviewed investor process.",
@@ -242,6 +295,28 @@ const english: HomeDictionary = {
     social: "Social",
     language: "Language",
     disclaimer: "Private offerings may be subject to eligibility, jurisdiction, and agreement terms. No return is guaranteed."
+  },
+  dashboard: {
+    liveOps: "Live ops",
+    trendLabel: "Capital / volume trend",
+    trendRange: "8 mo.",
+    chartCapital: "Active capital",
+    chartVolume: "Commerce volume",
+    monthlyValue: "Monthly"
+  },
+  commerce: {
+    allocations: [
+      { id: "OC-AL-1842", cycle: "Apple devices", marketplace: "Amazon / eBay", capital: "$420K", status: "Procurement", progress: 46 },
+      { id: "OC-AL-1818", cycle: "Creator bundles", marketplace: "Walmart Marketplace", capital: "$310K", status: "In transit", progress: 68 },
+      { id: "OC-AL-1796", cycle: "Refurb premium", marketplace: "Back Market", capital: "$265K", status: "Marketplace sale", progress: 82 }
+    ],
+    operations: [
+      { time: "09:30", title: "Batch received at NJ warehouse", detail: "146 serialized tablets entered quality review", state: "Verified" },
+      { time: "11:45", title: "Marketplace settlement posted", detail: "Cycle OC-AL-1772 moved to reporting close", state: "Settled" },
+      { time: "14:20", title: "Outbound shipment cleared", detail: "Creator bundle inventory routed to fulfillment", state: "In transit" }
+    ],
+    proofSignals: ["Shipment media", "Warehouse scans", "Marketplace statements", "Payout records", "Serial checks"],
+    chartMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"]
   }
 };
 
@@ -312,10 +387,109 @@ const russian: HomeDictionary = {
   nav: { operations: "Операции", transparency: "Прозрачность", process: "Процесс", faq: "FAQ", reports: "Отчёты", cta: "Стать инвестором" },
   hero: { headline: "Инвестируйте в реальную торговлю электроникой", subheadline: "OTIZ CAPITAL направляет капитал в материальный товарный запас, продажи на маркетплейсах, логистику и понятную операционную отчётность.", cta: "Стать инвестором", secondary: "Модель прозрачности", dashboardTitle: "Панель коммерческих аллокаций", dashboardSubtitle: "Операционный обзор, не спекуляция.", activeAllocations: "Активный капитал", commerceVolume: "Объём торговли", deliveredDevices: "Доставленные устройства", monthlyReporting: "Ежемесячный отчёт" },
   trust: { title: "Институциональная ясность в каждом торговом цикле.", subtitle: "Капитал, товары, продажи, доставка и отчётность связаны в единой операционной модели.", items: [
-    { label: "Объём торговли", value: "$16.2M", detail: "Продажи на маркетплейсах" }, { label: "Активный капитал", value: "$12.8M", detail: "В текущих циклах" }, { label: "Завершённые доставки", value: "48.6K", detail: "Сериализованные устройства" }, { label: "Активные аллокации", value: "36", detail: "Циклы поставок" }, { label: "Прозрачность", value: "Monthly", detail: "Отчёты и подтверждения" }
+    { label: "Объём торговли", value: "$16.2M", detail: "Продажи на маркетплейсах" }, { label: "Активный капитал", value: "$12.8M", detail: "В текущих циклах" }, { label: "Завершённые доставки", value: "48.6K", detail: "Сериализованные устройства" }, { label: "Активные аллокации", value: "36", detail: "Циклы поставок" }, { label: "Прозрачность", value: "Ежемесячно", detail: "Отчёты и подтверждения" }
   ] },
+  how: {
+    title: "Как капитал превращается в операционную торговлю.",
+    subtitle: "Дисциплинированный путь от аллокации до движения товара, продажи на маркетплейсе и распределения.",
+    steps: [
+      { title: "Капитал", body: "Одобренный капитал инвестора поступает в определённый торговый мандат." },
+      { title: "Аллокация", body: "Средства распределяются по категориям электроники с целями по марже и оборачиваемости." },
+      { title: "Закупка", body: "Товар закупается, проверяется, сериализуется и направляется через логистических партнёров." },
+      { title: "Продажа на маркетплейсе", body: "Товары проходят через устоявшиеся каналы маркетплейсов и окна расчётов." },
+      { title: "Распределение прибыли", body: "Результаты цикла отражаются в отчётности, распределяются или реинвестируются по указанию инвестора." }
+    ]
+  },
+  transparency: {
+    title: "Доказательства встроены в операционную систему.",
+    subtitle: "Инвесторы видят подтверждения движения товара, продаж, отчётности и выплат без шумных торговых дашбордов.",
+    items: [
+      { title: "Подтверждение отгрузки", body: "Записи перевозчиков, журналы приёмки и сводки по движению партий для каждого цикла аллокации." },
+      { title: "Складские материалы", body: "Медиа по запасам, заметки контроля качества и записи сериализованных устройств при наличии." },
+      { title: "Отчётность маркетплейсов", body: "Выписки каналов продаж и прозрачность расчётов по завершённым циклам." },
+      { title: "Подтверждение выплат", body: "Записи о распределении, привязанные к закрытию цикла, счёту инвестора и предпочтению по реинвестированию." },
+      { title: "Истории инвесторов", body: "Спокойные операционные обновления от участников аллокаций, без заявлений о доходности в духе хайпа." },
+      { title: "Проверка серийных номеров", body: "Проверка на уровне устройств может быть запрошена для применимых партий товара." }
+    ],
+    request: "Проверка серийных номеров по запросу",
+    proofChain: "Цепочка подтверждений",
+    operational: "Операционный",
+    qcMedia: "Материалы контроля качества",
+    qcMediaDetail: "Съёмка на складе",
+    settlement: "Расчёт",
+    settlementDetail: "Сопоставлено с циклом"
+  },
+  live: {
+    title: "Живые операции без торгового шума.",
+    subtitle: "Взвешенный обзор текущих аллокаций, циклов поставок, статуса доставки и торговой активности.",
+    currentAllocations: "Текущие аллокации",
+    recentOperations: "Последние операции",
+    allocationsSubtitle: "Определённые циклы поставок со спокойным операционным статусом.",
+    activeCount: "36 активных",
+    eventsSubtitle: "События с подтверждениями за текущий торговый день."
+  },
+  realCommerce: {
+    title: "Реальные товары вместо спекулятивных активов.",
+    subtitle: "Торговля электроникой создаёт более короткие циклы, измеримый спрос, логистические подтверждения и операционную прозрачность.",
+    points: [
+      { title: "Ликвидность через маркетплейсы", body: "Продажи идут через торговые каналы с существующим спросом и записями о расчётах." },
+      { title: "Материальная электроника", body: "Капитал связан с реальными устройствами, аксессуарами, партиями товара и фулфилментом." },
+      { title: "Короткие торговые циклы", body: "Аллокации выстроены вокруг окон закупки, продажи, расчёта, отчётности и распределения." },
+      { title: "Операционная прозрачность", body: "Точки подтверждения привязаны к движению товара и отчётности, а не к спекулятивным ценовым экранам." }
+    ],
+    infrastructureTitle: "Торговая инфраструктура",
+    infrastructureBody: "Реальный товар создаёт видимые доказательства: заказы на закупку, события отгрузки, расчёты маркетплейсов, записи выплат и отчётность по циклам."
+  },
+  investor: {
+    title: "Приватный, проверяемый процесс для инвестора.",
+    subtitle: "Путь намеренно взвешен: квалификация, проверка, соглашение, аллокация, отчётность и решение о следующем цикле.",
+    steps: ["Заявка", "Рассмотрение", "Одобрение", "KYC", "Соглашение", "Аллокация", "Отчётность", "Выплата / Реинвест"]
+  },
+  testimonials: {
+    title: "Что ценят серьёзные участники.",
+    subtitle: "Зрелые отзывы от людей, которым важны ясность, документация и дисциплина исполнения.",
+    items: [
+      { quote: "Ритм отчётности ощущается скорее как операционный партнёр, чем финансовый дашборд. Я вижу реальное движение товара.", name: "M. Alvarez", role: "Частный инвестор" },
+      { quote: "Привлекательность проста: задокументированные торговые циклы, понятные аллокации и команда, которая говорит об операциях раньше, чем о доходности.", name: "Johann K.", role: "Советник семейного офиса" },
+      { quote: "Я хотел доступ к реальной торговой инфраструктуре без спекулятивного шума. OTIZ представляет процесс с уместной сдержанностью.", name: "Elena R.", role: "Оператор маркетплейса" }
+    ]
+  },
+  faq: {
+    title: "Вопросы о доверии — с прямыми ответами.",
+    subtitle: "Прозрачная основа для механики аллокаций, проверки, сроков, выводов средств и отчётности.",
+    items: [
+      { question: "Что такое аллокация?", answer: "Аллокация — это капитал, назначенный на определённый цикл торговли электроникой: закупка, продажа на маркетплейсе, расчёт и отчётность." },
+      { question: "Как предоставляется отчётность?", answer: "Инвесторы получают сводки на уровне цикла с операционным статусом, активностью маркетплейсов, заметками о расчётах и доступными записями-подтверждениями." },
+      { question: "Когда возможны выводы средств?", answer: "Выводы следуют условиям соглашения и окнам расчёта циклов. Платформа не построена вокруг мгновенной спекулятивной ликвидности." },
+      { question: "Какие маркетплейсы используются?", answer: "Операции могут использовать устоявшиеся каналы маркетплейсов и торговых партнёров в зависимости от категории, качества товара и регионального спроса." },
+      { question: "Можно ли проверить товар?", answer: "Применимые партии могут включать записи об отгрузке, складе, маркетплейсе, выплатах или проверке серийных номеров по запросу." },
+      { question: "Можно ли реинвестировать доход?", answer: "Да. Инвесторы могут выбрать выплату или реинвестирование согласно своему соглашению и доступности подходящих аллокаций." }
+    ]
+  },
   finalCta: { title: "Войдите в более спокойную модель коммерческого капитала.", subtitle: "Подайте заявку, чтобы изучить доступ, стандарты отчётности и операционную документацию OTIZ CAPITAL.", cta: "Стать инвестором" },
-  footer: { description: "OTIZ CAPITAL - премиальная платформа для аллокаций в электронике, логистики, отчётов маркетплейсов и видимости распределений.", legal: "Правовая информация", reports: "Отчёты", transparency: "Прозрачность", contact: "Контакты", creators: "Партнёрства с авторами", social: "Соцсети", language: "Язык", disclaimer: "Частные предложения могут зависеть от пригодности, юрисдикции и условий соглашения. Доходность не гарантируется." }
+  footer: { description: "OTIZ CAPITAL - премиальная платформа для аллокаций в электронике, логистики, отчётов маркетплейсов и видимости распределений.", legal: "Правовая информация", reports: "Отчёты", transparency: "Прозрачность", contact: "Контакты", creators: "Партнёрства с авторами", social: "Соцсети", language: "Язык", disclaimer: "Частные предложения могут зависеть от пригодности, юрисдикции и условий соглашения. Доходность не гарантируется." },
+  dashboard: {
+    liveOps: "Онлайн-операции",
+    trendLabel: "Тренд капитала / объёма",
+    trendRange: "8 мес.",
+    chartCapital: "Активный капитал",
+    chartVolume: "Объём торговли",
+    monthlyValue: "Ежемесячно"
+  },
+  commerce: {
+    allocations: [
+      { id: "OC-AL-1842", cycle: "Устройства Apple", marketplace: "Amazon / eBay", capital: "$420K", status: "Закупка", progress: 46 },
+      { id: "OC-AL-1818", cycle: "Наборы для авторов", marketplace: "Walmart Marketplace", capital: "$310K", status: "В пути", progress: 68 },
+      { id: "OC-AL-1796", cycle: "Восстановленные премиум", marketplace: "Back Market", capital: "$265K", status: "Продажа на маркетплейсе", progress: 82 }
+    ],
+    operations: [
+      { time: "09:30", title: "Партия принята на складе в Нью-Джерси", detail: "146 сериализованных планшетов поступили на контроль качества", state: "Проверено" },
+      { time: "11:45", title: "Расчёт маркетплейса проведён", detail: "Цикл OC-AL-1772 переведён в закрытие отчётности", state: "Рассчитано" },
+      { time: "14:20", title: "Исходящая отгрузка выпущена", detail: "Товары набора для авторов направлены в фулфилмент", state: "В пути" }
+    ],
+    proofSignals: ["Медиа отгрузок", "Складские сканы", "Выписки маркетплейсов", "Записи выплат", "Проверки серийных номеров"],
+    chartMonths: ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг"]
+  }
 };
 
 const chinese: HomeDictionary = {

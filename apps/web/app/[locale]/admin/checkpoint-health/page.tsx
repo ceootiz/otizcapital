@@ -7,10 +7,31 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Checkpoint Health | OTIZ CAPITAL",
-  description: "Protected internal operations checkpoint for readiness, reconciliation, risk, withdrawals, proofs, notifications, and report snapshots."
-};
+const META = {
+  en: {
+    title: "Checkpoint Health | OTIZ CAPITAL",
+    description:
+      "Protected internal operations checkpoint for readiness, reconciliation, risk, withdrawals, proofs, notifications, and report snapshots."
+  },
+  ru: {
+    title: "Состояние контрольных точек | OTIZ CAPITAL",
+    description:
+      "Защищённая внутренняя контрольная точка операций: готовность, сверка, риск, выводы, подтверждения, уведомления и снимки отчётов."
+  }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  if (!isLocale(params.locale)) {
+    return {};
+  }
+
+  const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
+
+  return {
+    title: meta.title,
+    description: meta.description
+  };
+}
 
 export default async function AdminCheckpointHealthRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) notFound();

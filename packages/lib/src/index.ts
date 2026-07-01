@@ -5,5 +5,7 @@ export * from "./crm-views";
 export * from "./homepage-content";
 export * from "./apply-content";
 export * from "./application-sla";
+export * from "./admin-i18n";
+export * from "./content-merge";
 export * from "./investor-application";
 export * from "./i18n";

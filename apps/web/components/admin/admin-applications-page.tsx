@@ -7,8 +7,14 @@ import { ArrowLeft, BellRing, CheckCircle2, Clock3, Download, FileText, LogOut, 
 import {
   APPLICATION_SLA_FILTERS,
   DEFAULT_CRM_CONFIG,
+  createAdminFormatters,
+  enumLabel,
   getApplicationPriorityReasons,
   getApplicationSlaState,
+  getCrmViews,
+  priorityReasonLabel,
+  slaBadgeLabel,
+  type AdminFormatters,
   type ApplicationPriorityReason,
   type CrmConfig,
   type ApplicationSlaFilter,
@@ -16,7 +22,7 @@ import {
   type Locale
 } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { CRM_VIEWS, getCrmView, getCrmViewKey, type CrmViewKey } from "./crm-views";
+import { getCrmView, getCrmViewKey, type CrmViewKey } from "./crm-views";
 import { AdminNavigation } from "./admin-navigation";
 
 const APPLICATION_STATUSES = ["NEW", "REVIEWED", "APPROVED", "REJECTED", "CONTACTED"] as const;
@@ -228,18 +234,7 @@ type AuditSnapshot = Partial<{
 const statuses: Array<"ALL" | ApplicationStatus> = ["ALL", ...APPLICATION_STATUSES];
 const priorityOptions: Array<"ALL" | ApplicationPriority> = ["ALL", ...APPLICATION_PRIORITIES];
 const reinvestInterestOptions: Array<"ALL" | ReinvestInterest> = ["ALL", ...REINVEST_INTEREST_OPTIONS];
-const sortOptions: Array<{ value: InvestorApplicationSort; label: string }> = [
-  { value: "smart", label: "Smart priority" },
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "amount-desc", label: "Highest amount" },
-  { value: "next-action", label: "Next action date" }
-];
-const SLA_QUICK_FILTERS: Array<{ key: ApplicationSlaFilter; label: string; description: string }> = [
-  { key: "first-contact-overdue", label: "First contact overdue", description: "New leads waiting 24h+" },
-  { key: "due-soon", label: "Due soon", description: "Next 24 hours" },
-  { key: "high-value-no-contact", label: "High value no contact", description: "$25k+ untouched" }
-];
+const SLA_QUICK_FILTER_KEYS: ApplicationSlaFilter[] = ["first-contact-overdue", "due-soon", "high-value-no-contact"];
 const defaultPageInfo: PageInfo = {
   total: 0,
   page: 1,
@@ -265,8 +260,372 @@ const defaultNotificationSummary: NotificationSummary = {
   },
   deliveryEnabled: false
 };
-const numberFormatter = new Intl.NumberFormat("en-US");
-const dateTimeFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "short", timeStyle: "short" });
+const STRINGS = {
+  en: {
+    backToHome: "Back to homepage",
+    logout: "Logout",
+    adminAccessProtected: "Admin access protected",
+    adminAccessDesc: "CRM actions use the signed admin session, CSRF-protected mutations, pagination, CSV export, and audit logging.",
+    summaryFirstContactOverdue: "First contact overdue",
+    summaryDueSoon: "Due soon",
+    summaryOverdue: "Overdue",
+    summaryHighValueNoContact: "High value no contact",
+    summaryNewLeads: "New leads",
+    summaryContacted: "Contacted",
+    summaryApproved: "Approved",
+    summaryHighVip: "High/VIP priority",
+    summaryOverdueNextActions: "Overdue next actions",
+    summaryPlannedAllocationTotal: "Planned allocation total",
+    investorApplications: "Investor applications",
+    queueSubtitle: "Compact CRM queue for review, prioritization, and follow-up.",
+    totalSuffix: "total",
+    exportCsv: "Export CSV",
+    slaDescFirstContact: "New leads waiting 24h+",
+    slaDescDueSoon: "Next 24 hours",
+    slaDescHighValue: "$25k+ untouched",
+    searchAria: "Search applications",
+    searchPlaceholder: "Search name, email, Telegram, country",
+    filterByStatus: "Filter by status",
+    filterByPriority: "Filter by priority",
+    filterByReinvest: "Filter by reinvest interest",
+    smartPriorityHelp: "Smart priority raises overdue actions, first-contact SLA breaches, high-value no-contact leads, due-soon actions, and VIP/High priority leads.",
+    searchSourceAria: "Search by source label",
+    searchSourcePlaceholder: "Search source label",
+    overdueCheckboxAria: "Show overdue next actions",
+    overdueNextActions: "Overdue next actions",
+    reset: "Reset",
+    all: "All",
+    colLead: "Lead",
+    colPriority: "Priority",
+    colStatus: "Status",
+    colAmount: "Amount",
+    colSource: "Source",
+    colNextAction: "Next action",
+    colCreated: "Created",
+    loadingApplications: "Loading applications",
+    loadingApplicationsDesc: "Fetching the current CRM queue.",
+    noMatching: "No matching applications",
+    noApplications: "No applications yet",
+    noMatchingDesc: "Try clearing filters or broadening the search.",
+    noApplicationsDesc: "New investor applications will appear here after submission.",
+    noNextActionShort: "No next action",
+    pageLabel: "Page",
+    ofLabel: "of",
+    shownLabel: "shown",
+    previous: "Previous",
+    next: "Next",
+    ruleFirstContactSla: "First contact SLA",
+    ruleDueSoonWindow: "Due soon window",
+    ruleHighValueThreshold: "High value threshold",
+    ruleStaleLeadThreshold: "Stale lead threshold",
+    hoursSuffix: "h",
+    daysSuffix: "d",
+    notificationWorker: "Notification worker",
+    notificationWorkerDescEnabled: "Pending events are processed locally. Outbound delivery is enabled but provider delivery is not implemented.",
+    notificationWorkerDescDisabled: "Pending events are processed locally. Outbound delivery is disabled.",
+    processedLabel: "Processed",
+    pendingSuffix: "pending",
+    skippedSuffix: "skipped",
+    sentSuffix: "sent",
+    failedSuffix: "failed",
+    processing: "Processing...",
+    processPending: "Process pending notifications",
+    loadingQueueCount: "Loading queue count",
+    sortAria: "Sort applications",
+    selectApplication: "Select an application",
+    selectApplicationDesc: "Application details, quick actions, and timeline will appear here.",
+    whyPrioritized: "Why this lead is prioritized",
+    noUrgentSignals: "No urgent priority signals.",
+    investorLinked: "Investor linked",
+    capitalProfile: "Capital profile:",
+    reinvestWord: "Reinvest",
+    enabledWord: "enabled",
+    disabledWord: "disabled",
+    investorAccount: "Investor account",
+    approveBeforeCreate: "Approve application before creating investor access.",
+    createInvestorProfileDesc: "Create a protected investor profile from this approved application.",
+    creating: "Creating...",
+    createInvestorAccount: "Create investor account",
+    emailRequired: "Email is required for investor login access.",
+    slaIndicators: "SLA indicators",
+    noActiveSla: "No active SLA flags for this application.",
+    quickActions: "Quick actions",
+    markContacted: "Mark contacted",
+    approve: "Approve",
+    reject: "Reject",
+    setVip: "Set VIP",
+    clearNextAction: "Clear next action",
+    markedContacted: "Marked as contacted.",
+    applicationApproved: "Application approved.",
+    applicationRejected: "Application rejected.",
+    prioritySetVip: "Priority set to VIP.",
+    nextActionCleared: "Next action cleared.",
+    priorityLabel: "Priority",
+    sourceLabelField: "Source label",
+    sourcePlaceholder: "Creator, partner, referral",
+    nextActionField: "Next action",
+    nextActionPlaceholder: "Call, document review, approval prep",
+    nextActionDateTime: "Next action date/time",
+    managerNotes: "Manager notes",
+    managerNotesPlaceholder: "Internal review notes, follow-up context, allocation fit.",
+    unsavedChanges: "Unsaved CRM changes",
+    fieldsUpToDate: "CRM fields are up to date",
+    saving: "Saving...",
+    saveCrmFields: "Save CRM fields",
+    crmFieldsSaved: "CRM fields saved.",
+    unableSaveCrm: "Unable to save CRM fields.",
+    unableQuickAction: "Unable to run quick action.",
+    investorLinkedNotice: "Investor account is linked to this approved application.",
+    contact: "Contact",
+    noEmail: "No email",
+    noTelegram: "No Telegram",
+    country: "Country",
+    plannedAllocation: "Planned allocation",
+    depositMethod: "Deposit method",
+    investorType: "Investor type",
+    reinvestInterestLabel: "Reinvest interest",
+    contactedAt: "Contacted at",
+    approvedAt: "Approved at",
+    applicationMessage: "Application message",
+    noNotesProvided: "No notes provided.",
+    activityTimeline: "Application activity timeline",
+    noActivity: "No activity yet",
+    noActivityDesc: "Application lifecycle events will appear here.",
+    notificationEvents: "Notification events",
+    noNotificationEvents: "No notification events yet",
+    noNotificationEventsDesc: "Internal email, Telegram, or operator notification events will appear here when they are queued.",
+    telegramPreview: "Telegram preview",
+    recipient: "Recipient",
+    recentAuditHistory: "Recent audit history",
+    noAuditHistory: "No audit history yet",
+    noAuditHistoryDesc: "Status, priority, notes, source, and next action updates will appear here.",
+    byWord: "by",
+    noNextActionDesc: "Set a follow-up step and due date when this lead needs operator attention.",
+    noActionTextSet: "No action text set.",
+    overdueWord: "Overdue",
+    unableLoadApplications: "Unable to load applications.",
+    unableLoadQueueCounts: "Unable to load queue counts.",
+    unableLoadNotificationSummary: "Unable to load notification summary.",
+    unableUpdate: "Unable to update application.",
+    unableProcessNotifications: "Unable to process notifications.",
+    unableCreateInvestor: "Unable to create investor account.",
+    unableLogout: "Unable to log out.",
+    applicationChangesSaved: "Application changes saved.",
+    investorCreatedLinked: "Investor account created and linked.",
+    investorExistingLinked: "Existing investor account linked.",
+    tlCreated: "Application created",
+    tlSubmittedSuffix: "submitted an investor application.",
+    tlContacted: "Contacted timestamp set",
+    tlContactedDetail: "Lead has been marked as contacted.",
+    tlApproved: "Approved timestamp set",
+    tlApprovedDetail: "Lead has been approved.",
+    tlRejected: "Rejected timestamp set",
+    tlRejectedDetail: "Lead has been rejected.",
+    tlStatusChanged: "Status changed",
+    tlStatusUpdated: "Status updated.",
+    tlPriorityChanged: "Priority changed",
+    tlPriorityUpdated: "Priority updated.",
+    tlNotesUpdated: "Notes updated",
+    tlNotesUpdatedDetail: "Manager notes updated.",
+    tlNotesClearedDetail: "Manager notes cleared.",
+    tlSourceUpdated: "Source label updated",
+    tlSourceUpdatedDetail: "Source label updated.",
+    tlNextActionSet: "Next action set",
+    tlNextActionCleared: "Next action cleared",
+    tlNextActionFallback: "Next action",
+    tlNoNextActionScheduled: "No next action scheduled.",
+    tlByDate: "by",
+    emptyWord: "empty",
+    ntfInvestorApplication: "Investor application",
+    ntfEnteredQueueSuffix: "entered the internal notification queue.",
+    ntfPrevious: "previous",
+    ntfUpdated: "updated",
+    ntfInternalEvent: "Internal {channel} event for {entity}."
+  },
+  ru: {
+    backToHome: "На главную",
+    logout: "Выйти",
+    adminAccessProtected: "Доступ администратора защищён",
+    adminAccessDesc: "Действия CRM используют подписанную админ-сессию, защищённые от CSRF мутации, пагинацию, экспорт CSV и журнал аудита.",
+    summaryFirstContactOverdue: "Просрочен первый контакт",
+    summaryDueSoon: "Скоро срок",
+    summaryOverdue: "Просрочено",
+    summaryHighValueNoContact: "Крупный лид без контакта",
+    summaryNewLeads: "Новые лиды",
+    summaryContacted: "Связались",
+    summaryApproved: "Одобрены",
+    summaryHighVip: "Высокий/VIP приоритет",
+    summaryOverdueNextActions: "Просроченные следующие действия",
+    summaryPlannedAllocationTotal: "Планируемая аллокация всего",
+    investorApplications: "Заявки инвесторов",
+    queueSubtitle: "Компактная очередь CRM для проверки, приоритизации и работы с лидами.",
+    totalSuffix: "всего",
+    exportCsv: "Экспорт CSV",
+    slaDescFirstContact: "Новые лиды ждут 24ч+",
+    slaDescDueSoon: "Ближайшие 24 часа",
+    slaDescHighValue: "$25k+ без работы",
+    searchAria: "Поиск заявок",
+    searchPlaceholder: "Поиск по имени, email, Telegram, стране",
+    filterByStatus: "Фильтр по статусу",
+    filterByPriority: "Фильтр по приоритету",
+    filterByReinvest: "Фильтр по интересу к реинвесту",
+    smartPriorityHelp: "Умный приоритет поднимает просроченные действия, нарушения SLA первого контакта, крупных лидов без контакта, действия с близким сроком и лидов с приоритетом VIP/Высокий.",
+    searchSourceAria: "Поиск по источнику",
+    searchSourcePlaceholder: "Поиск по метке источника",
+    overdueCheckboxAria: "Показать просроченные следующие действия",
+    overdueNextActions: "Просроченные следующие действия",
+    reset: "Сбросить",
+    all: "Все",
+    colLead: "Лид",
+    colPriority: "Приоритет",
+    colStatus: "Статус",
+    colAmount: "Сумма",
+    colSource: "Источник",
+    colNextAction: "Следующее действие",
+    colCreated: "Создано",
+    loadingApplications: "Загрузка заявок",
+    loadingApplicationsDesc: "Загружаем текущую очередь CRM.",
+    noMatching: "Нет подходящих заявок",
+    noApplications: "Пока нет заявок",
+    noMatchingDesc: "Попробуйте сбросить фильтры или расширить поиск.",
+    noApplicationsDesc: "Новые заявки инвесторов появятся здесь после отправки.",
+    noNextActionShort: "Нет следующего действия",
+    pageLabel: "Страница",
+    ofLabel: "из",
+    shownLabel: "показано",
+    previous: "Назад",
+    next: "Далее",
+    ruleFirstContactSla: "SLA первого контакта",
+    ruleDueSoonWindow: "Окно «скоро срок»",
+    ruleHighValueThreshold: "Порог крупного лида",
+    ruleStaleLeadThreshold: "Порог залежавшегося лида",
+    hoursSuffix: "ч",
+    daysSuffix: "д",
+    notificationWorker: "Обработчик уведомлений",
+    notificationWorkerDescEnabled: "Ожидающие события обрабатываются локально. Исходящая доставка включена, но доставка через провайдера не реализована.",
+    notificationWorkerDescDisabled: "Ожидающие события обрабатываются локально. Исходящая доставка отключена.",
+    processedLabel: "Обработано",
+    pendingSuffix: "в ожидании",
+    skippedSuffix: "пропущено",
+    sentSuffix: "отправлено",
+    failedSuffix: "ошибок",
+    processing: "Обработка...",
+    processPending: "Обработать ожидающие уведомления",
+    loadingQueueCount: "Загрузка счётчика очереди",
+    sortAria: "Сортировка заявок",
+    selectApplication: "Выберите заявку",
+    selectApplicationDesc: "Здесь появятся детали заявки, быстрые действия и хронология.",
+    whyPrioritized: "Почему этот лид в приоритете",
+    noUrgentSignals: "Нет срочных сигналов приоритета.",
+    investorLinked: "Инвестор привязан",
+    capitalProfile: "Профиль капитала:",
+    reinvestWord: "Реинвест",
+    enabledWord: "включён",
+    disabledWord: "отключён",
+    investorAccount: "Аккаунт инвестора",
+    approveBeforeCreate: "Одобрите заявку перед созданием доступа инвестора.",
+    createInvestorProfileDesc: "Создайте защищённый профиль инвестора из этой одобренной заявки.",
+    creating: "Создание...",
+    createInvestorAccount: "Создать аккаунт инвестора",
+    emailRequired: "Для входа инвестора требуется email.",
+    slaIndicators: "Индикаторы SLA",
+    noActiveSla: "Нет активных флагов SLA для этой заявки.",
+    quickActions: "Быстрые действия",
+    markContacted: "Отметить контакт",
+    approve: "Одобрить",
+    reject: "Отклонить",
+    setVip: "Сделать VIP",
+    clearNextAction: "Очистить следующее действие",
+    markedContacted: "Отмечено как «связались».",
+    applicationApproved: "Заявка одобрена.",
+    applicationRejected: "Заявка отклонена.",
+    prioritySetVip: "Приоритет установлен на VIP.",
+    nextActionCleared: "Следующее действие очищено.",
+    priorityLabel: "Приоритет",
+    sourceLabelField: "Метка источника",
+    sourcePlaceholder: "Автор, партнёр, реферал",
+    nextActionField: "Следующее действие",
+    nextActionPlaceholder: "Звонок, проверка документов, подготовка к одобрению",
+    nextActionDateTime: "Дата/время следующего действия",
+    managerNotes: "Заметки менеджера",
+    managerNotesPlaceholder: "Внутренние заметки, контекст по работе с лидом, соответствие аллокации.",
+    unsavedChanges: "Несохранённые изменения CRM",
+    fieldsUpToDate: "Поля CRM актуальны",
+    saving: "Сохранение...",
+    saveCrmFields: "Сохранить поля CRM",
+    crmFieldsSaved: "Поля CRM сохранены.",
+    unableSaveCrm: "Не удалось сохранить поля CRM.",
+    unableQuickAction: "Не удалось выполнить быстрое действие.",
+    investorLinkedNotice: "Аккаунт инвестора привязан к этой одобренной заявке.",
+    contact: "Контакт",
+    noEmail: "Нет email",
+    noTelegram: "Нет Telegram",
+    country: "Страна",
+    plannedAllocation: "Планируемая аллокация",
+    depositMethod: "Способ депозита",
+    investorType: "Тип инвестора",
+    reinvestInterestLabel: "Интерес к реинвесту",
+    contactedAt: "Дата контакта",
+    approvedAt: "Дата одобрения",
+    applicationMessage: "Сообщение заявки",
+    noNotesProvided: "Заметки не указаны.",
+    activityTimeline: "Хронология активности заявки",
+    noActivity: "Пока нет активности",
+    noActivityDesc: "События жизненного цикла заявки появятся здесь.",
+    notificationEvents: "События уведомлений",
+    noNotificationEvents: "Пока нет событий уведомлений",
+    noNotificationEventsDesc: "Внутренние события email, Telegram или уведомлений оператора появятся здесь после постановки в очередь.",
+    telegramPreview: "Предпросмотр Telegram",
+    recipient: "Получатель",
+    recentAuditHistory: "Недавняя история аудита",
+    noAuditHistory: "Пока нет истории аудита",
+    noAuditHistoryDesc: "Здесь появятся изменения статуса, приоритета, заметок, источника и следующего действия.",
+    byWord: "автор",
+    noNextActionDesc: "Задайте шаг и срок, когда этому лиду нужно внимание оператора.",
+    noActionTextSet: "Текст действия не задан.",
+    overdueWord: "Просрочено",
+    unableLoadApplications: "Не удалось загрузить заявки.",
+    unableLoadQueueCounts: "Не удалось загрузить счётчики очереди.",
+    unableLoadNotificationSummary: "Не удалось загрузить сводку уведомлений.",
+    unableUpdate: "Не удалось обновить заявку.",
+    unableProcessNotifications: "Не удалось обработать уведомления.",
+    unableCreateInvestor: "Не удалось создать аккаунт инвестора.",
+    unableLogout: "Не удалось выйти.",
+    applicationChangesSaved: "Изменения заявки сохранены.",
+    investorCreatedLinked: "Аккаунт инвестора создан и привязан.",
+    investorExistingLinked: "Существующий аккаунт инвестора привязан.",
+    tlCreated: "Заявка создана",
+    tlSubmittedSuffix: "отправил(а) заявку инвестора.",
+    tlContacted: "Установлена отметка контакта",
+    tlContactedDetail: "Лид отмечен как «связались».",
+    tlApproved: "Установлена отметка одобрения",
+    tlApprovedDetail: "Лид одобрен.",
+    tlRejected: "Установлена отметка отклонения",
+    tlRejectedDetail: "Лид отклонён.",
+    tlStatusChanged: "Статус изменён",
+    tlStatusUpdated: "Статус обновлён.",
+    tlPriorityChanged: "Приоритет изменён",
+    tlPriorityUpdated: "Приоритет обновлён.",
+    tlNotesUpdated: "Заметки обновлены",
+    tlNotesUpdatedDetail: "Заметки менеджера обновлены.",
+    tlNotesClearedDetail: "Заметки менеджера очищены.",
+    tlSourceUpdated: "Метка источника обновлена",
+    tlSourceUpdatedDetail: "Метка источника обновлена.",
+    tlNextActionSet: "Следующее действие задано",
+    tlNextActionCleared: "Следующее действие очищено",
+    tlNextActionFallback: "Следующее действие",
+    tlNoNextActionScheduled: "Следующее действие не запланировано.",
+    tlByDate: "к",
+    emptyWord: "пусто",
+    ntfInvestorApplication: "Заявка инвестора",
+    ntfEnteredQueueSuffix: "добавлен(а) во внутреннюю очередь уведомлений.",
+    ntfPrevious: "предыдущий",
+    ntfUpdated: "обновлён",
+    ntfInternalEvent: "Внутреннее {channel}-событие для {entity}."
+  }
+} as const;
+type Strings = typeof STRINGS.en;
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
@@ -286,33 +645,30 @@ function getAdminMutationHeaders() {
   };
 }
 
-function formatInteger(value: number) {
-  return numberFormatter.format(value);
+function formatInteger(value: number, f: AdminFormatters) {
+  return f.number(value);
 }
 
-function formatMoney(value: number) {
-  return `$${formatInteger(value)}`;
+function formatMoney(value: number, f: AdminFormatters) {
+  return f.currency(value);
 }
 
-function formatHours(value: number) {
-  return `${formatInteger(value)}h`;
+function formatHours(value: number, f: AdminFormatters, t: Strings) {
+  return `${f.number(value)}${t.hoursSuffix}`;
 }
 
-function formatDays(value: number) {
-  return `${formatInteger(value)}d`;
+function formatDays(value: number, f: AdminFormatters, t: Strings) {
+  return `${f.number(value)}${t.daysSuffix}`;
 }
 
-function formatOptionalCount(value: number | undefined, isLoading: boolean, hasError: boolean) {
+function formatOptionalCount(value: number | undefined, isLoading: boolean, hasError: boolean, f: AdminFormatters) {
   if (isLoading) return "...";
   if (hasError || typeof value !== "number") return "—";
-  return formatInteger(value);
+  return f.number(value);
 }
 
-function formatDateTime(value: string | null) {
-  if (!value) return "—";
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : dateTimeFormatter.format(date);
+function formatDateTime(value: string | null, f: AdminFormatters) {
+  return f.dateTime(value);
 }
 
 function toDateTimeInputValue(value: string | null) {
@@ -381,7 +737,7 @@ function formatNotificationLabel(value: string) {
     .join(" ");
 }
 
-function formatNotificationDetail(event: NotificationEvent) {
+function formatNotificationDetail(event: NotificationEvent, t: Strings) {
   if (event.messagePreview?.text) {
     return event.messagePreview.text;
   }
@@ -389,62 +745,62 @@ function formatNotificationDetail(event: NotificationEvent) {
   const payload = parseNotificationPayload(event.payloadJson);
 
   if (event.type === "INVESTOR_APPLICATION_CREATED") {
-    const fullName = typeof payload.fullName === "string" ? payload.fullName : "Investor application";
-    return `${fullName} entered the internal notification queue.`;
+    const fullName = typeof payload.fullName === "string" ? payload.fullName : t.ntfInvestorApplication;
+    return `${fullName} ${t.ntfEnteredQueueSuffix}`;
   }
 
   if (event.type === "APPLICATION_STATUS_CHANGED") {
-    const previousStatus = typeof payload.previousStatus === "string" ? payload.previousStatus : "previous";
-    const status = typeof payload.status === "string" ? payload.status : "updated";
+    const previousStatus = typeof payload.previousStatus === "string" ? payload.previousStatus : t.ntfPrevious;
+    const status = typeof payload.status === "string" ? payload.status : t.ntfUpdated;
     return `${previousStatus} -> ${status}`;
   }
 
-  return `Internal ${event.channel.toLowerCase()} event for ${event.entityType}.`;
+  return t.ntfInternalEvent.replace("{channel}", event.channel.toLowerCase()).replace("{entity}", event.entityType);
 }
 
-function getChangedFieldDetail(beforeValue: unknown, afterValue: unknown, fallback: string) {
-  const before = beforeValue === null || beforeValue === undefined || beforeValue === "" ? "empty" : String(beforeValue);
-  const after = afterValue === null || afterValue === undefined || afterValue === "" ? "empty" : String(afterValue);
+function getChangedFieldDetail(beforeValue: unknown, afterValue: unknown, fallback: string, t: Strings) {
+  const before = beforeValue === null || beforeValue === undefined || beforeValue === "" ? t.emptyWord : String(beforeValue);
+  const after = afterValue === null || afterValue === undefined || afterValue === "" ? t.emptyWord : String(afterValue);
 
   return before === after ? fallback : `${before} -> ${after}`;
 }
 
-function buildActivityTimeline(application: AdminApplication, auditLogs: AuditLog[]) {
+function buildActivityTimeline(application: AdminApplication, auditLogs: AuditLog[], t: Strings, f: AdminFormatters) {
   const items: ActivityItem[] = [
     {
       key: "created",
-      label: "Application created",
-      detail: `${application.fullName} submitted an investor application.`,
+      label: t.tlCreated,
+      detail: `${application.fullName} ${t.tlSubmittedSuffix}`,
       at: application.createdAt
     }
   ];
 
-  if (application.contactedAt) items.push({ key: "contacted", label: "Contacted timestamp set", detail: "Lead has been marked as contacted.", at: application.contactedAt });
-  if (application.approvedAt) items.push({ key: "approved", label: "Approved timestamp set", detail: "Lead has been approved.", at: application.approvedAt });
-  if (application.rejectedAt) items.push({ key: "rejected", label: "Rejected timestamp set", detail: "Lead has been rejected.", at: application.rejectedAt });
+  if (application.contactedAt) items.push({ key: "contacted", label: t.tlContacted, detail: t.tlContactedDetail, at: application.contactedAt });
+  if (application.approvedAt) items.push({ key: "approved", label: t.tlApproved, detail: t.tlApprovedDetail, at: application.approvedAt });
+  if (application.rejectedAt) items.push({ key: "rejected", label: t.tlRejected, detail: t.tlRejectedDetail, at: application.rejectedAt });
 
   for (const log of auditLogs) {
     const before = parseAuditSnapshot(log.beforeJson);
     const after = parseAuditSnapshot(log.afterJson);
 
     if (before.status !== after.status) {
-      items.push({ key: `${log.id}-status`, label: "Status changed", detail: getChangedFieldDetail(before.status, after.status, "Status updated."), at: log.createdAt });
+      items.push({ key: `${log.id}-status`, label: t.tlStatusChanged, detail: getChangedFieldDetail(before.status, after.status, t.tlStatusUpdated, t), at: log.createdAt });
     }
     if (before.priority !== after.priority) {
-      items.push({ key: `${log.id}-priority`, label: "Priority changed", detail: getChangedFieldDetail(before.priority, after.priority, "Priority updated."), at: log.createdAt });
+      items.push({ key: `${log.id}-priority`, label: t.tlPriorityChanged, detail: getChangedFieldDetail(before.priority, after.priority, t.tlPriorityUpdated, t), at: log.createdAt });
     }
     if (before.managerNotes !== after.managerNotes) {
-      items.push({ key: `${log.id}-notes`, label: "Notes updated", detail: after.managerNotes ? "Manager notes updated." : "Manager notes cleared.", at: log.createdAt });
+      items.push({ key: `${log.id}-notes`, label: t.tlNotesUpdated, detail: after.managerNotes ? t.tlNotesUpdatedDetail : t.tlNotesClearedDetail, at: log.createdAt });
     }
     if (before.sourceLabel !== after.sourceLabel) {
-      items.push({ key: `${log.id}-source`, label: "Source label updated", detail: getChangedFieldDetail(before.sourceLabel, after.sourceLabel, "Source label updated."), at: log.createdAt });
+      items.push({ key: `${log.id}-source`, label: t.tlSourceUpdated, detail: getChangedFieldDetail(before.sourceLabel, after.sourceLabel, t.tlSourceUpdatedDetail, t), at: log.createdAt });
     }
     if (before.nextAction !== after.nextAction || before.nextActionAt !== after.nextActionAt) {
       const hasNextAction = Boolean(after.nextAction || after.nextActionAt);
       items.push({
         key: `${log.id}-next-action`,
-        label: hasNextAction ? "Next action set" : "Next action cleared",
-        detail: hasNextAction ? `${after.nextAction || "Next action"} ${after.nextActionAt ? `by ${formatDateTime(after.nextActionAt)}` : ""}`.trim() : "No next action scheduled.",
+        label: hasNextAction ? t.tlNextActionSet : t.tlNextActionCleared,
+        detail: hasNextAction ? `${after.nextAction || t.tlNextActionFallback} ${after.nextActionAt ? `${t.tlByDate} ${formatDateTime(after.nextActionAt, f)}` : ""}`.trim() : t.tlNoNextActionScheduled,
         at: log.createdAt
       });
     }
@@ -508,6 +864,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
   const [queueCountsError, setQueueCountsError] = React.useState<string | null>(null);
   const [notificationError, setNotificationError] = React.useState<string | null>(null);
   const crmConfig = queueCounts?.config ?? DEFAULT_CRM_CONFIG;
+  const t = getStrings(locale);
+  const f = React.useMemo(() => createAdminFormatters(locale), [locale]);
 
   const filterParams = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -546,7 +904,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       .then(async (response) => {
         const payload = (await response.json()) as ApiListResponse;
 
-        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to load applications.");
+        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.unableLoadApplications);
 
         const nextPageInfo = payload.pageInfo || defaultPageInfo;
         if (nextPageInfo.total > 0 && page > nextPageInfo.totalPages) {
@@ -568,7 +926,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
         setApplications([]);
         setPageInfo(defaultPageInfo);
         setSummary(defaultSummary);
-        setError(requestError instanceof Error ? requestError.message : "Unable to load applications.");
+        setError(requestError instanceof Error ? requestError.message : t.unableLoadApplications);
       })
       .finally(() => setIsLoading(false));
 
@@ -585,7 +943,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       .then(async (response) => {
         const payload = (await response.json()) as ApiQueueCountsResponse;
 
-        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to load queue counts.");
+        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.unableLoadQueueCounts);
 
         setQueueCounts(payload.data);
       })
@@ -593,7 +951,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;
 
         setQueueCounts(null);
-        setQueueCountsError(requestError instanceof Error ? requestError.message : "Unable to load queue counts.");
+        setQueueCountsError(requestError instanceof Error ? requestError.message : t.unableLoadQueueCounts);
       })
       .finally(() => setAreQueueCountsLoading(false));
 
@@ -610,7 +968,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       .then(async (response) => {
         const payload = (await response.json()) as ApiNotificationSummaryResponse;
 
-        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to load notification summary.");
+        if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.unableLoadNotificationSummary);
 
         setNotificationSummary(payload.data);
       })
@@ -618,7 +976,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") return;
 
         setNotificationSummary(defaultNotificationSummary);
-        setNotificationError(requestError instanceof Error ? requestError.message : "Unable to load notification summary.");
+        setNotificationError(requestError instanceof Error ? requestError.message : t.unableLoadNotificationSummary);
       })
       .finally(() => setIsNotificationSummaryLoading(false));
 
@@ -676,12 +1034,12 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       const response = await fetch("/api/admin/logout", { method: "POST", headers: { [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) } });
       const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
 
-      if (!response.ok || !payload?.ok) throw new Error(payload?.error || "Unable to log out.");
+      if (!response.ok || !payload?.ok) throw new Error(payload?.error || t.unableLogout);
 
       router.push(`/${locale}/admin/login`);
       router.refresh();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to log out.");
+      setError(requestError instanceof Error ? requestError.message : t.unableLogout);
     }
   }
 
@@ -698,7 +1056,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       });
       const responsePayload = (await response.json()) as { ok: boolean; data?: AdminApplication; error?: string };
 
-      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || "Unable to update application.");
+      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || t.unableUpdate);
 
       setApplications((current) => current.map((item) => (item.id === responsePayload.data?.id ? responsePayload.data : item)));
       setNotice(successMessage);
@@ -706,7 +1064,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       setRefreshKey((current) => current + 1);
       return responsePayload.data;
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to update application.");
+      setError(requestError instanceof Error ? requestError.message : t.unableUpdate);
       throw requestError;
     } finally {
       setIsUpdating(false);
@@ -726,13 +1084,13 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       });
       const payload = (await response.json()) as ApiProcessNotificationsResponse;
 
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to process notifications.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.unableProcessNotifications);
 
       setNotificationProcessResult(payload.data);
       if (selectedApplication) await loadNotificationEvents(selectedApplication.id);
       setRefreshKey((current) => current + 1);
     } catch (requestError) {
-      setNotificationError(requestError instanceof Error ? requestError.message : "Unable to process notifications.");
+      setNotificationError(requestError instanceof Error ? requestError.message : t.unableProcessNotifications);
     } finally {
       setIsProcessingNotifications(false);
     }
@@ -748,7 +1106,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
         nextAction: draft.nextAction,
         nextActionAt: draft.nextActionAt || null
       },
-      "Application changes saved."
+      t.applicationChangesSaved
     );
   }
 
@@ -765,15 +1123,15 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       });
       const payload = (await response.json()) as ApiCreateInvestorResponse;
 
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to create investor account.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.unableCreateInvestor);
 
       setApplications((current) => current.map((item) => (item.id === payload.data?.application.id ? payload.data.application : item)));
-      setNotice(payload.created ? "Investor account created and linked." : "Existing investor account linked.");
+      setNotice(payload.created ? t.investorCreatedLinked : t.investorExistingLinked);
       await Promise.all([loadAuditLogs(payload.data.application.id), loadNotificationEvents(payload.data.application.id)]);
       setRefreshKey((current) => current + 1);
       return payload.data.application;
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create investor account.");
+      setError(requestError instanceof Error ? requestError.message : t.unableCreateInvestor);
       throw requestError;
     } finally {
       setIsCreatingInvestor(false);
@@ -827,13 +1185,13 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
           <div className="mb-8 flex items-center justify-between gap-4">
             <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="size-4" />
-              Back to homepage
+              {t.backToHome}
             </Link>
             <div className="flex items-center gap-3">
               <AdminNavigation locale={locale} activeSection="applications" className="hidden items-center gap-2 sm:flex" />
               <Button type="button" variant="outline" size="sm" onClick={logout}>
                 <LogOut data-icon="inline-start" />
-                Logout
+                {t.logout}
               </Button>
             </div>
           </div>
@@ -842,13 +1200,13 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 size-5 shrink-0" />
               <div>
-                <p className="font-semibold">Admin access protected</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">CRM actions use the signed admin session, CSRF-protected mutations, pagination, CSV export, and audit logging.</p>
+                <p className="font-semibold">{t.adminAccessProtected}</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{t.adminAccessDesc}</p>
               </div>
             </div>
           </div>
 
-          <CrmRulesCard config={crmConfig} />
+          <CrmRulesCard config={crmConfig} locale={locale} />
 
           <NotificationProcessorPanel
             summary={notificationSummary}
@@ -857,19 +1215,20 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             error={notificationError}
             result={notificationProcessResult}
             onProcess={processPendingNotifications}
+            locale={locale}
           />
 
           <div className="mb-6 grid gap-4 md:grid-cols-3 xl:grid-cols-5">
-            <SummaryCard label="First contact overdue" value={formatOptionalCount(queueCounts?.sla["first-contact-overdue"], areQueueCountsLoading, Boolean(queueCountsError))} />
-            <SummaryCard label="Due soon" value={formatOptionalCount(queueCounts?.sla["due-soon"], areQueueCountsLoading, Boolean(queueCountsError))} />
-            <SummaryCard label="Overdue" value={formatOptionalCount(queueCounts?.sla.overdue, areQueueCountsLoading, Boolean(queueCountsError))} />
-            <SummaryCard label="High value no contact" value={formatOptionalCount(queueCounts?.sla["high-value-no-contact"], areQueueCountsLoading, Boolean(queueCountsError))} />
-            <SummaryCard label="New leads" value={formatInteger(summary.newLeads)} />
-            <SummaryCard label="Contacted" value={formatInteger(summary.contacted)} />
-            <SummaryCard label="Approved" value={formatInteger(summary.approved)} />
-            <SummaryCard label="High/VIP priority" value={formatInteger(summary.highVipPriority)} />
-            <SummaryCard label="Overdue next actions" value={formatInteger(summary.overdueNextActions)} />
-            <SummaryCard label="Planned allocation total" value={formatMoney(summary.plannedAllocationTotal)} />
+            <SummaryCard label={t.summaryFirstContactOverdue} value={formatOptionalCount(queueCounts?.sla["first-contact-overdue"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
+            <SummaryCard label={t.summaryDueSoon} value={formatOptionalCount(queueCounts?.sla["due-soon"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
+            <SummaryCard label={t.summaryOverdue} value={formatOptionalCount(queueCounts?.sla.overdue, areQueueCountsLoading, Boolean(queueCountsError), f)} />
+            <SummaryCard label={t.summaryHighValueNoContact} value={formatOptionalCount(queueCounts?.sla["high-value-no-contact"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
+            <SummaryCard label={t.summaryNewLeads} value={formatInteger(summary.newLeads, f)} />
+            <SummaryCard label={t.summaryContacted} value={formatInteger(summary.contacted, f)} />
+            <SummaryCard label={t.summaryApproved} value={formatInteger(summary.approved, f)} />
+            <SummaryCard label={t.summaryHighVip} value={formatInteger(summary.highVipPriority, f)} />
+            <SummaryCard label={t.summaryOverdueNextActions} value={formatInteger(summary.overdueNextActions, f)} />
+            <SummaryCard label={t.summaryPlannedAllocationTotal} value={formatMoney(summary.plannedAllocationTotal, f)} />
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(25rem,0.84fr)]">
@@ -877,21 +1236,21 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <CardTitle className="text-2xl">Investor applications</CardTitle>
-                    <CardDescription>Compact CRM queue for review, prioritization, and follow-up.</CardDescription>
+                    <CardTitle className="text-2xl">{t.investorApplications}</CardTitle>
+                    <CardDescription>{t.queueSubtitle}</CardDescription>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge>{pageInfo.total} total</Badge>
+                    <Badge>{pageInfo.total} {t.totalSuffix}</Badge>
                     <Button type="button" variant="outline" size="sm" onClick={exportCsv}>
                       <Download data-icon="inline-start" />
-                      Export CSV
+                      {t.exportCsv}
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                  {CRM_VIEWS.map((view) => {
+                  {getCrmViews(locale).map((view) => {
                     const isActive = activeView === view.key;
 
                     return (
@@ -907,7 +1266,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                       >
                         <span className="flex items-center justify-between gap-3">
                           <span className="block text-sm font-semibold">{view.label}</span>
-                          <QueueCountBadge value={queueCounts?.views[view.key]} isLoading={areQueueCountsLoading} hasError={Boolean(queueCountsError)} />
+                          <QueueCountBadge value={queueCounts?.views[view.key]} isLoading={areQueueCountsLoading} hasError={Boolean(queueCountsError)} locale={locale} />
                         </span>
                         <span className="mt-1 block text-xs leading-5 opacity-75">{view.description}</span>
                       </button>
@@ -915,15 +1274,16 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   })}
                 </div>
                 <div className="mb-4 flex flex-wrap gap-2 rounded-[1.5rem] border border-white/10 bg-black/15 p-3">
-                  {SLA_QUICK_FILTERS.map((filter) => {
-                    const isActive = slaFilter === filter.key;
+                  {SLA_QUICK_FILTER_KEYS.map((filterKey) => {
+                    const isActive = slaFilter === filterKey;
+                    const description = filterKey === "first-contact-overdue" ? t.slaDescFirstContact : filterKey === "due-soon" ? t.slaDescDueSoon : t.slaDescHighValue;
 
                     return (
                       <button
-                        key={filter.key}
+                        key={filterKey}
                         type="button"
                         onClick={() => {
-                          setSlaFilter((current) => (current === filter.key ? "ALL" : filter.key));
+                          setSlaFilter((current) => (current === filterKey ? "ALL" : filterKey));
                           setPage(1);
                         }}
                         className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
@@ -931,10 +1291,10 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                             ? "border-gold-200/35 bg-gold-200/10 text-gold-100"
                             : "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
                         }`}
-                        title={filter.description}
+                        title={description}
                       >
-                        <span>{filter.label}</span>
-                        <QueueCountBadge value={queueCounts?.sla[filter.key]} isLoading={areQueueCountsLoading} hasError={Boolean(queueCountsError)} />
+                        <span>{slaBadgeLabel(filterKey, locale)}</span>
+                        <QueueCountBadge value={queueCounts?.sla[filterKey]} isLoading={areQueueCountsLoading} hasError={Boolean(queueCountsError)} locale={locale} />
                       </button>
                     );
                   })}
@@ -943,19 +1303,19 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
                     <Search className="size-4" />
                     <input
-                      aria-label="Search applications"
+                      aria-label={t.searchAria}
                       value={search}
                       onChange={(event) => { setSearch(event.target.value); setPage(1); }}
-                      placeholder="Search name, email, Telegram, country"
+                      placeholder={t.searchPlaceholder}
                       className="w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground/60"
                     />
                   </label>
-                  <CrmSelect label="Filter by status" value={status} onChange={(value) => { setStatus(value as "ALL" | ApplicationStatus); setPage(1); }} options={statuses} />
-                  <CrmSelect label="Filter by priority" value={priority} onChange={(value) => { setPriority(value as "ALL" | ApplicationPriority); setPage(1); }} options={priorityOptions} />
+                  <CrmSelect label={t.filterByStatus} value={status} onChange={(value) => { setStatus(value as "ALL" | ApplicationStatus); setPage(1); }} options={statuses} renderOption={(value) => (value === "ALL" ? t.all : enumLabel("applicationStatus", value, locale))} />
+                  <CrmSelect label={t.filterByPriority} value={priority} onChange={(value) => { setPriority(value as "ALL" | ApplicationPriority); setPage(1); }} options={priorityOptions} renderOption={(value) => (value === "ALL" ? t.all : enumLabel("applicationPriority", value, locale))} />
                   <div className="flex flex-col gap-2">
-                    <SortSelect value={sort} onChange={(value) => { setSort(value); setPage(1); }} />
+                    <SortSelect value={sort} onChange={(value) => { setSort(value); setPage(1); }} locale={locale} />
                     <p className="text-[0.68rem] leading-4 text-muted-foreground">
-                      Smart priority raises overdue actions, first-contact SLA breaches, high-value no-contact leads, due-soon actions, and VIP/High priority leads.
+                      {t.smartPriorityHelp}
                     </p>
                   </div>
                 </div>
@@ -963,27 +1323,28 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
                     <Search className="size-4" />
                     <input
-                      aria-label="Search by source label"
+                      aria-label={t.searchSourceAria}
                       value={sourceSearch}
                       onChange={(event) => { setSourceSearch(event.target.value); setPage(1); }}
-                      placeholder="Search source label"
+                      placeholder={t.searchSourcePlaceholder}
                       className="w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground/60"
                     />
                   </label>
                   <CrmSelect
-                    label="Filter by reinvest interest"
+                    label={t.filterByReinvest}
                     value={reinvestInterest}
                     onChange={(value) => {
                       setReinvestInterest(value as "ALL" | ReinvestInterest);
                       setPage(1);
                     }}
                     options={reinvestInterestOptions}
+                    renderOption={(value) => (value === "ALL" ? t.all : enumLabel("reinvestInterest", value, locale))}
                   />
                   <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
-                    <input type="checkbox" checked={overdueOnly} onChange={(event) => { setOverdueOnly(event.target.checked); setPage(1); }} aria-label="Show overdue next actions" />
-                    <span>Overdue next actions</span>
+                    <input type="checkbox" checked={overdueOnly} onChange={(event) => { setOverdueOnly(event.target.checked); setPage(1); }} aria-label={t.overdueCheckboxAria} />
+                    <span>{t.overdueNextActions}</span>
                   </label>
-                  <Button type="button" variant="outline" size="sm" onClick={resetFilters} className="h-12">Reset</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={resetFilters} className="h-12">{t.reset}</Button>
                 </div>
 
                 {notice ? <AdminNotice tone="success" message={notice} /> : null}
@@ -991,18 +1352,18 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
 
                 <div className="overflow-hidden rounded-[1.5rem] border border-white/10">
                   <div className="hidden grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
-                    <span>Lead</span>
-                    <span>Priority</span>
-                    <span>Status</span>
-                    <span>Amount</span>
-                    <span>Source</span>
-                    <span>Next action</span>
-                    <span>Created</span>
+                    <span>{t.colLead}</span>
+                    <span>{t.colPriority}</span>
+                    <span>{t.colStatus}</span>
+                    <span>{t.colAmount}</span>
+                    <span>{t.colSource}</span>
+                    <span>{t.colNextAction}</span>
+                    <span>{t.colCreated}</span>
                   </div>
                   {isLoading ? (
-                    <QueueEmptyState title="Loading applications" description="Fetching the current CRM queue." />
+                    <QueueEmptyState title={t.loadingApplications} description={t.loadingApplicationsDesc} />
                   ) : applications.length === 0 ? (
-                    <QueueEmptyState title={hasActiveFilters ? "No matching applications" : "No applications yet"} description={hasActiveFilters ? "Try clearing filters or broadening the search." : "New investor applications will appear here after submission."} />
+                    <QueueEmptyState title={hasActiveFilters ? t.noMatching : t.noApplications} description={hasActiveFilters ? t.noMatchingDesc : t.noApplicationsDesc} />
                   ) : (
                     applications.map((application) => {
                       const slaState = getApplicationSlaState(application, { config: crmConfig });
@@ -1021,17 +1382,17 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                               <span className="block font-semibold text-foreground">{application.fullName}</span>
                               <span className="mt-1 block text-xs text-muted-foreground">{application.email || application.telegram || application.country}</span>
                             </span>
-                            <SlaBadges state={slaState} compact />
+                            <SlaBadges state={slaState} compact locale={locale} />
                           </span>
-                          <span><PriorityBadge priority={application.priority} /></span>
-                          <span><Badge variant={application.status === "NEW" ? "default" : "secondary"}>{application.status}</Badge></span>
-                          <span className="font-semibold text-foreground">{formatMoney(application.plannedAllocationAmount)}</span>
+                          <span><PriorityBadge priority={application.priority} locale={locale} /></span>
+                          <span><Badge variant={application.status === "NEW" ? "default" : "secondary"}>{enumLabel("applicationStatus", application.status, locale)}</Badge></span>
+                          <span className="font-semibold text-foreground">{formatMoney(application.plannedAllocationAmount, f)}</span>
                           <span className="text-sm text-muted-foreground">{application.sourceLabel || "—"}</span>
                           <span className="flex flex-col gap-1 text-sm text-muted-foreground">
-                            <span>{application.nextAction || "No next action"}</span>
-                            {application.nextActionAt ? <OverdueBadge value={application.nextActionAt} /> : null}
+                            <span>{application.nextAction || t.noNextActionShort}</span>
+                            {application.nextActionAt ? <OverdueBadge value={application.nextActionAt} locale={locale} /> : null}
                           </span>
-                          <span className="text-sm text-muted-foreground">{formatDateTime(application.createdAt)}</span>
+                          <span className="text-sm text-muted-foreground">{formatDateTime(application.createdAt, f)}</span>
                         </button>
                       );
                     })
@@ -1039,10 +1400,10 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                 </div>
 
                 <div className="mt-5 flex flex-col gap-3 rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                  <span>Page {pageInfo.page} of {pageInfo.totalPages} · {applications.length} shown · {pageInfo.total} total</span>
+                  <span>{t.pageLabel} {pageInfo.page} {t.ofLabel} {pageInfo.totalPages} · {applications.length} {t.shownLabel} · {pageInfo.total} {t.totalSuffix}</span>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasPreviousPage} onClick={() => setPage((current) => Math.max(1, current - 1))}>Previous</Button>
-                    <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasNextPage} onClick={() => setPage((current) => current + 1)}>Next</Button>
+                    <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasPreviousPage} onClick={() => setPage((current) => Math.max(1, current - 1))}>{t.previous}</Button>
+                    <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasNextPage} onClick={() => setPage((current) => current + 1)}>{t.next}</Button>
                   </div>
                 </div>
               </CardContent>
@@ -1058,6 +1419,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             onSaveCrmDraft={saveCrmDraft}
             onCreateInvestor={createInvestorFromApplication}
             crmConfig={crmConfig}
+            locale={locale}
             />
           </div>
         </div>
@@ -1066,14 +1428,17 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
   );
 }
 
-function CrmRulesCard({ config }: { config: CrmConfig }) {
+function CrmRulesCard({ config, locale }: { config: CrmConfig; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   return (
     <Card className="mb-6 rounded-[1.5rem] border border-white/10 bg-graphite-900/[0.58]">
       <CardContent className="grid gap-4 px-5 py-4 sm:grid-cols-2 xl:grid-cols-4">
-        <RuleMetric label="First contact SLA" value={formatHours(config.firstContactSlaHours)} />
-        <RuleMetric label="Due soon window" value={formatHours(config.nextActionDueSoonHours)} />
-        <RuleMetric label="High value threshold" value={formatMoney(config.highValueLeadAmount)} />
-        <RuleMetric label="Stale lead threshold" value={formatDays(config.staleLeadDays)} />
+        <RuleMetric label={t.ruleFirstContactSla} value={formatHours(config.firstContactSlaHours, f, t)} />
+        <RuleMetric label={t.ruleDueSoonWindow} value={formatHours(config.nextActionDueSoonHours, f, t)} />
+        <RuleMetric label={t.ruleHighValueThreshold} value={formatMoney(config.highValueLeadAmount, f)} />
+        <RuleMetric label={t.ruleStaleLeadThreshold} value={formatDays(config.staleLeadDays, f, t)} />
       </CardContent>
     </Card>
   );
@@ -1094,7 +1459,8 @@ function NotificationProcessorPanel({
   isProcessing,
   error,
   result,
-  onProcess
+  onProcess,
+  locale
 }: {
   summary: NotificationSummary;
   isLoading: boolean;
@@ -1102,7 +1468,10 @@ function NotificationProcessorPanel({
   error: string | null;
   result: ProcessNotificationsResult | null;
   onProcess: () => void;
+  locale: Locale;
 }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
   const pendingCount = summary.counts.PENDING;
   const isDisabled = isLoading || isProcessing || pendingCount === 0;
 
@@ -1114,25 +1483,25 @@ function NotificationProcessorPanel({
             <BellRing className="size-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-foreground">Notification worker</p>
+            <p className="text-sm font-semibold text-foreground">{t.notificationWorker}</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Pending events are processed locally. Outbound delivery is {summary.deliveryEnabled ? "enabled but provider delivery is not implemented" : "disabled"}.
+              {summary.deliveryEnabled ? t.notificationWorkerDescEnabled : t.notificationWorkerDescDisabled}
             </p>
             {result ? (
               <p className="mt-2 text-xs leading-5 text-gold-100">
-                Processed {formatInteger(result.processed)} · skipped {formatInteger(result.skipped)} · failed {formatInteger(result.failed)}
+                {t.processedLabel} {formatInteger(result.processed, f)} · {t.skippedSuffix} {formatInteger(result.skipped, f)} · {t.failedSuffix} {formatInteger(result.failed, f)}
               </p>
             ) : null}
             {error ? <p className="mt-2 text-xs leading-5 text-gold-100">{error}</p> : null}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge>{isLoading ? "..." : `${formatInteger(pendingCount)} pending`}</Badge>
-          <Badge variant="secondary">{formatInteger(summary.counts.SKIPPED)} skipped</Badge>
-          <Badge variant="secondary">{formatInteger(summary.counts.SENT)} sent</Badge>
-          <Badge variant="secondary">{formatInteger(summary.counts.FAILED)} failed</Badge>
+          <Badge>{isLoading ? "..." : `${formatInteger(pendingCount, f)} ${t.pendingSuffix}`}</Badge>
+          <Badge variant="secondary">{formatInteger(summary.counts.SKIPPED, f)} {t.skippedSuffix}</Badge>
+          <Badge variant="secondary">{formatInteger(summary.counts.SENT, f)} {t.sentSuffix}</Badge>
+          <Badge variant="secondary">{formatInteger(summary.counts.FAILED, f)} {t.failedSuffix}</Badge>
           <Button type="button" variant="outline" size="sm" disabled={isDisabled} onClick={onProcess}>
-            {isProcessing ? "Processing..." : "Process pending notifications"}
+            {isProcessing ? t.processing : t.processPending}
           </Button>
         </div>
       </CardContent>
@@ -1151,31 +1520,36 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function QueueCountBadge({ value, isLoading, hasError }: { value: number | undefined; isLoading: boolean; hasError: boolean }) {
+function QueueCountBadge({ value, isLoading, hasError, locale }: { value: number | undefined; isLoading: boolean; hasError: boolean; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   if (isLoading) {
-    return <span aria-label="Loading queue count" className="h-5 w-9 rounded-full border border-white/10 bg-white/[0.06] opacity-70 animate-pulse" />;
+    return <span aria-label={t.loadingQueueCount} className="h-5 w-9 rounded-full border border-white/10 bg-white/[0.06] opacity-70 animate-pulse" />;
   }
 
   if (hasError || typeof value !== "number") {
     return <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[0.68rem] font-semibold text-muted-foreground">—</span>;
   }
 
-  return <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.68rem] font-semibold text-foreground">{formatInteger(value)}</span>;
+  return <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.68rem] font-semibold text-foreground">{formatInteger(value, f)}</span>;
 }
 
-function CrmSelect({ label, value, options, onChange }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void }) {
+function CrmSelect({ label, value, options, onChange, renderOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; renderOption?: (value: string) => string }) {
   return (
     <select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
-      {options.map((option) => <option key={option} value={option} className="bg-graphite-900 text-foreground">{option}</option>)}
+      {options.map((option) => <option key={option} value={option} className="bg-graphite-900 text-foreground">{renderOption ? renderOption(option) : option}</option>)}
     </select>
   );
 }
 
-function SortSelect({ value, onChange }: { value: InvestorApplicationSort; onChange: (value: InvestorApplicationSort) => void }) {
+function SortSelect({ value, onChange, locale }: { value: InvestorApplicationSort; onChange: (value: InvestorApplicationSort) => void; locale: Locale }) {
+  const t = getStrings(locale);
+
   return (
-    <select aria-label="Sort applications" value={value} onChange={(event) => onChange(event.target.value as InvestorApplicationSort)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
-      {sortOptions.map((option) => (
-        <option key={option.value} value={option.value} className="bg-graphite-900 text-foreground">{option.label}</option>
+    <select aria-label={t.sortAria} value={value} onChange={(event) => onChange(event.target.value as InvestorApplicationSort)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
+      {INVESTOR_APPLICATION_SORT_OPTIONS.map((option) => (
+        <option key={option} value={option} className="bg-graphite-900 text-foreground">{enumLabel("applicationSort", option, locale)}</option>
       ))}
     </select>
   );
@@ -1186,17 +1560,19 @@ function AdminNotice({ message, tone }: { message: string; tone: "success" | "er
   return <div className={`mb-5 flex items-center gap-3 rounded-2xl border p-4 text-sm ${toneClass}`}><CheckCircle2 className="size-4" />{message}</div>;
 }
 
-function PriorityBadge({ priority }: { priority: ApplicationPriority }) {
+function PriorityBadge({ priority, locale }: { priority: ApplicationPriority; locale: Locale }) {
   const isElevated = priority === "VIP" || priority === "HIGH";
-  return <Badge variant={isElevated ? "default" : "secondary"}>{priority}</Badge>;
+  return <Badge variant={isElevated ? "default" : "secondary"}>{enumLabel("applicationPriority", priority, locale)}</Badge>;
 }
 
-function OverdueBadge({ value }: { value: string }) {
+function OverdueBadge({ value, locale }: { value: string; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
   const overdue = isOverdue(value);
   return (
     <span className={`inline-flex w-fit items-center gap-1 rounded-full border px-2 py-1 text-[0.68rem] ${overdue ? "border-gold-200/30 bg-gold-200/10 text-gold-100" : "border-white/10 bg-white/[0.04] text-muted-foreground"}`}>
       <Clock3 className="size-3" />
-      {overdue ? "Overdue" : formatDateTime(value)}
+      {overdue ? t.overdueWord : formatDateTime(value, f)}
     </span>
   );
 }
@@ -1214,40 +1590,45 @@ function getPriorityReasonClass(tone: ApplicationPriorityReason["tone"]) {
   return "border-white/10 bg-white/[0.04] text-muted-foreground";
 }
 
-function SlaBadges({ state, compact = false }: { state: ApplicationSlaState; compact?: boolean }) {
+function SlaBadges({ state, compact = false, locale }: { state: ApplicationSlaState; compact?: boolean; locale: Locale }) {
   if (state.badges.length === 0) return null;
 
   return (
     <span className={`flex flex-wrap gap-1.5 ${compact ? "" : "mt-3"}`}>
       {state.badges.map((badge) => (
         <span key={badge.flag} className={`inline-flex w-fit items-center rounded-full border px-2 py-1 text-[0.68rem] font-semibold ${getSlaBadgeClass(badge.tone)}`}>
-          {compact ? badge.shortLabel : badge.label}
+          {slaBadgeLabel(badge.filter, locale, compact)}
         </span>
       ))}
     </span>
   );
 }
 
-function PriorityReasonsPanel({ reasons }: { reasons: ApplicationPriorityReason[] }) {
+function PriorityReasonsPanel({ reasons, locale }: { reasons: ApplicationPriorityReason[]; locale: Locale }) {
+  const t = getStrings(locale);
+
   return (
     <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Why this lead is prioritized</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.whyPrioritized}</p>
       {reasons.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {reasons.map((reason) => (
             <span key={reason.key} className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${getPriorityReasonClass(reason.tone)}`}>
-              {reason.label}
+              {priorityReasonLabel(reason, locale)}
             </span>
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">No urgent priority signals.</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.noUrgentSignals}</p>
       )}
     </div>
   );
 }
 
-function InvestorLinkPanel({ application, isCreating, onCreate }: { application: AdminApplication; isCreating: boolean; onCreate: () => void }) {
+function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { application: AdminApplication; isCreating: boolean; onCreate: () => void; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   if (application.investor) {
     return (
       <div className="rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-4">
@@ -1256,11 +1637,11 @@ function InvestorLinkPanel({ application, isCreating, onCreate }: { application:
             <Users className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Investor linked</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorLinked}</p>
             <p className="mt-2 text-sm font-semibold text-foreground">{application.investor.fullName}</p>
-            <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{application.investor.email} · {application.investor.status}</p>
+            <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{application.investor.email} · {enumLabel("investorStatus", application.investor.status, locale)}</p>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              Capital profile: {formatMoney(Number(application.investor.totalCapital || 0))} · Reinvest {application.investor.reinvestEnabled ? "enabled" : "disabled"}
+              {t.capitalProfile} {formatMoney(Number(application.investor.totalCapital || 0), f)} · {t.reinvestWord} {application.investor.reinvestEnabled ? t.enabledWord : t.disabledWord}
             </p>
           </div>
         </div>
@@ -1271,8 +1652,8 @@ function InvestorLinkPanel({ application, isCreating, onCreate }: { application:
   if (application.status !== "APPROVED") {
     return (
       <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Investor account</p>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">Approve application before creating investor access.</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.approveBeforeCreate}</p>
       </div>
     );
   }
@@ -1281,27 +1662,29 @@ function InvestorLinkPanel({ application, isCreating, onCreate }: { application:
     <div className="rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Investor account</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Create a protected investor profile from this approved application.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.createInvestorProfileDesc}</p>
         </div>
         <Button type="button" size="sm" disabled={isCreating || !application.email} onClick={onCreate}>
           <UserPlus data-icon="inline-start" />
-          {isCreating ? "Creating..." : "Create investor account"}
+          {isCreating ? t.creating : t.createInvestorAccount}
         </Button>
       </div>
-      {!application.email ? <p className="mt-3 text-xs text-gold-100">Email is required for investor login access.</p> : null}
+      {!application.email ? <p className="mt-3 text-xs text-gold-100">{t.emailRequired}</p> : null}
     </div>
   );
 }
 
-function SlaIndicatorPanel({ state }: { state: ApplicationSlaState }) {
+function SlaIndicatorPanel({ state, locale }: { state: ApplicationSlaState; locale: Locale }) {
+  const t = getStrings(locale);
+
   return (
     <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">SLA indicators</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.slaIndicators}</p>
       {state.badges.length > 0 ? (
-        <SlaBadges state={state} />
+        <SlaBadges state={state} locale={locale} />
       ) : (
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">No active SLA flags for this application.</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.noActiveSla}</p>
       )}
     </div>
   );
@@ -1326,7 +1709,8 @@ function ApplicationDetail({
   onPatchApplication,
   onSaveCrmDraft,
   onCreateInvestor,
-  crmConfig
+  crmConfig,
+  locale
 }: {
   application: AdminApplication | null;
   auditLogs: AuditLog[];
@@ -1337,7 +1721,10 @@ function ApplicationDetail({
   onSaveCrmDraft: (application: AdminApplication, draft: CrmDraft) => Promise<AdminApplication>;
   onCreateInvestor: (application: AdminApplication) => Promise<AdminApplication>;
   crmConfig: CrmConfig;
+  locale: Locale;
 }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
   const [draft, setDraft] = React.useState<CrmDraft>({ priority: "NORMAL", sourceLabel: "", managerNotes: "", nextAction: "", nextActionAt: "" });
   const [detailNotice, setDetailNotice] = React.useState<string | null>(null);
   const [detailError, setDetailError] = React.useState<string | null>(null);
@@ -1367,15 +1754,15 @@ function ApplicationDetail({
       <Card className="rounded-[2rem] bg-white/[0.035]">
         <CardContent className="flex min-h-96 flex-col items-center justify-center p-8 text-center">
           <FileText className="size-10 text-gold-100" />
-          <p className="mt-5 font-semibold text-foreground">Select an application</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Application details, quick actions, and timeline will appear here.</p>
+          <p className="mt-5 font-semibold text-foreground">{t.selectApplication}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.selectApplicationDesc}</p>
         </CardContent>
       </Card>
     );
   }
 
   const isDirty = draft.priority !== application.priority || draft.sourceLabel !== (application.sourceLabel || "") || draft.managerNotes !== (application.managerNotes || "") || draft.nextAction !== (application.nextAction || "") || draft.nextActionAt !== toDateTimeInputValue(application.nextActionAt);
-  const timeline = buildActivityTimeline(application, auditLogs);
+  const timeline = buildActivityTimeline(application, auditLogs, t, f);
   const slaState = getApplicationSlaState(application, { config: crmConfig });
   const priorityReasons = getApplicationPriorityReasons(application, crmConfig);
 
@@ -1387,9 +1774,9 @@ function ApplicationDetail({
 
     try {
       await onSaveCrmDraft(application, draft);
-      setDetailNotice("CRM fields saved.");
+      setDetailNotice(t.crmFieldsSaved);
     } catch (requestError) {
-      setDetailError(requestError instanceof Error ? requestError.message : "Unable to save CRM fields.");
+      setDetailError(requestError instanceof Error ? requestError.message : t.unableSaveCrm);
     } finally {
       setIsSaving(false);
     }
@@ -1412,7 +1799,7 @@ function ApplicationDetail({
         nextActionAt: toDateTimeInputValue(updated.nextActionAt)
       });
     } catch (requestError) {
-      setDetailError(requestError instanceof Error ? requestError.message : "Unable to run quick action.");
+      setDetailError(requestError instanceof Error ? requestError.message : t.unableQuickAction);
     }
   }
 
@@ -1424,9 +1811,9 @@ function ApplicationDetail({
 
     try {
       await onCreateInvestor(application);
-      setDetailNotice("Investor account is linked to this approved application.");
+      setDetailNotice(t.investorLinkedNotice);
     } catch (requestError) {
-      setDetailError(requestError instanceof Error ? requestError.message : "Unable to create investor account.");
+      setDetailError(requestError instanceof Error ? requestError.message : t.unableCreateInvestor);
     }
   }
 
@@ -1439,26 +1826,26 @@ function ApplicationDetail({
             <CardDescription>{application.id}</CardDescription>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <PriorityBadge priority={application.priority} />
-            <Badge>{application.status}</Badge>
+            <PriorityBadge priority={application.priority} locale={locale} />
+            <Badge>{enumLabel("applicationStatus", application.status, locale)}</Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <SlaIndicatorPanel state={slaState} />
+        <SlaIndicatorPanel state={slaState} locale={locale} />
 
-        <PriorityReasonsPanel reasons={priorityReasons} />
+        <PriorityReasonsPanel reasons={priorityReasons} locale={locale} />
 
-        <InvestorLinkPanel application={application} isCreating={isCreatingInvestor} onCreate={createInvestorAccount} />
+        <InvestorLinkPanel application={application} isCreating={isCreatingInvestor} onCreate={createInvestorAccount} locale={locale} />
 
         <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Quick actions</p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "CONTACTED"} onClick={() => runQuickAction({ status: "CONTACTED" }, "Marked as contacted.")}>Mark contacted</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "APPROVED"} onClick={() => runQuickAction({ status: "APPROVED" }, "Application approved.")}>Approve</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "REJECTED"} onClick={() => runQuickAction({ status: "REJECTED" }, "Application rejected.")}>Reject</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.priority === "VIP"} onClick={() => runQuickAction({ priority: "VIP" }, "Priority set to VIP.")}>Set VIP</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || (!application.nextAction && !application.nextActionAt)} onClick={() => runQuickAction({ nextAction: null, nextActionAt: null }, "Next action cleared.")}>Clear next action</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "CONTACTED"} onClick={() => runQuickAction({ status: "CONTACTED" }, t.markedContacted)}>{t.markContacted}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "APPROVED"} onClick={() => runQuickAction({ status: "APPROVED" }, t.applicationApproved)}>{t.approve}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "REJECTED"} onClick={() => runQuickAction({ status: "REJECTED" }, t.applicationRejected)}>{t.reject}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.priority === "VIP"} onClick={() => runQuickAction({ priority: "VIP" }, t.prioritySetVip)}>{t.setVip}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || (!application.nextAction && !application.nextActionAt)} onClick={() => runQuickAction({ nextAction: null, nextActionAt: null }, t.nextActionCleared)}>{t.clearNextAction}</Button>
           </div>
         </div>
 
@@ -1466,27 +1853,27 @@ function ApplicationDetail({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Priority</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.priorityLabel}</span>
             <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value as ApplicationPriority }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
-              {APPLICATION_PRIORITIES.map((nextPriority) => <option key={nextPriority} value={nextPriority} className="bg-graphite-900 text-foreground">{nextPriority}</option>)}
+              {APPLICATION_PRIORITIES.map((nextPriority) => <option key={nextPriority} value={nextPriority} className="bg-graphite-900 text-foreground">{enumLabel("applicationPriority", nextPriority, locale)}</option>)}
             </select>
           </label>
-          <CrmTextInput label="Source label" value={draft.sourceLabel} onChange={(value) => setDraft((current) => ({ ...current, sourceLabel: value }))} placeholder="Creator, partner, referral" />
-          <CrmTextInput label="Next action" value={draft.nextAction} onChange={(value) => setDraft((current) => ({ ...current, nextAction: value }))} placeholder="Call, document review, approval prep" />
+          <CrmTextInput label={t.sourceLabelField} value={draft.sourceLabel} onChange={(value) => setDraft((current) => ({ ...current, sourceLabel: value }))} placeholder={t.sourcePlaceholder} />
+          <CrmTextInput label={t.nextActionField} value={draft.nextAction} onChange={(value) => setDraft((current) => ({ ...current, nextAction: value }))} placeholder={t.nextActionPlaceholder} />
           <label className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next action date/time</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.nextActionDateTime}</span>
             <input type="datetime-local" value={draft.nextActionAt} onChange={(event) => setDraft((current) => ({ ...current, nextActionAt: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45" />
           </label>
         </div>
         <label className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Manager notes</span>
-          <textarea value={draft.managerNotes} onChange={(event) => setDraft((current) => ({ ...current, managerNotes: event.target.value }))} placeholder="Internal review notes, follow-up context, allocation fit." className="min-h-32 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none focus:border-gold-200/45" />
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.managerNotes}</span>
+          <textarea value={draft.managerNotes} onChange={(event) => setDraft((current) => ({ ...current, managerNotes: event.target.value }))} placeholder={t.managerNotesPlaceholder} className="min-h-32 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none focus:border-gold-200/45" />
         </label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">{isDirty ? "Unsaved CRM changes" : "CRM fields are up to date"}</p>
+          <p className="text-sm text-muted-foreground">{isDirty ? t.unsavedChanges : t.fieldsUpToDate}</p>
           <Button type="button" disabled={!isDirty || isSaving} onClick={saveDraft}>
             <Save data-icon="inline-start" />
-            {isSaving ? "Saving..." : "Save CRM fields"}
+            {isSaving ? t.saving : t.saveCrmFields}
           </Button>
         </div>
         {detailNotice ? <AdminNotice tone="success" message={detailNotice} /> : null}
@@ -1495,47 +1882,47 @@ function ApplicationDetail({
         <Separator />
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <DetailRow label="Contact" value={`${application.email || "No email"} / ${application.telegram || "No Telegram"}`} />
-          <DetailRow label="Country" value={application.country} />
-          <DetailRow label="Planned allocation" value={formatMoney(application.plannedAllocationAmount)} />
-          <DetailRow label="Deposit method" value={application.preferredDepositMethod} />
-          <DetailRow label="Investor type" value={application.investorType} />
-          <DetailRow label="Reinvest interest" value={application.reinvestInterest} />
-          <DetailRow label="Contacted at" value={formatDateTime(application.contactedAt)} />
-          <DetailRow label="Approved at" value={formatDateTime(application.approvedAt)} />
+          <DetailRow label={t.contact} value={`${application.email || t.noEmail} / ${application.telegram || t.noTelegram}`} />
+          <DetailRow label={t.country} value={application.country} />
+          <DetailRow label={t.plannedAllocation} value={formatMoney(application.plannedAllocationAmount, f)} />
+          <DetailRow label={t.depositMethod} value={application.preferredDepositMethod} />
+          <DetailRow label={t.investorType} value={application.investorType} />
+          <DetailRow label={t.reinvestInterestLabel} value={enumLabel("reinvestInterest", application.reinvestInterest, locale)} />
+          <DetailRow label={t.contactedAt} value={formatDateTime(application.contactedAt, f)} />
+          <DetailRow label={t.approvedAt} value={formatDateTime(application.approvedAt, f)} />
         </div>
-        <NextActionState application={application} />
+        <NextActionState application={application} locale={locale} />
 
         <Separator />
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Application message</p>
-          <p className="mt-2 text-sm leading-7 text-foreground">{application.message || "No notes provided."}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.applicationMessage}</p>
+          <p className="mt-2 text-sm leading-7 text-foreground">{application.message || t.noNotesProvided}</p>
         </div>
 
         <Separator />
 
-        <ActivityTimeline items={timeline} />
+        <ActivityTimeline items={timeline} locale={locale} />
 
         <Separator />
 
-        <NotificationEventsPanel events={notificationEvents} />
+        <NotificationEventsPanel events={notificationEvents} locale={locale} />
 
         <Separator />
 
         <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recent audit history</p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.recentAuditHistory}</p>
           {auditLogs.length === 0 ? (
-            <EmptyInlineState title="No audit history yet" description="Status, priority, notes, source, and next action updates will appear here." />
+            <EmptyInlineState title={t.noAuditHistory} description={t.noAuditHistoryDesc} />
           ) : (
             <div className="flex flex-col gap-3">
               {auditLogs.map((log) => (
                 <div key={log.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">{log.action}</p>
-                    <p className="text-xs text-muted-foreground">{formatDateTime(log.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateTime(log.createdAt, f)}</p>
                   </div>
-                  <p className="mt-2 break-words text-xs leading-5 text-muted-foreground">{log.beforeJson || "{}"}{" -> "}{log.afterJson || "{}"} by {log.actor}</p>
+                  <p className="mt-2 break-words text-xs leading-5 text-muted-foreground">{log.beforeJson || "{}"}{" -> "}{log.afterJson || "{}"} {t.byWord} {log.actor}</p>
                 </div>
               ))}
             </div>
@@ -1546,12 +1933,15 @@ function ApplicationDetail({
   );
 }
 
-function NotificationEventsPanel({ events }: { events: NotificationEvent[] }) {
+function NotificationEventsPanel({ events, locale }: { events: NotificationEvent[]; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Notification events</p>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.notificationEvents}</p>
       {events.length === 0 ? (
-        <EmptyInlineState title="No notification events yet" description="Internal email, Telegram, or operator notification events will appear here when they are queued." />
+        <EmptyInlineState title={t.noNotificationEvents} description={t.noNotificationEventsDesc} />
       ) : (
         <div className="flex flex-col gap-3">
           {events.map((event) => (
@@ -1563,22 +1953,22 @@ function NotificationEventsPanel({ events }: { events: NotificationEvent[] }) {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{event.messagePreview?.subject || formatNotificationLabel(event.type)}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(event.createdAt)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(event.createdAt, f)}</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">{event.channel}</Badge>
-                  <Badge>{event.status}</Badge>
+                  <Badge variant="secondary">{enumLabel("notificationChannel", event.channel, locale)}</Badge>
+                  <Badge>{enumLabel("notificationStatus", event.status, locale)}</Badge>
                 </div>
               </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">{formatNotificationDetail(event)}</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{formatNotificationDetail(event, t)}</p>
               {event.messagePreview?.telegramText ? (
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Telegram preview</p>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.telegramPreview}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{event.messagePreview.telegramText}</p>
                 </div>
               ) : null}
-              <p className="mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">Recipient: {event.recipient}</p>
+              <p className="mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">{t.recipient}: {event.recipient}</p>
               {event.error ? <p className="mt-2 text-xs leading-5 text-gold-100">{event.error}</p> : null}
             </div>
           ))}
@@ -1588,28 +1978,34 @@ function NotificationEventsPanel({ events }: { events: NotificationEvent[] }) {
   );
 }
 
-function NextActionState({ application }: { application: AdminApplication }) {
+function NextActionState({ application, locale }: { application: AdminApplication; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   if (!application.nextAction && !application.nextActionAt) {
-    return <EmptyInlineState title="No next action" description="Set a follow-up step and due date when this lead needs operator attention." />;
+    return <EmptyInlineState title={t.noNextActionShort} description={t.noNextActionDesc} />;
   }
 
   return (
     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next action</p>
-      <p className="mt-2 text-sm leading-6 text-foreground">{application.nextAction || "No action text set."}</p>
-      <p className={`mt-2 text-xs ${isOverdue(application.nextActionAt) ? "text-gold-100" : "text-muted-foreground"}`}>{formatDateTime(application.nextActionAt)}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.nextActionField}</p>
+      <p className="mt-2 text-sm leading-6 text-foreground">{application.nextAction || t.noActionTextSet}</p>
+      <p className={`mt-2 text-xs ${isOverdue(application.nextActionAt) ? "text-gold-100" : "text-muted-foreground"}`}>{formatDateTime(application.nextActionAt, f)}</p>
     </div>
   );
 }
 
-function ActivityTimeline({ items }: { items: ActivityItem[] }) {
+function ActivityTimeline({ items, locale }: { items: ActivityItem[]; locale: Locale }) {
+  const t = getStrings(locale);
+  const f = createAdminFormatters(locale);
+
   if (items.length === 0) {
-    return <EmptyInlineState title="No activity yet" description="Application lifecycle events will appear here." />;
+    return <EmptyInlineState title={t.noActivity} description={t.noActivityDesc} />;
   }
 
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Application activity timeline</p>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.activityTimeline}</p>
       <div className="relative flex flex-col gap-3 before:absolute before:left-[0.56rem] before:top-3 before:h-[calc(100%-1.5rem)] before:w-px before:bg-white/10">
         {items.map((item) => (
           <div key={item.key} className="relative flex gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -1619,7 +2015,7 @@ function ActivityTimeline({ items }: { items: ActivityItem[] }) {
             <span>
               <span className="block text-sm font-semibold text-foreground">{item.label}</span>
               <span className="mt-1 block text-xs leading-5 text-muted-foreground">{item.detail}</span>
-              <span className="mt-2 block text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">{formatDateTime(item.at)}</span>
+              <span className="mt-2 block text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">{formatDateTime(item.at, f)}</span>
             </span>
           </div>
         ))}

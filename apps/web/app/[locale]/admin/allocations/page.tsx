@@ -7,10 +7,15 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Admin Allocations | OTIZ CAPITAL",
-  description: "Protected admin allocation manager."
+const META: Partial<Record<Locale, { title: string; description: string }>> = {
+  en: { title: "Admin Allocations | OTIZ CAPITAL", description: "Protected admin allocation manager." },
+  ru: { title: "Аллокации администратора | OTIZ CAPITAL", description: "Защищённый менеджер аллокаций администратора." }
 };
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const meta = META[params.locale] ?? META.en!;
+  return { title: meta.title, description: meta.description };
+}
 
 export default async function AdminAllocationsRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) notFound();

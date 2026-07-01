@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getHomeDictionary, isLocale, locales, type Locale } from "@otiz/lib";
+import { isLocale, locales, type Locale } from "@otiz/lib";
 import { HomePage } from "@/components/home/home-page";
+import { getHomeContent } from "@/lib/site-content";
+
+// ISR: statically generated per locale, revalidated periodically and on demand
+// (the admin content editor calls revalidatePath after a save).
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
   if (!isLocale(params.locale)) {
     return {};
   }
 
-  const dictionary = getHomeDictionary(params.locale);
+  const dictionary = await getHomeContent(params.locale);
 
   return {
     title: dictionary.meta.title,
@@ -24,10 +29,10 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
   };
 }
 
-export default function LocaleHomePage({ params }: { params: { locale: Locale } }) {
+export default async function LocaleHomePage({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {
     notFound();
   }
 
-  return <HomePage dictionary={getHomeDictionary(params.locale)} locale={params.locale} />;
+  return <HomePage dictionary={await getHomeContent(params.locale)} locale={params.locale} />;
 }

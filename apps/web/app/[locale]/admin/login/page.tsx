@@ -6,10 +6,24 @@ import { getAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Admin Login | OTIZ CAPITAL",
-  description: "Admin login for OTIZ CAPITAL investor applications."
+const METADATA_STRINGS: Record<string, { title: string; description: string }> = {
+  en: {
+    title: "Admin Login | OTIZ CAPITAL",
+    description: "Admin login for OTIZ CAPITAL investor applications."
+  },
+  ru: {
+    title: "Вход администратора | OTIZ CAPITAL",
+    description: "Вход администратора для заявок инвесторов OTIZ CAPITAL."
+  }
 };
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const strings = METADATA_STRINGS[params.locale] ?? METADATA_STRINGS.en;
+  return {
+    title: strings.title,
+    description: strings.description
+  };
+}
 
 export default function AdminLoginRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {

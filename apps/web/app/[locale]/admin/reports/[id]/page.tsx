@@ -7,10 +7,24 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Admin Report Detail | OTIZ CAPITAL",
-  description: "Protected monthly report detail and proof snapshot review."
-};
+const META = {
+  en: {
+    title: "Admin Report Detail | OTIZ CAPITAL",
+    description: "Protected monthly report detail and proof snapshot review."
+  },
+  ru: {
+    title: "Детали отчёта администратора | OTIZ CAPITAL",
+    description: "Защищённый детальный ежемесячный отчёт и просмотр снимка подтверждений."
+  }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
+  return {
+    title: meta.title,
+    description: meta.description
+  };
+}
 
 export default async function AdminReportDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
   if (!isLocale(params.locale)) notFound();

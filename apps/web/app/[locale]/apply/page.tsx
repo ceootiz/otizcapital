@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getApplyDictionary, isLocale, locales, type Locale } from "@otiz/lib";
+import { isLocale, locales, type Locale } from "@otiz/lib";
 import { ApplicationPage } from "@/components/apply/application-page";
+import { getApplyContent } from "@/lib/site-content";
+
+// ISR: statically generated per locale, revalidated periodically and on demand
+// (the admin content editor calls revalidatePath after a save).
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
   if (!isLocale(params.locale)) {
     return {};
   }
 
-  const dictionary = getApplyDictionary(params.locale);
+  const dictionary = await getApplyContent(params.locale);
 
   return {
     title: dictionary.meta.title,
@@ -24,10 +29,10 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
   };
 }
 
-export default function ApplyPage({ params }: { params: { locale: Locale } }) {
+export default async function ApplyPage({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {
     notFound();
   }
 
-  return <ApplicationPage dictionary={getApplyDictionary(params.locale)} locale={params.locale} />;
+  return <ApplicationPage dictionary={await getApplyContent(params.locale)} locale={params.locale} />;
 }

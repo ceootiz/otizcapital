@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, PackagePlus, Save, ShieldCheck } from "lucide-react";
-import type { Locale } from "@otiz/lib";
+import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import { AdminNavigation } from "./admin-navigation";
 
@@ -102,8 +102,191 @@ type ReportDraft = {
   status: string;
 };
 
-const moneyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-const dateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+const STRINGS = {
+  en: {
+    BACK_TO_INVESTORS: "Back to investors",
+    EYEBROW: "Managed investor profile",
+    REINVEST_ON: "Reinvest enabled",
+    REINVEST_OFF: "Reinvest disabled",
+    KPI_ACTIVE_CAPITAL: "Active capital",
+    KPI_TOTAL_PROFIT: "Total profit",
+    KPI_ACTIVE_ALLOCATIONS: "Active allocations",
+    KPI_COMPLETED_ALLOCATIONS: "Completed allocations",
+    EDIT_INVESTOR_TITLE: "Edit investor",
+    EDIT_INVESTOR_DESC: "Admin-managed profile fields only. No money movement is performed here.",
+    LABEL_STATUS: "Status",
+    LABEL_TOTAL_CAPITAL: "Total capital",
+    PH_TOTAL_CAPITAL: "25000",
+    LABEL_REINVEST_ENABLED: "Reinvest enabled",
+    LABEL_LAST_REPORT_DATE: "Last report date",
+    LABEL_NOTES: "Notes",
+    SAVE_INVESTOR_IDLE: "Save investor",
+    SAVE_INVESTOR_BUSY: "Saving...",
+    SOURCE_APPLICATION_TITLE: "Source application",
+    SOURCE_APPLICATION_DESC: "Original approved lead context.",
+    NO_EMAIL: "No email",
+    PLANNED_ALLOCATION: "Planned allocation:",
+    OPEN_SOURCE_APPLICATION: "Open source application",
+    NO_SOURCE_APPLICATION: "No source application linked.",
+    CREATE_ALLOCATION_TITLE: "Create managed allocation",
+    CREATE_ALLOCATION_DESC: "One supply allocation assigned to this investor. No investor self-service creation.",
+    LABEL_SUPPLY_CODE: "Supply code",
+    PH_SUPPLY_CODE: "SUP-APL-0526-102",
+    LABEL_PRODUCT: "Product",
+    PH_PRODUCT: "iPhone 15 Pro batch",
+    LABEL_MARKETPLACE: "Marketplace",
+    PH_MARKETPLACE: "Amazon / eBay / local",
+    LABEL_ALLOCATION_AMOUNT: "Allocation amount",
+    PH_ALLOCATION_AMOUNT: "10000",
+    LABEL_CURRENCY: "Currency",
+    PH_CURRENCY: "USD",
+    LABEL_EXPECTED_CYCLE_DAYS: "Expected cycle days",
+    PH_EXPECTED_CYCLE_DAYS: "45",
+    LABEL_ESTIMATED_RESULT: "Estimated result",
+    PH_ESTIMATED_RESULT: "Operational estimate",
+    CREATE_ALLOCATION_IDLE: "Create allocation",
+    CREATE_ALLOCATION_BUSY: "Creating...",
+    ALLOCATIONS_TITLE: "Allocations",
+    ALLOCATIONS_DESC: "Managed electronics commerce allocations for this investor.",
+    NO_ALLOCATIONS_TITLE: "No allocations yet",
+    NO_ALLOCATIONS_DESC: "Create the first managed allocation when capital is assigned to a real supply cycle.",
+    MARKETPLACE_NOT_SET: "Marketplace not set",
+    METRIC_AMOUNT: "Amount",
+    METRIC_EXPECTED_CYCLE: "Expected cycle",
+    METRIC_ESTIMATED: "Estimated",
+    METRIC_ACTUAL_PROFIT: "Actual profit",
+    DAYS: "days",
+    LABEL_UPDATE_STATUS: "Update status",
+    LABEL_ACTUAL_PROFIT: "Actual profit",
+    PH_ACTUAL_PROFIT: "0",
+    UPDATED_LABEL: "Updated",
+    COMPLETED_AT_LABEL: "Completed",
+    REPORTS_TITLE: "Monthly reports",
+    REPORTS_DESC: "Admin-managed reporting. Proof summary includes only available or verified proof categories.",
+    LABEL_MONTH: "Month",
+    PH_MONTH: "May 2026",
+    LABEL_TITLE: "Title",
+    PH_TITLE: "May operational report",
+    LABEL_SUMMARY: "Summary",
+    LABEL_PERFORMANCE_NOTE: "Performance note",
+    PH_PERFORMANCE_NOTE: "Operational performance note",
+    LABEL_PAYOUT_NOTE: "Payout note",
+    PH_PAYOUT_NOTE: "Payout or reinvest note",
+    CREATE_REPORT_IDLE: "Create report",
+    CREATE_REPORT_BUSY: "Creating...",
+    NO_REPORTS_TITLE: "No reports yet",
+    NO_REPORTS_DESC: "Create a draft report when monthly operations are ready for manager review.",
+    METRIC_PUBLISHED: "Published",
+    METRIC_PROOF_CATEGORIES: "Proof categories",
+    METRIC_UPDATED: "Updated",
+    NO_AVAILABLE_PROOFS: "No available proofs",
+    PUBLISH: "Publish",
+    OPEN_REPORT: "Open report",
+    NOTICE_INVESTOR_UPDATED: "Investor profile updated.",
+    NOTICE_ALLOCATION_CREATED: "Allocation created.",
+    NOTICE_ALLOCATION_UPDATED: "Allocation updated.",
+    NOTICE_REPORT_CREATED: "Monthly report created.",
+    NOTICE_REPORT_UPDATED: "Monthly report updated.",
+    ERROR_UPDATE_INVESTOR: "Unable to update investor.",
+    ERROR_CREATE_ALLOCATION: "Unable to create allocation.",
+    ERROR_UPDATE_ALLOCATION: "Unable to update allocation.",
+    ERROR_CREATE_REPORT: "Unable to create report.",
+    ERROR_UPDATE_REPORT: "Unable to update report."
+  },
+  ru: {
+    BACK_TO_INVESTORS: "К инвесторам",
+    EYEBROW: "Управляемый профиль инвестора",
+    REINVEST_ON: "Реинвест включён",
+    REINVEST_OFF: "Реинвест отключён",
+    KPI_ACTIVE_CAPITAL: "Активный капитал",
+    KPI_TOTAL_PROFIT: "Общая прибыль",
+    KPI_ACTIVE_ALLOCATIONS: "Активные аллокации",
+    KPI_COMPLETED_ALLOCATIONS: "Завершённые аллокации",
+    EDIT_INVESTOR_TITLE: "Редактировать инвестора",
+    EDIT_INVESTOR_DESC: "Только управляемые администратором поля профиля. Движение средств здесь не выполняется.",
+    LABEL_STATUS: "Статус",
+    LABEL_TOTAL_CAPITAL: "Общий капитал",
+    PH_TOTAL_CAPITAL: "25000",
+    LABEL_REINVEST_ENABLED: "Реинвест включён",
+    LABEL_LAST_REPORT_DATE: "Дата последнего отчёта",
+    LABEL_NOTES: "Заметки",
+    SAVE_INVESTOR_IDLE: "Сохранить инвестора",
+    SAVE_INVESTOR_BUSY: "Сохранение...",
+    SOURCE_APPLICATION_TITLE: "Исходная заявка",
+    SOURCE_APPLICATION_DESC: "Контекст исходного одобренного лида.",
+    NO_EMAIL: "Нет email",
+    PLANNED_ALLOCATION: "Планируемая аллокация:",
+    OPEN_SOURCE_APPLICATION: "Открыть исходную заявку",
+    NO_SOURCE_APPLICATION: "Исходная заявка не привязана.",
+    CREATE_ALLOCATION_TITLE: "Создать управляемую аллокацию",
+    CREATE_ALLOCATION_DESC: "Одна аллокация поставки, назначенная этому инвестору. Самостоятельное создание инвестором недоступно.",
+    LABEL_SUPPLY_CODE: "Код поставки",
+    PH_SUPPLY_CODE: "SUP-APL-0526-102",
+    LABEL_PRODUCT: "Товар",
+    PH_PRODUCT: "Партия iPhone 15 Pro",
+    LABEL_MARKETPLACE: "Маркетплейс",
+    PH_MARKETPLACE: "Amazon / eBay / локальный",
+    LABEL_ALLOCATION_AMOUNT: "Сумма аллокации",
+    PH_ALLOCATION_AMOUNT: "10000",
+    LABEL_CURRENCY: "Валюта",
+    PH_CURRENCY: "USD",
+    LABEL_EXPECTED_CYCLE_DAYS: "Ожидаемый цикл, дней",
+    PH_EXPECTED_CYCLE_DAYS: "45",
+    LABEL_ESTIMATED_RESULT: "Оценочный результат",
+    PH_ESTIMATED_RESULT: "Операционная оценка",
+    CREATE_ALLOCATION_IDLE: "Создать аллокацию",
+    CREATE_ALLOCATION_BUSY: "Создание...",
+    ALLOCATIONS_TITLE: "Аллокации",
+    ALLOCATIONS_DESC: "Управляемые аллокации в торговле электроникой для этого инвестора.",
+    NO_ALLOCATIONS_TITLE: "Аллокаций пока нет",
+    NO_ALLOCATIONS_DESC: "Создайте первую управляемую аллокацию, когда капитал назначен на реальный цикл поставки.",
+    MARKETPLACE_NOT_SET: "Маркетплейс не указан",
+    METRIC_AMOUNT: "Сумма",
+    METRIC_EXPECTED_CYCLE: "Ожидаемый цикл",
+    METRIC_ESTIMATED: "Оценка",
+    METRIC_ACTUAL_PROFIT: "Фактическая прибыль",
+    DAYS: "дней",
+    LABEL_UPDATE_STATUS: "Обновить статус",
+    LABEL_ACTUAL_PROFIT: "Фактическая прибыль",
+    PH_ACTUAL_PROFIT: "0",
+    UPDATED_LABEL: "Обновлено",
+    COMPLETED_AT_LABEL: "Завершено",
+    REPORTS_TITLE: "Ежемесячные отчёты",
+    REPORTS_DESC: "Управляемая администратором отчётность. Сводка подтверждений включает только доступные или проверенные категории.",
+    LABEL_MONTH: "Месяц",
+    PH_MONTH: "Май 2026",
+    LABEL_TITLE: "Заголовок",
+    PH_TITLE: "Операционный отчёт за май",
+    LABEL_SUMMARY: "Сводка",
+    LABEL_PERFORMANCE_NOTE: "Заметка о результатах",
+    PH_PERFORMANCE_NOTE: "Заметка об операционных результатах",
+    LABEL_PAYOUT_NOTE: "Заметка о выплате",
+    PH_PAYOUT_NOTE: "Заметка о выплате или реинвесте",
+    CREATE_REPORT_IDLE: "Создать отчёт",
+    CREATE_REPORT_BUSY: "Создание...",
+    NO_REPORTS_TITLE: "Отчётов пока нет",
+    NO_REPORTS_DESC: "Создайте черновик отчёта, когда операции за месяц готовы к проверке менеджером.",
+    METRIC_PUBLISHED: "Опубликовано",
+    METRIC_PROOF_CATEGORIES: "Категории подтверждений",
+    METRIC_UPDATED: "Обновлено",
+    NO_AVAILABLE_PROOFS: "Нет доступных подтверждений",
+    PUBLISH: "Опубликовать",
+    OPEN_REPORT: "Открыть отчёт",
+    NOTICE_INVESTOR_UPDATED: "Профиль инвестора обновлён.",
+    NOTICE_ALLOCATION_CREATED: "Аллокация создана.",
+    NOTICE_ALLOCATION_UPDATED: "Аллокация обновлена.",
+    NOTICE_REPORT_CREATED: "Ежемесячный отчёт создан.",
+    NOTICE_REPORT_UPDATED: "Ежемесячный отчёт обновлён.",
+    ERROR_UPDATE_INVESTOR: "Не удалось обновить инвестора.",
+    ERROR_CREATE_ALLOCATION: "Не удалось создать аллокацию.",
+    ERROR_UPDATE_ALLOCATION: "Не удалось обновить аллокацию.",
+    ERROR_CREATE_REPORT: "Не удалось создать отчёт.",
+    ERROR_UPDATE_REPORT: "Не удалось обновить отчёт."
+  }
+} as const;
+
+type Strings = typeof STRINGS.en;
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
@@ -115,17 +298,6 @@ function getAdminMutationHeaders() {
     "Content-Type": "application/json",
     [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE)
   };
-}
-
-function formatMoney(value: string | number | null | undefined) {
-  const amount = Number(value || 0);
-  return moneyFormatter.format(Number.isFinite(amount) ? amount : 0);
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : dateFormatter.format(date);
 }
 
 function toDateInputValue(value: string | null) {
@@ -145,6 +317,18 @@ function calculateKpis(allocations: Allocation[]) {
 }
 
 export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: { locale: Locale; investor: InvestorDetail }) {
+  const t = getStrings(locale);
+  const formatters = createAdminFormatters(locale);
+
+  function formatMoney(value: string | number | null | undefined) {
+    const amount = Number(value || 0);
+    return formatters.currency(Number.isFinite(amount) ? amount : 0);
+  }
+
+  function formatDate(value: string | null) {
+    return formatters.dateTime(value);
+  }
+
   const [investor, setInvestor] = React.useState(initialInvestor);
   const [investorDraft, setInvestorDraft] = React.useState<InvestorDraft>(() => ({
     status: initialInvestor.status,
@@ -192,11 +376,11 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
         })
       });
       const payload = (await response.json()) as { ok: boolean; data?: Partial<InvestorDetail>; error?: string };
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to update investor.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.ERROR_UPDATE_INVESTOR);
       setInvestor((current) => ({ ...current, ...payload.data }));
-      setNotice("Investor profile updated.");
+      setNotice(t.NOTICE_INVESTOR_UPDATED);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to update investor.");
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_UPDATE_INVESTOR);
     } finally {
       setIsSavingInvestor(false);
     }
@@ -217,12 +401,12 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
         })
       });
       const payload = (await response.json()) as { ok: boolean; data?: Allocation; error?: string };
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to create allocation.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.ERROR_CREATE_ALLOCATION);
       setInvestor((current) => ({ ...current, allocations: [payload.data as Allocation, ...current.allocations] }));
       setAllocationDraft({ supplyCode: "", productName: "", marketplace: "", allocationAmount: "", currency: "USD", status: "DRAFT", expectedCycleDays: "45", estimatedResult: "", notes: "" });
-      setNotice("Allocation created.");
+      setNotice(t.NOTICE_ALLOCATION_CREATED);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create allocation.");
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_CREATE_ALLOCATION);
     } finally {
       setIsCreatingAllocation(false);
     }
@@ -240,14 +424,14 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
         body: JSON.stringify(payload)
       });
       const responsePayload = (await response.json()) as { ok: boolean; data?: Allocation; error?: string };
-      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || "Unable to update allocation.");
+      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || t.ERROR_UPDATE_ALLOCATION);
       setInvestor((current) => ({
         ...current,
         allocations: current.allocations.map((item) => (item.id === responsePayload.data?.id ? responsePayload.data : item))
       }));
-      setNotice("Allocation updated.");
+      setNotice(t.NOTICE_ALLOCATION_UPDATED);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to update allocation.");
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_UPDATE_ALLOCATION);
     } finally {
       setUpdatingAllocationId(null);
     }
@@ -265,12 +449,12 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
         body: JSON.stringify(reportDraft)
       });
       const payload = (await response.json()) as { ok: boolean; data?: MonthlyReport; error?: string };
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to create report.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.ERROR_CREATE_REPORT);
       setInvestor((current) => ({ ...current, monthlyReports: [payload.data as MonthlyReport, ...current.monthlyReports] }));
       setReportDraft({ month: "", title: "", summary: "", performanceNote: "", payoutNote: "", status: "DRAFT" });
-      setNotice("Monthly report created.");
+      setNotice(t.NOTICE_REPORT_CREATED);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create report.");
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_CREATE_REPORT);
     } finally {
       setIsCreatingReport(false);
     }
@@ -288,14 +472,14 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
         body: JSON.stringify(payload)
       });
       const responsePayload = (await response.json()) as { ok: boolean; data?: MonthlyReport; error?: string };
-      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || "Unable to update report.");
+      if (!response.ok || !responsePayload.ok || !responsePayload.data) throw new Error(responsePayload.error || t.ERROR_UPDATE_REPORT);
       setInvestor((current) => ({
         ...current,
         monthlyReports: current.monthlyReports.map((item) => (item.id === responsePayload.data?.id ? responsePayload.data : item))
       }));
-      setNotice("Monthly report updated.");
+      setNotice(t.NOTICE_REPORT_UPDATED);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to update report.");
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_UPDATE_REPORT);
     } finally {
       setUpdatingReportId(null);
     }
@@ -310,7 +494,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Link href={`/${locale}/admin/investors`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="size-4" />
-              Back to investors
+              {t.BACK_TO_INVESTORS}
             </Link>
             <AdminNavigation locale={locale} activeSection="investors" />
           </div>
@@ -318,13 +502,13 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
           <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">Managed investor profile</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{investor.fullName}</h1>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{investor.email} {investor.telegram ? `· ${investor.telegram}` : ""}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge>{investor.status}</Badge>
-                <Badge variant="secondary">Reinvest {investor.reinvestEnabled ? "enabled" : "disabled"}</Badge>
+                <Badge>{enumLabel("investorStatus", investor.status, locale)}</Badge>
+                <Badge variant="secondary">{investor.reinvestEnabled ? t.REINVEST_ON : t.REINVEST_OFF}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -333,58 +517,58 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
           {error ? <AdminNotice tone="error" message={error} /> : null}
 
           <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <KpiCard label="Active capital" value={formatMoney(kpis.activeCapital)} />
-            <KpiCard label="Total profit" value={formatMoney(kpis.totalProfit)} />
-            <KpiCard label="Active allocations" value={String(kpis.activeAllocations)} />
-            <KpiCard label="Completed allocations" value={String(kpis.completedAllocations)} />
+            <KpiCard label={t.KPI_ACTIVE_CAPITAL} value={formatMoney(kpis.activeCapital)} />
+            <KpiCard label={t.KPI_TOTAL_PROFIT} value={formatMoney(kpis.totalProfit)} />
+            <KpiCard label={t.KPI_ACTIVE_ALLOCATIONS} value={String(kpis.activeAllocations)} />
+            <KpiCard label={t.KPI_COMPLETED_ALLOCATIONS} value={String(kpis.completedAllocations)} />
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
             <div className="grid gap-6">
               <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
-                  <CardTitle>Edit investor</CardTitle>
-                  <CardDescription>Admin-managed profile fields only. No money movement is performed here.</CardDescription>
+                  <CardTitle>{t.EDIT_INVESTOR_TITLE}</CardTitle>
+                  <CardDescription>{t.EDIT_INVESTOR_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   <label className="grid gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Status</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
                     <select value={investorDraft.status} onChange={(event) => setInvestorDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                      {INVESTOR_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{status}</option>)}
+                      {INVESTOR_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("investorStatus", status, locale)}</option>)}
                     </select>
                   </label>
-                  <CrmInput label="Total capital" value={investorDraft.totalCapital} onChange={(value) => setInvestorDraft((current) => ({ ...current, totalCapital: value }))} placeholder="25000" />
+                  <CrmInput label={t.LABEL_TOTAL_CAPITAL} value={investorDraft.totalCapital} onChange={(value) => setInvestorDraft((current) => ({ ...current, totalCapital: value }))} placeholder={t.PH_TOTAL_CAPITAL} />
                   <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-muted-foreground">
                     <input type="checkbox" checked={investorDraft.reinvestEnabled} onChange={(event) => setInvestorDraft((current) => ({ ...current, reinvestEnabled: event.target.checked }))} />
-                    Reinvest enabled
+                    {t.LABEL_REINVEST_ENABLED}
                   </label>
-                  <CrmInput label="Last report date" type="date" value={investorDraft.lastReportAt} onChange={(value) => setInvestorDraft((current) => ({ ...current, lastReportAt: value }))} placeholder="" />
+                  <CrmInput label={t.LABEL_LAST_REPORT_DATE} type="date" value={investorDraft.lastReportAt} onChange={(value) => setInvestorDraft((current) => ({ ...current, lastReportAt: value }))} placeholder="" />
                   <label className="grid gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Notes</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_NOTES}</span>
                     <textarea value={investorDraft.notes} onChange={(event) => setInvestorDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-28 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                   </label>
                   <Button type="button" disabled={isSavingInvestor} onClick={saveInvestor}>
                     <Save data-icon="inline-start" />
-                    {isSavingInvestor ? "Saving..." : "Save investor"}
+                    {isSavingInvestor ? t.SAVE_INVESTOR_BUSY : t.SAVE_INVESTOR_IDLE}
                   </Button>
                 </CardContent>
               </Card>
 
               <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
-                  <CardTitle>Source application</CardTitle>
-                  <CardDescription>Original approved lead context.</CardDescription>
+                  <CardTitle>{t.SOURCE_APPLICATION_TITLE}</CardTitle>
+                  <CardDescription>{t.SOURCE_APPLICATION_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {investor.sourceApplication ? (
                     <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
                       <p className="font-semibold text-foreground">{investor.sourceApplication.fullName}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{investor.sourceApplication.email || "No email"} · {investor.sourceApplication.status}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">Planned allocation: {formatMoney(investor.sourceApplication.plannedAllocationAmount)}</p>
-                      <Link href={`/${locale}/admin/applications?search=${investor.sourceApplication.id}`} className="mt-3 inline-flex text-sm font-semibold text-gold-100">Open source application</Link>
+                      <p className="mt-2 text-sm text-muted-foreground">{investor.sourceApplication.email || t.NO_EMAIL} · {enumLabel("applicationStatus", investor.sourceApplication.status, locale)}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t.PLANNED_ALLOCATION} {formatMoney(investor.sourceApplication.plannedAllocationAmount)}</p>
+                      <Link href={`/${locale}/admin/applications?search=${investor.sourceApplication.id}`} className="mt-3 inline-flex text-sm font-semibold text-gold-100">{t.OPEN_SOURCE_APPLICATION}</Link>
                     </div>
                   ) : (
-                    <p className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">No source application linked.</p>
+                    <p className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{t.NO_SOURCE_APPLICATION}</p>
                   )}
                 </CardContent>
               </Card>
@@ -393,31 +577,31 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
             <div className="grid gap-6">
               <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
-                  <CardTitle>Create managed allocation</CardTitle>
-                  <CardDescription>One supply allocation assigned to this investor. No investor self-service creation.</CardDescription>
+                  <CardTitle>{t.CREATE_ALLOCATION_TITLE}</CardTitle>
+                  <CardDescription>{t.CREATE_ALLOCATION_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2">
-                  <CrmInput label="Supply code" value={allocationDraft.supplyCode} onChange={(value) => setAllocationDraft((current) => ({ ...current, supplyCode: value }))} placeholder="SUP-APL-0526-102" />
-                  <CrmInput label="Product" value={allocationDraft.productName} onChange={(value) => setAllocationDraft((current) => ({ ...current, productName: value }))} placeholder="iPhone 15 Pro batch" />
-                  <CrmInput label="Marketplace" value={allocationDraft.marketplace} onChange={(value) => setAllocationDraft((current) => ({ ...current, marketplace: value }))} placeholder="Amazon / eBay / local" />
-                  <CrmInput label="Allocation amount" value={allocationDraft.allocationAmount} onChange={(value) => setAllocationDraft((current) => ({ ...current, allocationAmount: value }))} placeholder="10000" />
-                  <CrmInput label="Currency" value={allocationDraft.currency} onChange={(value) => setAllocationDraft((current) => ({ ...current, currency: value }))} placeholder="USD" />
+                  <CrmInput label={t.LABEL_SUPPLY_CODE} value={allocationDraft.supplyCode} onChange={(value) => setAllocationDraft((current) => ({ ...current, supplyCode: value }))} placeholder={t.PH_SUPPLY_CODE} />
+                  <CrmInput label={t.LABEL_PRODUCT} value={allocationDraft.productName} onChange={(value) => setAllocationDraft((current) => ({ ...current, productName: value }))} placeholder={t.PH_PRODUCT} />
+                  <CrmInput label={t.LABEL_MARKETPLACE} value={allocationDraft.marketplace} onChange={(value) => setAllocationDraft((current) => ({ ...current, marketplace: value }))} placeholder={t.PH_MARKETPLACE} />
+                  <CrmInput label={t.LABEL_ALLOCATION_AMOUNT} value={allocationDraft.allocationAmount} onChange={(value) => setAllocationDraft((current) => ({ ...current, allocationAmount: value }))} placeholder={t.PH_ALLOCATION_AMOUNT} />
+                  <CrmInput label={t.LABEL_CURRENCY} value={allocationDraft.currency} onChange={(value) => setAllocationDraft((current) => ({ ...current, currency: value }))} placeholder={t.PH_CURRENCY} />
                   <label className="grid gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Status</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
                     <select value={allocationDraft.status} onChange={(event) => setAllocationDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                      {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{status}</option>)}
+                      {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
                     </select>
                   </label>
-                  <CrmInput label="Expected cycle days" value={allocationDraft.expectedCycleDays} onChange={(value) => setAllocationDraft((current) => ({ ...current, expectedCycleDays: value }))} placeholder="45" />
-                  <CrmInput label="Estimated result" value={allocationDraft.estimatedResult} onChange={(value) => setAllocationDraft((current) => ({ ...current, estimatedResult: value }))} placeholder="Operational estimate" />
+                  <CrmInput label={t.LABEL_EXPECTED_CYCLE_DAYS} value={allocationDraft.expectedCycleDays} onChange={(value) => setAllocationDraft((current) => ({ ...current, expectedCycleDays: value }))} placeholder={t.PH_EXPECTED_CYCLE_DAYS} />
+                  <CrmInput label={t.LABEL_ESTIMATED_RESULT} value={allocationDraft.estimatedResult} onChange={(value) => setAllocationDraft((current) => ({ ...current, estimatedResult: value }))} placeholder={t.PH_ESTIMATED_RESULT} />
                   <label className="grid gap-2 md:col-span-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Notes</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_NOTES}</span>
                     <textarea value={allocationDraft.notes} onChange={(event) => setAllocationDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                   </label>
                   <div className="md:col-span-2">
                     <Button type="button" disabled={isCreatingAllocation} onClick={createAllocation}>
                       <PackagePlus data-icon="inline-start" />
-                      {isCreatingAllocation ? "Creating..." : "Create allocation"}
+                      {isCreatingAllocation ? t.CREATE_ALLOCATION_BUSY : t.CREATE_ALLOCATION_IDLE}
                     </Button>
                   </div>
                 </CardContent>
@@ -425,15 +609,15 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
               <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
-                  <CardTitle>Allocations</CardTitle>
-                  <CardDescription>Managed electronics commerce allocations for this investor.</CardDescription>
+                  <CardTitle>{t.ALLOCATIONS_TITLE}</CardTitle>
+                  <CardDescription>{t.ALLOCATIONS_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   {investor.allocations.length === 0 ? (
                     <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6 text-center">
                       <ShieldCheck className="mx-auto size-8 text-gold-100" />
-                      <p className="mt-4 font-semibold text-foreground">No allocations yet</p>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Create the first managed allocation when capital is assigned to a real supply cycle.</p>
+                      <p className="mt-4 font-semibold text-foreground">{t.NO_ALLOCATIONS_TITLE}</p>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_ALLOCATIONS_DESC}</p>
                     </div>
                   ) : (
                     investor.allocations.map((allocation) => (
@@ -442,26 +626,26 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
                             <h3 className="mt-2 text-lg font-semibold text-foreground">{allocation.productName}</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">{allocation.marketplace || "Marketplace not set"}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">{allocation.marketplace || t.MARKETPLACE_NOT_SET}</p>
                           </div>
-                          <Badge>{allocation.status}</Badge>
+                          <Badge>{enumLabel("allocationStatus", allocation.status, locale)}</Badge>
                         </Link>
                         <div className="mt-4 grid gap-3 md:grid-cols-4">
-                          <Metric label="Amount" value={formatMoney(allocation.allocationAmount)} />
-                          <Metric label="Expected cycle" value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} days` : "-"} />
-                          <Metric label="Estimated" value={allocation.estimatedResult || "-"} />
-                          <Metric label="Actual profit" value={allocation.actualProfit ? formatMoney(allocation.actualProfit) : "-"} />
+                          <Metric label={t.METRIC_AMOUNT} value={formatMoney(allocation.allocationAmount)} />
+                          <Metric label={t.METRIC_EXPECTED_CYCLE} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.DAYS}` : "—"} />
+                          <Metric label={t.METRIC_ESTIMATED} value={allocation.estimatedResult || "—"} />
+                          <Metric label={t.METRIC_ACTUAL_PROFIT} value={allocation.actualProfit ? formatMoney(allocation.actualProfit) : "—"} />
                         </div>
                         <Separator className="my-4" />
                         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                           <label className="grid gap-2">
-                            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Update status</span>
+                            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_UPDATE_STATUS}</span>
                             <select defaultValue={allocation.status} onChange={(event) => updateAllocation(allocation, { status: event.target.value })} disabled={updatingAllocationId === allocation.id} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                              {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{status}</option>)}
+                              {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
                             </select>
                           </label>
-                          <CrmInput label="Actual profit" value={allocation.actualProfit || ""} onChange={(value) => updateAllocation(allocation, { actualProfit: value || null })} placeholder="0" />
-                          <span className="text-xs leading-5 text-muted-foreground">Updated {formatDate(allocation.updatedAt)}<br />Completed {formatDate(allocation.completedAt)}</span>
+                          <CrmInput label={t.LABEL_ACTUAL_PROFIT} value={allocation.actualProfit || ""} onChange={(value) => updateAllocation(allocation, { actualProfit: value || null })} placeholder={t.PH_ACTUAL_PROFIT} />
+                          <span className="text-xs leading-5 text-muted-foreground">{t.UPDATED_LABEL} {formatDate(allocation.updatedAt)}<br />{t.COMPLETED_AT_LABEL} {formatDate(allocation.completedAt)}</span>
                         </div>
                       </div>
                     ))
@@ -471,34 +655,34 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
               <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
                 <CardHeader>
-                  <CardTitle>Monthly reports</CardTitle>
-                  <CardDescription>Admin-managed reporting. Proof summary includes only available or verified proof categories.</CardDescription>
+                  <CardTitle>{t.REPORTS_TITLE}</CardTitle>
+                  <CardDescription>{t.REPORTS_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   <div className="grid gap-4 md:grid-cols-2">
-                    <CrmInput label="Month" value={reportDraft.month} onChange={(value) => setReportDraft((current) => ({ ...current, month: value }))} placeholder="May 2026" />
-                    <CrmInput label="Title" value={reportDraft.title} onChange={(value) => setReportDraft((current) => ({ ...current, title: value }))} placeholder="May operational report" />
+                    <CrmInput label={t.LABEL_MONTH} value={reportDraft.month} onChange={(value) => setReportDraft((current) => ({ ...current, month: value }))} placeholder={t.PH_MONTH} />
+                    <CrmInput label={t.LABEL_TITLE} value={reportDraft.title} onChange={(value) => setReportDraft((current) => ({ ...current, title: value }))} placeholder={t.PH_TITLE} />
                     <label className="grid gap-2 md:col-span-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Summary</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_SUMMARY}</span>
                       <textarea value={reportDraft.summary} onChange={(event) => setReportDraft((current) => ({ ...current, summary: event.target.value }))} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                     </label>
-                    <CrmInput label="Performance note" value={reportDraft.performanceNote} onChange={(value) => setReportDraft((current) => ({ ...current, performanceNote: value }))} placeholder="Operational performance note" />
-                    <CrmInput label="Payout note" value={reportDraft.payoutNote} onChange={(value) => setReportDraft((current) => ({ ...current, payoutNote: value }))} placeholder="Payout or reinvest note" />
+                    <CrmInput label={t.LABEL_PERFORMANCE_NOTE} value={reportDraft.performanceNote} onChange={(value) => setReportDraft((current) => ({ ...current, performanceNote: value }))} placeholder={t.PH_PERFORMANCE_NOTE} />
+                    <CrmInput label={t.LABEL_PAYOUT_NOTE} value={reportDraft.payoutNote} onChange={(value) => setReportDraft((current) => ({ ...current, payoutNote: value }))} placeholder={t.PH_PAYOUT_NOTE} />
                     <label className="grid gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Status</span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
                       <select value={reportDraft.status} onChange={(event) => setReportDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                        {REPORT_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{status}</option>)}
+                        {REPORT_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("reportStatus", status, locale)}</option>)}
                       </select>
                     </label>
                     <div className="flex items-end">
-                      <Button type="button" disabled={isCreatingReport} onClick={createReport}>{isCreatingReport ? "Creating..." : "Create report"}</Button>
+                      <Button type="button" disabled={isCreatingReport} onClick={createReport}>{isCreatingReport ? t.CREATE_REPORT_BUSY : t.CREATE_REPORT_IDLE}</Button>
                     </div>
                   </div>
                   <Separator />
                   {investor.monthlyReports.length === 0 ? (
                     <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6 text-center">
-                      <p className="font-semibold text-foreground">No reports yet</p>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Create a draft report when monthly operations are ready for manager review.</p>
+                      <p className="font-semibold text-foreground">{t.NO_REPORTS_TITLE}</p>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_REPORTS_DESC}</p>
                     </div>
                   ) : (
                     investor.monthlyReports.map((report) => (
@@ -509,19 +693,19 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                             <Link href={`/${locale}/admin/reports/${report.id}`} className="mt-2 block text-lg font-semibold text-foreground transition-colors hover:text-gold-100">{report.title}</Link>
                             <p className="mt-2 text-sm leading-6 text-muted-foreground">{report.summary}</p>
                           </div>
-                          <Badge>{report.status}</Badge>
+                          <Badge>{enumLabel("reportStatus", report.status, locale)}</Badge>
                         </div>
                         <div className="mt-4 grid gap-3 md:grid-cols-3">
-                          <Metric label="Published" value={formatDate(report.publishedAt)} />
-                          <Metric label="Proof categories" value={Object.keys(report.proofSummary).length ? Object.entries(report.proofSummary).map(([type, count]) => `${type}: ${count}`).join(", ") : "No available proofs"} />
-                          <Metric label="Updated" value={formatDate(report.updatedAt)} />
+                          <Metric label={t.METRIC_PUBLISHED} value={formatDate(report.publishedAt)} />
+                          <Metric label={t.METRIC_PROOF_CATEGORIES} value={Object.keys(report.proofSummary).length ? Object.entries(report.proofSummary).map(([type, count]) => `${enumLabel("proofType", type, locale)}: ${count}`).join(", ") : t.NO_AVAILABLE_PROOFS} />
+                          <Metric label={t.METRIC_UPDATED} value={formatDate(report.updatedAt)} />
                         </div>
                         <div className="mt-4 flex flex-wrap gap-2">
                           {REPORT_STATUSES.map((status) => (
-                            <Button key={status} type="button" variant="outline" size="sm" disabled={updatingReportId === report.id || report.status === status} onClick={() => updateReport(report, { status })}>{status}</Button>
+                            <Button key={status} type="button" variant="outline" size="sm" disabled={updatingReportId === report.id || report.status === status} onClick={() => updateReport(report, { status })}>{enumLabel("reportStatus", status, locale)}</Button>
                           ))}
-                          <Button type="button" size="sm" disabled={updatingReportId === report.id || report.status === "PUBLISHED"} onClick={() => updateReport(report, { status: "PUBLISHED" })}>Publish</Button>
-                          <Link href={`/${locale}/admin/reports/${report.id}`} className="inline-flex h-9 items-center rounded-full border border-white/10 px-4 text-sm font-semibold text-gold-100 transition-colors hover:bg-white/[0.06]">Open report</Link>
+                          <Button type="button" size="sm" disabled={updatingReportId === report.id || report.status === "PUBLISHED"} onClick={() => updateReport(report, { status: "PUBLISHED" })}>{t.PUBLISH}</Button>
+                          <Link href={`/${locale}/admin/reports/${report.id}`} className="inline-flex h-9 items-center rounded-full border border-white/10 px-4 text-sm font-semibold text-gold-100 transition-colors hover:bg-white/[0.06]">{t.OPEN_REPORT}</Link>
                         </div>
                       </div>
                     ))

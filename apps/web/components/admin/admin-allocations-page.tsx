@@ -3,9 +3,87 @@
 import * as React from "react";
 import Link from "next/link";
 import { PackagePlus } from "lucide-react";
-import type { Locale } from "@otiz/lib";
+import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import { AdminNavigation } from "./admin-navigation";
+
+const STRINGS = {
+  en: {
+    eyebrow: "Admin operations",
+    h1: "Allocations manager",
+    createTitle: "Create allocation",
+    createDesc: "Manager-created supply allocation. No marketplace or payment integration is performed.",
+    fieldInvestor: "Investor",
+    fieldSupplyCode: "Supply code",
+    fieldProduct: "Product",
+    fieldMarketplace: "Marketplace",
+    fieldInvestedAmount: "Invested amount",
+    fieldExpectedReturn: "Expected return",
+    fieldStageStatus: "Stage/status",
+    fieldRisk: "Risk",
+    fieldExpectedPayoutDate: "Expected payout date",
+    filterStatus: "Status",
+    filterInvestor: "Investor",
+    filterRisk: "Risk",
+    filterPayout: "Payout",
+    all: "All",
+    createButton: "Create allocation",
+    creating: "Creating...",
+    metricInvested: "Invested",
+    metricExpectedReturn: "Expected return",
+    metricExpectedPayout: "Expected payout",
+    metricPayoutStatus: "Payout status",
+    metricProofScore: "Proof score",
+    metricMissingEvidence: "Missing evidence",
+    notEstimated: "Not estimated",
+    notEvaluated: "Not evaluated",
+    none: "None",
+    proofPending: "Proof pending",
+    belowThreshold: "Proof completeness is below current readiness policy threshold.",
+    emptyState: "No allocations match the current filters.",
+    noticeCreated: "Allocation created.",
+    noticeError: "Unable to create allocation."
+  },
+  ru: {
+    eyebrow: "Операции администратора",
+    h1: "Менеджер аллокаций",
+    createTitle: "Создать аллокацию",
+    createDesc: "Аллокация поставки, созданная менеджером. Интеграция с маркетплейсом или платежами не выполняется.",
+    fieldInvestor: "Инвестор",
+    fieldSupplyCode: "Код поставки",
+    fieldProduct: "Товар",
+    fieldMarketplace: "Маркетплейс",
+    fieldInvestedAmount: "Сумма инвестиций",
+    fieldExpectedReturn: "Ожидаемая доходность",
+    fieldStageStatus: "Этап/статус",
+    fieldRisk: "Риск",
+    fieldExpectedPayoutDate: "Ожидаемая дата выплаты",
+    filterStatus: "Статус",
+    filterInvestor: "Инвестор",
+    filterRisk: "Риск",
+    filterPayout: "Выплата",
+    all: "Все",
+    createButton: "Создать аллокацию",
+    creating: "Создание...",
+    metricInvested: "Инвестировано",
+    metricExpectedReturn: "Ожидаемая доходность",
+    metricExpectedPayout: "Ожидаемая выплата",
+    metricPayoutStatus: "Статус выплаты",
+    metricProofScore: "Оценка подтверждения",
+    metricMissingEvidence: "Отсутствующие подтверждения",
+    notEstimated: "Не оценено",
+    notEvaluated: "Не оценено",
+    none: "Нет",
+    proofPending: "Подтверждение ожидается",
+    belowThreshold: "Полнота подтверждений ниже текущего порога политики готовности.",
+    emptyState: "Нет аллокаций, соответствующих текущим фильтрам.",
+    noticeCreated: "Аллокация создана.",
+    noticeError: "Не удалось создать аллокацию."
+  }
+} as const;
+
+type Strings = typeof STRINGS.en;
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -67,9 +145,6 @@ type Draft = {
   notes: string;
 };
 
-const moneyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-const dateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
-
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
   return document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
@@ -77,17 +152,6 @@ function getCookieValue(name: string) {
 
 function getAdminMutationHeaders() {
   return { "Content-Type": "application/json", [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) };
-}
-
-function formatMoney(value: string | number | null | undefined) {
-  const amount = Number(value || 0);
-  return moneyFormatter.format(Number.isFinite(amount) ? amount : 0);
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : dateFormatter.format(date);
 }
 
 function stageFromStatus(status: string, payoutStatus: string) {
@@ -107,6 +171,8 @@ function progressFromStage(stage: string) {
 }
 
 export function AdminAllocationsPage({ locale, allocations: initialAllocations, investors }: { locale: Locale; allocations: Allocation[]; investors: InvestorOption[] }) {
+  const t = getStrings(locale);
+  const formatters = createAdminFormatters(locale);
   const [allocations, setAllocations] = React.useState(initialAllocations);
   const [statusFilter, setStatusFilter] = React.useState("ALL");
   const [riskFilter, setRiskFilter] = React.useState("ALL");
@@ -147,13 +213,13 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
         body: JSON.stringify({ ...draft, expectedCycleDays: draft.expectedCycleDays ? Number(draft.expectedCycleDays) : null, expectedPayoutAt: draft.expectedPayoutAt || null })
       });
       const payload = (await response.json()) as { ok: boolean; data?: Allocation; error?: string };
-      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to create allocation.");
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.noticeError);
       const investor = investors.find((item) => item.id === payload.data?.investorId);
       setAllocations((current) => [{ ...payload.data as Allocation, investor: investor ? { ...investor, telegram: null, status: "ACTIVE" } : payload.data!.investor, proofs: [] }, ...current]);
       setDraft((current) => ({ ...current, supplyCode: "", productName: "", marketplace: "", allocationAmount: "", expectedPayoutAt: "", estimatedResult: "", notes: "" }));
-      setNotice("Allocation created.");
+      setNotice(t.noticeCreated);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create allocation.");
+      setError(requestError instanceof Error ? requestError.message : t.noticeError);
     } finally {
       setIsCreating(false);
     }
@@ -167,8 +233,8 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">Admin operations</p>
-              <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">Allocations manager</h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+              <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.h1}</h1>
             </div>
             <AdminNavigation locale={locale} activeSection="allocations" />
           </div>
@@ -177,31 +243,31 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
           {error ? <Notice tone="error" message={error} /> : null}
 
           <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.72]">
-            <CardHeader><CardTitle>Create allocation</CardTitle><CardDescription>Manager-created supply allocation. No marketplace or payment integration is performed.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>{t.createTitle}</CardTitle><CardDescription>{t.createDesc}</CardDescription></CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
-              <SelectField label="Investor" value={draft.investorId} options={investors.map((investor) => ({ label: `${investor.fullName} · ${investor.email}`, value: investor.id }))} onChange={(value) => setDraft((current) => ({ ...current, investorId: value }))} />
-              <TextField label="Supply code" value={draft.supplyCode} onChange={(value) => setDraft((current) => ({ ...current, supplyCode: value }))} />
-              <TextField label="Product" value={draft.productName} onChange={(value) => setDraft((current) => ({ ...current, productName: value }))} />
-              <TextField label="Marketplace" value={draft.marketplace} onChange={(value) => setDraft((current) => ({ ...current, marketplace: value }))} />
-              <TextField label="Invested amount" value={draft.allocationAmount} onChange={(value) => setDraft((current) => ({ ...current, allocationAmount: value }))} />
-              <TextField label="Expected return" value={draft.estimatedResult} onChange={(value) => setDraft((current) => ({ ...current, estimatedResult: value }))} />
-              <SelectField label="Stage/status" value={draft.status} options={STATUSES.filter((status) => status !== "ALL").map((status) => ({ label: status, value: status }))} onChange={(value) => setDraft((current) => ({ ...current, status: value }))} />
-              <SelectField label="Risk" value={draft.riskLevel} options={RISK_LEVELS.filter((risk) => risk !== "ALL").map((risk) => ({ label: risk, value: risk }))} onChange={(value) => setDraft((current) => ({ ...current, riskLevel: value }))} />
-              <TextField label="Expected payout date" type="date" value={draft.expectedPayoutAt} onChange={(value) => setDraft((current) => ({ ...current, expectedPayoutAt: value }))} />
-              <div className="md:col-span-3"><Button type="button" onClick={createAllocation} disabled={isCreating || !draft.investorId}><PackagePlus data-icon="inline-start" />{isCreating ? "Creating..." : "Create allocation"}</Button></div>
+              <SelectField label={t.fieldInvestor} value={draft.investorId} options={investors.map((investor) => ({ label: `${investor.fullName} · ${investor.email}`, value: investor.id }))} onChange={(value) => setDraft((current) => ({ ...current, investorId: value }))} />
+              <TextField label={t.fieldSupplyCode} value={draft.supplyCode} onChange={(value) => setDraft((current) => ({ ...current, supplyCode: value }))} />
+              <TextField label={t.fieldProduct} value={draft.productName} onChange={(value) => setDraft((current) => ({ ...current, productName: value }))} />
+              <TextField label={t.fieldMarketplace} value={draft.marketplace} onChange={(value) => setDraft((current) => ({ ...current, marketplace: value }))} />
+              <TextField label={t.fieldInvestedAmount} value={draft.allocationAmount} onChange={(value) => setDraft((current) => ({ ...current, allocationAmount: value }))} />
+              <TextField label={t.fieldExpectedReturn} value={draft.estimatedResult} onChange={(value) => setDraft((current) => ({ ...current, estimatedResult: value }))} />
+              <SelectField label={t.fieldStageStatus} value={draft.status} options={STATUSES.filter((status) => status !== "ALL").map((status) => ({ label: enumLabel("allocationStatus", status, locale), value: status }))} onChange={(value) => setDraft((current) => ({ ...current, status: value }))} />
+              <SelectField label={t.fieldRisk} value={draft.riskLevel} options={RISK_LEVELS.filter((risk) => risk !== "ALL").map((risk) => ({ label: enumLabel("riskLevel", risk, locale), value: risk }))} onChange={(value) => setDraft((current) => ({ ...current, riskLevel: value }))} />
+              <TextField label={t.fieldExpectedPayoutDate} type="date" value={draft.expectedPayoutAt} onChange={(value) => setDraft((current) => ({ ...current, expectedPayoutAt: value }))} />
+              <div className="md:col-span-3"><Button type="button" onClick={createAllocation} disabled={isCreating || !draft.investorId}><PackagePlus data-icon="inline-start" />{isCreating ? t.creating : t.createButton}</Button></div>
             </CardContent>
           </Card>
 
           <div className="mb-6 grid gap-3 md:grid-cols-4">
-            <SelectField label="Status" value={statusFilter} options={STATUSES.map((status) => ({ label: status, value: status }))} onChange={setStatusFilter} />
-            <SelectField label="Investor" value={investorFilter} options={[{ label: "ALL", value: "ALL" }, ...investors.map((investor) => ({ label: investor.fullName, value: investor.id }))]} onChange={setInvestorFilter} />
-            <SelectField label="Risk" value={riskFilter} options={RISK_LEVELS.map((risk) => ({ label: risk, value: risk }))} onChange={setRiskFilter} />
-            <SelectField label="Payout" value={payoutFilter} options={PAYOUT_STATUSES.map((status) => ({ label: status, value: status }))} onChange={setPayoutFilter} />
+            <SelectField label={t.filterStatus} value={statusFilter} options={STATUSES.map((status) => ({ label: enumLabel("allocationStatus", status, locale), value: status }))} onChange={setStatusFilter} />
+            <SelectField label={t.filterInvestor} value={investorFilter} options={[{ label: t.all, value: "ALL" }, ...investors.map((investor) => ({ label: investor.fullName, value: investor.id }))]} onChange={setInvestorFilter} />
+            <SelectField label={t.filterRisk} value={riskFilter} options={RISK_LEVELS.map((risk) => ({ label: enumLabel("riskLevel", risk, locale), value: risk }))} onChange={setRiskFilter} />
+            <SelectField label={t.filterPayout} value={payoutFilter} options={PAYOUT_STATUSES.map((status) => ({ label: enumLabel("payoutStatus", status, locale), value: status }))} onChange={setPayoutFilter} />
           </div>
 
           <div className="grid gap-4">
             {visibleAllocations.length === 0 ? (
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">No allocations match the current filters.</CardContent></Card>
+              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t.emptyState}</CardContent></Card>
             ) : visibleAllocations.map((allocation) => {
               const stage = stageFromStatus(allocation.status, allocation.payoutStatus);
               const progress = progressFromStage(stage);
@@ -211,18 +277,18 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
                     <CardContent className="p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode} · {allocation.investor.fullName}</p><h2 className="mt-2 text-xl font-semibold text-foreground">{allocation.productName}</h2></div>
-                        <div className="flex flex-wrap gap-2"><Badge>{stage}</Badge><Badge variant="secondary">{allocation.riskLevel}</Badge><Badge variant="secondary">{allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : "Proof pending"}</Badge></div>
+                        <div className="flex flex-wrap gap-2"><Badge>{stage}</Badge><Badge variant="secondary">{enumLabel("riskLevel", allocation.riskLevel, locale)}</Badge><Badge variant="secondary">{allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : t.proofPending}</Badge></div>
                       </div>
                       <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gold-200/70" style={{ width: `${progress}%` }} /></div>
                       <div className="mt-4 grid gap-3 md:grid-cols-5">
-                        <Metric label="Invested" value={formatMoney(allocation.allocationAmount)} />
-                        <Metric label="Expected return" value={allocation.estimatedResult || "Not estimated"} />
-                        <Metric label="Expected payout" value={formatDate(allocation.expectedPayoutAt)} />
-                        <Metric label="Payout status" value={allocation.payoutStatus} />
-                        <Metric label="Proof score" value={allocation.proofCompleteness ? `${allocation.proofCompleteness.score}% / ${allocation.proofCompleteness.policyThreshold}%` : "Not evaluated"} />
-                        <Metric label="Missing evidence" value={allocation.proofCompleteness ? [...allocation.proofCompleteness.missingRequiredCategories, ...allocation.proofCompleteness.missingRecommendedCategories].slice(0, 3).join(", ") || "None" : "Not evaluated"} />
+                        <Metric label={t.metricInvested} value={formatters.currency(Number(allocation.allocationAmount || 0))} />
+                        <Metric label={t.metricExpectedReturn} value={allocation.estimatedResult || t.notEstimated} />
+                        <Metric label={t.metricExpectedPayout} value={formatters.date(allocation.expectedPayoutAt)} />
+                        <Metric label={t.metricPayoutStatus} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
+                        <Metric label={t.metricProofScore} value={allocation.proofCompleteness ? `${allocation.proofCompleteness.score}% / ${allocation.proofCompleteness.policyThreshold}%` : t.notEvaluated} />
+                        <Metric label={t.metricMissingEvidence} value={allocation.proofCompleteness ? [...allocation.proofCompleteness.missingRequiredCategories, ...allocation.proofCompleteness.missingRecommendedCategories].slice(0, 3).join(", ") || t.none : t.notEvaluated} />
                       </div>
-                      {allocation.proofCompleteness && allocation.proofCompleteness.score < allocation.proofCompleteness.policyThreshold ? <p className="mt-3 text-xs leading-5 text-gold-100">Proof completeness is below current readiness policy threshold.</p> : null}
+                      {allocation.proofCompleteness && allocation.proofCompleteness.score < allocation.proofCompleteness.policyThreshold ? <p className="mt-3 text-xs leading-5 text-gold-100">{t.belowThreshold}</p> : null}
                     </CardContent>
                   </Card>
                 </Link>
