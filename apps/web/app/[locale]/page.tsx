@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, locales, type Locale } from "@otiz/lib";
+import { getYieldSettings } from "@otiz/database";
 import { HomePage } from "@/components/home/home-page";
 import { getHomeContent } from "@/lib/site-content";
 
@@ -34,5 +35,7 @@ export default async function LocaleHomePage({ params }: { params: { locale: Loc
     notFound();
   }
 
-  return <HomePage dictionary={await getHomeContent(params.locale)} locale={params.locale} />;
+  const [dictionary, settings] = await Promise.all([getHomeContent(params.locale), getYieldSettings()]);
+
+  return <HomePage dictionary={dictionary} locale={params.locale} annualRate={settings.annualRatePercent} />;
 }

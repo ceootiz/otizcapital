@@ -17,3 +17,4 @@ export * from "./risk-engine";
 export * from "./withdrawals";
 export * from "./checkpoint-health";
 export * from "./deposit-addresses";
+export * from "./yield-settings";

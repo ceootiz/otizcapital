@@ -36,6 +36,10 @@ const UI: Record<"en" | "ru", {
   resetDone: string;
   loadError: string;
   saveError: string;
+  yieldTitle: string;
+  yieldLabel: string;
+  yieldSaved: string;
+  yieldError: string;
 }> = {
   en: {
     eyebrow: "Content management",
@@ -62,7 +66,11 @@ const UI: Record<"en" | "ru", {
     saved: "Content saved and published.",
     resetDone: "Content reset to defaults.",
     loadError: "Unable to load content.",
-    saveError: "Unable to save content."
+    saveError: "Unable to save content.",
+    yieldTitle: "Yield calculator rate",
+    yieldLabel: "Annual rate (%)",
+    yieldSaved: "Yield rate saved.",
+    yieldError: "Unable to save yield rate."
   },
   ru: {
     eyebrow: "Управление контентом",
@@ -89,7 +97,11 @@ const UI: Record<"en" | "ru", {
     saved: "Контент сохранён и опубликован.",
     resetDone: "Контент сброшен к значениям по умолчанию.",
     loadError: "Не удалось загрузить контент.",
-    saveError: "Не удалось сохранить контент."
+    saveError: "Не удалось сохранить контент.",
+    yieldTitle: "Ставка доходности калькулятора",
+    yieldLabel: "Годовая ставка (%)",
+    yieldSaved: "Ставка доходности сохранена.",
+    yieldError: "Не удалось сохранить ставку доходности."
   }
 };
 
@@ -133,6 +145,88 @@ function blankLike(sample: Json): Json {
     return out;
   }
   return "";
+}
+
+function YieldSettingsCard({ t }: { t: ReturnType<typeof getUi> }) {
+  const [rate, setRate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<{ tone: "ok" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/yield", { cache: "no-store" });
+        const body = await res.json();
+        if (!res.ok || !body.ok) throw new Error(body.error || t.yieldError);
+        if (active) setRate(String(body.annualRatePercent));
+      } catch (error) {
+        if (active) setNotice({ tone: "error", message: error instanceof Error ? error.message : t.yieldError });
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [t.yieldError]);
+
+  const save = useCallback(async () => {
+    setSaving(true);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/admin/yield", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) },
+        body: JSON.stringify({ annualRatePercent: rate === "" ? 0 : Number(rate) })
+      });
+      const body = await res.json();
+      if (!res.ok || !body.ok) throw new Error(body.error || t.yieldError);
+      setRate(String(body.annualRatePercent));
+      setNotice({ tone: "ok", message: t.yieldSaved });
+    } catch (error) {
+      setNotice({ tone: "error", message: error instanceof Error ? error.message : t.yieldError });
+    } finally {
+      setSaving(false);
+    }
+  }, [rate, t.yieldSaved, t.yieldError]);
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border border-gold-200/25 bg-gold-200/[0.06] p-4 sm:flex-row sm:items-end sm:justify-between">
+      <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {t.yieldTitle}
+        <span className="mt-1 flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={1000}
+            step={1}
+            value={rate}
+            disabled={loading}
+            onChange={(event) => setRate(event.target.value)}
+            aria-label={t.yieldLabel}
+            className="w-32 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground disabled:opacity-40"
+          />
+          <span className="text-[0.7rem] normal-case text-muted-foreground">{t.yieldLabel}</span>
+        </span>
+      </label>
+
+      <div className="flex items-center gap-3">
+        {notice && (
+          <span className={`text-xs ${notice.tone === "ok" ? "text-emerald-300" : "text-red-300"}`}>{notice.message}</span>
+        )}
+        <button
+          type="button"
+          onClick={() => void save()}
+          disabled={saving || loading}
+          className="rounded-full border border-gold-200/35 bg-gold-200/10 px-5 py-2 text-xs font-semibold text-gold-100 transition-colors hover:bg-gold-200/20 disabled:opacity-40"
+        >
+          {saving ? t.saving : t.save}
+        </button>
+      </div>
+    </section>
+  );
 }
 
 export function AdminContentPage({ locale }: { locale: Locale }) {
@@ -227,6 +321,8 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
           <h1 className="text-2xl font-semibold text-foreground">{t.title}</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">{t.description}</p>
         </header>
+
+        <YieldSettingsCard t={t} />
 
         {/* Controls */}
         <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-end sm:justify-between">

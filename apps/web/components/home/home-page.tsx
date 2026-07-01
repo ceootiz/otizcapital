@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -19,6 +19,7 @@ import {
   X
 } from "lucide-react";
 import {
+  createAdminFormatters,
   localeNames,
   localeShortNames,
   locales,
@@ -46,7 +47,15 @@ import { ThemeToggle } from "./theme-toggle";
 const flowIcons = [CircleDollarSign, BarChart3, Factory, Globe2, FileCheck2];
 const proofIcons = [Truck, Factory, BarChart3, ShieldCheck, CheckCircle2, PackageCheck];
 
-export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
+export function HomePage({
+  dictionary,
+  locale,
+  annualRate
+}: {
+  dictionary: HomeDictionary;
+  locale: Locale;
+  annualRate: number;
+}) {
   return (
     <main className="relative overflow-hidden micro-noise">
       <Header dictionary={dictionary} activeLocale={locale} />
@@ -59,6 +68,7 @@ export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; l
       <InvestorProcess dictionary={dictionary} />
       <Testimonials dictionary={dictionary} />
       <FAQ dictionary={dictionary} />
+      <YieldCalculator locale={locale} annualRate={annualRate} />
       <FinalCTA dictionary={dictionary} locale={locale} />
       <Footer dictionary={dictionary} activeLocale={locale} />
     </main>
@@ -541,6 +551,163 @@ function FAQ({ dictionary }: { dictionary: HomeDictionary }) {
         </Card>
       </Reveal>
     </SectionShell>
+  );
+}
+
+const YIELD_STRINGS = {
+  en: {
+    heading: "Yield calculator",
+    subtitle: "Model your monthly-compounding projection at the current allocation rate.",
+    amount: "Investment amount (USD)",
+    months: "Term (months)",
+    monthUnit: "mo",
+    colMonth: "Month",
+    colStarting: "Starting balance",
+    colProfit: "Profit",
+    colCumulative: "Cumulative profit",
+    colEnding: "Ending balance",
+    totalProfit: "Total profit",
+    totalReturn: "Total return",
+    rateNote: "Effective annual rate: {rate}"
+  },
+  ru: {
+    heading: "Калькулятор доходности",
+    subtitle: "Смоделируйте прогноз с ежемесячной капитализацией по текущей ставке аллокации.",
+    amount: "Сумма инвестиций (USD)",
+    months: "Срок (месяцев)",
+    monthUnit: "мес",
+    colMonth: "Месяц",
+    colStarting: "Начальный баланс",
+    colProfit: "Прибыль",
+    colCumulative: "Накопленная прибыль",
+    colEnding: "Итоговый баланс",
+    totalProfit: "Итоговая прибыль",
+    totalReturn: "Итоговая доходность",
+    rateNote: "Эффективная годовая ставка: {rate}"
+  }
+};
+
+type YieldStrings = typeof YIELD_STRINGS.en;
+const getYieldStrings = (locale: Locale): YieldStrings =>
+  (YIELD_STRINGS as unknown as Record<string, YieldStrings>)[locale] ?? YIELD_STRINGS.en;
+
+function YieldCalculator({ locale, annualRate }: { locale: Locale; annualRate: number }) {
+  const t = getYieldStrings(locale);
+  const fmt = useMemo(() => createAdminFormatters(locale), [locale]);
+  const [amount, setAmount] = useState(10000);
+  const [months, setMonths] = useState(12);
+
+  const { rows, totalProfit, totalReturnPct } = useMemo(() => {
+    const principal = Number.isFinite(amount) && amount > 0 ? amount : 0;
+    const monthlyRate = annualRate / 100 / 12;
+    const built: { month: number; starting: number; profit: number; cumulative: number; ending: number }[] = [];
+    let balance = principal;
+    for (let month = 1; month <= months; month += 1) {
+      const starting = balance;
+      const profit = starting * monthlyRate;
+      const ending = starting + profit;
+      built.push({ month, starting, profit, cumulative: ending - principal, ending });
+      balance = ending;
+    }
+    const totalP = balance - principal;
+    return {
+      rows: built,
+      totalProfit: totalP,
+      totalReturnPct: principal > 0 ? (totalP / principal) * 100 : 0
+    };
+  }, [amount, months, annualRate]);
+
+  return (
+    <section id="calculator" className="relative py-24">
+      <div className="container">
+        <Reveal>
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-10 text-center">
+              <h2 className="font-display text-4xl font-medium tracking-[-0.05em] text-foreground sm:text-5xl">
+                {t.heading}
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">{t.subtitle}</p>
+              <p className="mt-4 inline-flex rounded-full border border-gold-200/25 bg-gold-200/10 px-4 py-1.5 text-xs font-semibold text-gold-100">
+                {t.rateNote.replace("{rate}", fmt.percent(annualRate / 100, annualRate % 1 === 0 ? 0 : 2))}
+              </p>
+            </div>
+
+            <div className="glass-panel rounded-2xl border border-white/10 p-6 sm:p-8">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <label className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.amount}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={amount}
+                    onChange={(event) => setAmount(event.target.value === "" ? 0 : Math.max(0, Number(event.target.value)))}
+                    className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+                <label className="flex flex-col gap-2">
+                  <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span>{t.months}</span>
+                    <span className="text-gold-100">
+                      {months} {t.monthUnit}
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={24}
+                    step={1}
+                    value={months}
+                    onChange={(event) => setMonths(Number(event.target.value))}
+                    className="accent-gold-200"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-8 overflow-x-auto">
+                <table className="w-full min-w-[36rem] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-white/10 text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                      <th className="py-3 pr-4 font-semibold">{t.colMonth}</th>
+                      <th className="py-3 pr-4 text-right font-semibold">{t.colStarting}</th>
+                      <th className="py-3 pr-4 text-right font-semibold">{t.colProfit}</th>
+                      <th className="py-3 pr-4 text-right font-semibold">{t.colCumulative}</th>
+                      <th className="py-3 text-right font-semibold">{t.colEnding}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <tr key={row.month} className="border-b border-white/[0.06] text-foreground">
+                        <td className="py-2.5 pr-4 text-muted-foreground">{row.month}</td>
+                        <td className="py-2.5 pr-4 text-right">{fmt.currency(row.starting)}</td>
+                        <td className="py-2.5 pr-4 text-right text-gold-100">{fmt.currency(row.profit)}</td>
+                        <td className="py-2.5 pr-4 text-right text-gold-100">{fmt.currency(row.cumulative)}</td>
+                        <td className="py-2.5 text-right font-semibold">{fmt.currency(row.ending)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-gold-200/10 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.totalProfit}</p>
+                  <p className="mt-2 font-display text-3xl font-medium tracking-[-0.04em] text-gold-100">
+                    {fmt.currency(totalProfit)}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.totalReturn}</p>
+                  <p className="mt-2 font-display text-3xl font-medium tracking-[-0.04em] text-foreground">
+                    {fmt.percent(totalReturnPct / 100, 2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
