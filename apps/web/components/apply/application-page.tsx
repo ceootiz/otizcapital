@@ -9,6 +9,7 @@ import {
   applyTrustSignals,
   createInvestorApplication,
   type ApplyDictionary,
+  type CountryOption,
   type InvestorApplicationDraft,
   type InvestorType,
   type Locale,
@@ -51,7 +52,15 @@ const initialForm: FormState = {
   consent: false
 };
 
-export function ApplicationPage({ dictionary, locale }: { dictionary: ApplyDictionary; locale: Locale }) {
+export function ApplicationPage({
+  dictionary,
+  locale,
+  countryOptions
+}: {
+  dictionary: ApplyDictionary;
+  locale: Locale;
+  countryOptions: CountryOption[];
+}) {
   const reduceMotion = useReducedMotion();
   const [form, setForm] = React.useState<FormState>(initialForm);
   const [errors, setErrors] = React.useState<FormErrors>({});
@@ -193,7 +202,13 @@ export function ApplicationPage({ dictionary, locale }: { dictionary: ApplyDicti
                         <TextField label={dictionary.form.fullName} value={form.fullName} error={errors.fullName} onChange={(value) => updateField("fullName", value)} autoComplete="name" />
                         <TextField label={dictionary.form.telegram} value={form.telegram} error={errors.telegram} onChange={(value) => updateField("telegram", value)} placeholder="@username" />
                         <TextField label={dictionary.form.email} value={form.email} error={errors.email} onChange={(value) => updateField("email", value)} inputMode="email" autoComplete="email" />
-                        <TextField label={dictionary.form.country} value={form.country} error={errors.country} onChange={(value) => updateField("country", value)} autoComplete="country-name" />
+                        <CountrySelect
+                          label={dictionary.form.country}
+                          value={form.country}
+                          error={errors.country}
+                          options={countryOptions}
+                          onSelect={(name) => updateField("country", name)}
+                        />
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <SelectField
@@ -372,6 +387,102 @@ function TextField({
         inputMode={inputMode}
         className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
       />
+      {error ? <span className="text-xs text-gold-100">{error}</span> : null}
+    </label>
+  );
+}
+
+function CountrySelect({
+  label,
+  value,
+  error,
+  options,
+  onSelect
+}: {
+  label: string;
+  value: string;
+  error?: string;
+  options: CountryOption[];
+  onSelect: (name: string) => void;
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState<string | null>(null);
+
+  // While the user is actively typing (query !== null) the input shows the
+  // filter text; otherwise it mirrors the currently selected country name.
+  const inputValue = query ?? value;
+
+  const filtered = React.useMemo(() => {
+    if (query === null || query.trim() === "") {
+      return options;
+    }
+    const needle = query.trim().toLowerCase();
+    return options.filter((option) => option.name.toLowerCase().includes(needle));
+  }, [options, query]);
+
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+        setQuery(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open]);
+
+  function handleSelect(name: string) {
+    onSelect(name);
+    setQuery(null);
+    setOpen(false);
+  }
+
+  return (
+    <label className="flex flex-col gap-2">
+      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
+      <div ref={containerRef} className="relative">
+        <input
+          aria-label={label}
+          value={inputValue}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setOpen(false);
+              setQuery(null);
+            }
+          }}
+          autoComplete="off"
+          className="h-[3.25rem] w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+        />
+        {open ? (
+          <div className="absolute z-20 mt-2 max-h-[15rem] w-full overflow-y-auto rounded-2xl border border-white/10 bg-graphite-900 shadow-premium">
+            {filtered.length > 0 ? (
+              filtered.map((option) => (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => handleSelect(option.name)}
+                  className="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-white/[0.06]"
+                >
+                  {option.name}
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-2 text-sm text-muted-foreground">—</div>
+            )}
+          </div>
+        ) : null}
+      </div>
       {error ? <span className="text-xs text-gold-100">{error}</span> : null}
     </label>
   );

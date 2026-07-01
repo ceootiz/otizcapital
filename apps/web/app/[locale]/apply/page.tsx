@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { isLocale, locales, type Locale } from "@otiz/lib";
+import { getCountryOptions, isLocale, locales, type Locale } from "@otiz/lib";
 import { ApplicationPage } from "@/components/apply/application-page";
 import { getApplyContent } from "@/lib/site-content";
 
@@ -34,5 +34,13 @@ export default async function ApplyPage({ params }: { params: { locale: Locale }
     notFound();
   }
 
-  return <ApplicationPage dictionary={await getApplyContent(params.locale)} locale={params.locale} />;
+  const countryOptions = getCountryOptions(params.locale);
+
+  return (
+    <ApplicationPage
+      dictionary={await getApplyContent(params.locale)}
+      locale={params.locale}
+      countryOptions={countryOptions}
+    />
+  );
 }
