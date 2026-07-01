@@ -16,3 +16,4 @@ export * from "./report-readiness";
 export * from "./risk-engine";
 export * from "./withdrawals";
 export * from "./checkpoint-health";
+export * from "./deposit-addresses";

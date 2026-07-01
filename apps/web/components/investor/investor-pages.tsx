@@ -2,12 +2,13 @@ import Link from "next/link";
 import { ArrowLeft, BarChart3, CalendarClock, CheckCircle2, FileText, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
+import type { SerializedDepositAddress } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdrawal } from "@/lib/investor-dashboard-data";
 import { ThemeToggle } from "@/components/home/theme-toggle";
-import { InvestorLocaleSwitcher, InvestorLogoutButton, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
+import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 
-type InvestorPageKey = "dashboard" | "allocations" | "reports" | "withdrawals" | "reinvest";
+type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "withdrawals" | "reinvest";
 
 type InvestorMonthlyReport = {
   id: string;
@@ -31,9 +32,10 @@ const INVESTOR_STRINGS = {
     backHome: "Back to homepage",
     brand: "OTIZ INVESTOR",
     investorLabel: "Investor",
-    nav: { dashboard: "Dashboard", allocations: "Allocations", reports: "Reports", withdrawals: "Withdrawals", reinvest: "Reinvest" },
+    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", withdrawals: "Withdrawals", reinvest: "Reinvest" },
     pages: {
       dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
+      deposit: { eyebrow: "Account funding", title: "Deposit", description: "Send funds to the address below and notify your manager." },
       allocations: { eyebrow: "Supply cycle visibility", title: "Allocations", description: "Allocation cards show commerce supply IDs, product focus, cycle status, and latest operational update." },
       reports: { eyebrow: "Monthly reporting", title: "Reports", description: "Monthly summaries keep the focus on allocations, performance, payouts, and operational notes." },
       withdrawals: { eyebrow: "Manager-reviewed requests", title: "Withdrawals", description: "Request review and cooldown visibility with manager-controlled payout scheduling." },
@@ -80,15 +82,22 @@ const INVESTOR_STRINGS = {
       whatNotChanges: "What it does not change", whatNotChangesVal: "It does not guarantee allocation availability, cycle timing, or commercial outcome.",
       reviewModel: "Review model", reviewModelVal: "Manager confirmation remains required before permanent instruction changes."
     },
+    deposit: {
+      instructionTitle: "How to deposit",
+      instruction: "Send funds to the address below. After the transfer, notify your manager.",
+      emptyTitle: "No deposit addresses available yet.",
+      emptyDesc: "Deposit addresses will appear here once a manager publishes them. Please contact your manager for funding instructions."
+    },
     common: { notScheduled: "Not scheduled", notAvailable: "Not available" }
   },
   ru: {
     backHome: "На главную",
     brand: "OTIZ INVESTOR",
     investorLabel: "Инвестор",
-    nav: { dashboard: "Панель", allocations: "Аллокации", reports: "Отчёты", withdrawals: "Выводы", reinvest: "Реинвест" },
+    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", withdrawals: "Выводы", reinvest: "Реинвест" },
     pages: {
       dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
+      deposit: { eyebrow: "Пополнение счёта", title: "Пополнение", description: "Отправьте средства на указанный адрес и уведомите менеджера." },
       allocations: { eyebrow: "Видимость циклов поставок", title: "Аллокации", description: "Карточки аллокаций показывают ID поставки, продукт, статус цикла и последнее операционное обновление." },
       reports: { eyebrow: "Ежемесячная отчётность", title: "Отчёты", description: "Ежемесячные сводки фокусируются на аллокациях, результатах, выплатах и операционных заметках." },
       withdrawals: { eyebrow: "Запросы с проверкой менеджером", title: "Выводы", description: "Запрос проверки и видимость периода удержания с планированием выплат под контролем менеджера." },
@@ -134,6 +143,12 @@ const INVESTOR_STRINGS = {
       whatChanges: "Что это меняет", whatChangesVal: "Подходящие выплаты могут быть направлены в будущие циклы закупок вместо постановки в очередь на вывод.",
       whatNotChanges: "Что это не меняет", whatNotChangesVal: "Это не гарантирует доступность аллокаций, сроки цикла или коммерческий результат.",
       reviewModel: "Модель проверки", reviewModelVal: "Подтверждение менеджера по-прежнему требуется до постоянного изменения инструкций."
+    },
+    deposit: {
+      instructionTitle: "Как пополнить",
+      instruction: "Отправьте средства на указанный адрес. После перевода уведомите менеджера.",
+      emptyTitle: "Пока нет доступных адресов для пополнения.",
+      emptyDesc: "Адреса для пополнения появятся здесь после того, как менеджер их опубликует. Пожалуйста, свяжитесь с менеджером для получения инструкций."
     },
     common: { notScheduled: "Не запланировано", notAvailable: "Недоступно" }
   }
@@ -296,6 +311,26 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+export function InvestorDepositPage({ locale, addresses }: { locale: Locale; addresses: SerializedDepositAddress[] }) {
+  const t = getInvestorStrings(locale);
+
+  return (
+    <div className="grid gap-6">
+      <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <CardHeader>
+          <CardTitle>{t.deposit.instructionTitle}</CardTitle>
+          <CardDescription>{t.deposit.instruction}</CardDescription>
+        </CardHeader>
+      </Card>
+      {addresses.length === 0 ? (
+        <InvestorEmptyState title={t.deposit.emptyTitle} description={t.deposit.emptyDesc} />
+      ) : (
+        <InvestorDepositAddresses locale={locale} addresses={addresses} />
+      )}
     </div>
   );
 }

@@ -3,7 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 import { createAdminFormatters, localeNames, localeShortNames, locales, type Locale } from "@otiz/lib";
+import type { SerializedDepositAddress } from "@otiz/database";
 import { Button } from "@otiz/ui";
 
 const STRINGS = {
@@ -279,5 +281,80 @@ export function InvestorWithdrawalForm({
         {isSubmitting ? t.submitting : t.submit}
       </Button>
     </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Deposit addresses (grouped by currency, with copy button + QR code)
+// ---------------------------------------------------------------------------
+
+const DEPOSIT_STRINGS = {
+  en: { network: "Network", copy: "Copy", copied: "Copied" },
+  ru: { network: "Сеть", copy: "Копировать", copied: "Скопировано" }
+} as const;
+
+type DepositStrings = typeof DEPOSIT_STRINGS.en;
+const getDepositStrings = (locale: Locale): DepositStrings =>
+  (DEPOSIT_STRINGS as unknown as Record<string, DepositStrings>)[locale] ?? DEPOSIT_STRINGS.en;
+
+export function InvestorDepositAddresses({ locale, addresses }: { locale: Locale; addresses: SerializedDepositAddress[] }) {
+  const t = getDepositStrings(locale);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+  async function copyAddress(id: string, address: string) {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedId(id);
+      window.setTimeout(() => {
+        setCopiedId((current) => (current === id ? null : current));
+      }, 2000);
+    } catch {
+      // Clipboard access can fail (e.g. insecure context); silently ignore.
+    }
+  }
+
+  const groups = React.useMemo(() => {
+    const map = new Map<string, SerializedDepositAddress[]>();
+    for (const address of addresses) {
+      const list = map.get(address.currency) ?? [];
+      list.push(address);
+      map.set(address.currency, list);
+    }
+    return Array.from(map.entries());
+  }, [addresses]);
+
+  return (
+    <div className="grid gap-6">
+      {groups.map(([currency, groupAddresses]) => (
+        <div key={currency} className="grid gap-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{currency}</p>
+          <div className="grid gap-4">
+            {groupAddresses.map((address) => (
+              <div key={address.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.network}</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">{address.network}</p>
+                    <p className="mt-4 break-all font-mono text-sm leading-6 text-foreground">{address.address}</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                      onClick={() => copyAddress(address.id, address.address)}
+                    >
+                      {copiedId === address.id ? t.copied : t.copy}
+                    </Button>
+                  </div>
+                  <div className="flex shrink-0 items-center justify-center rounded-[1rem] border border-white/10 bg-black/20 p-3">
+                    <QRCodeSVG value={address.address} size={140} bgColor="#00000000" fgColor="#f4e8cd" level="M" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

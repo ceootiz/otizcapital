@@ -23,6 +23,29 @@ model SiteContent {
   @@index([scope])
 }
 
+// Admin-managed crypto deposit addresses shown to investors on the deposit tab.
+model DepositAddress {
+  id        String   @id @default(cuid())
+  currency  String
+  network   String
+  address   String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([currency])
+  @@index([sortOrder])
+}
+
+// Singleton settings for the homepage yield calculator (annual rate %).
+model YieldSettings {
+  id                String   @id @default("default")
+  annualRatePercent Float    @default(50)
+  updatedAt         DateTime @updatedAt
+}
+
 model InvestorApplication {
   id                      String   @id @default(cuid())
   investorId              String?
