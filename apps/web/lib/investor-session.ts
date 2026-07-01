@@ -5,7 +5,8 @@ import { findInvestorById } from "@otiz/database";
 
 const INVESTOR_SESSION_COOKIE = "investor_session";
 const INVESTOR_ACTOR = "investor";
-const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
+// "Remember me": investor sessions persist for 30 days (admin sessions stay short).
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const DEV_SESSION_SECRET = "otiz-capital-dev-investor-session-secret";
 
 let warnedAboutDevSecret = false;
