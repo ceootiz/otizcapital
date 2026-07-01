@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, locales, type Locale } from "@otiz/lib";
-import { getYieldSettings } from "@otiz/database";
 import { HomePage } from "@/components/home/home-page";
 import { getHomeContent } from "@/lib/site-content";
 
@@ -26,6 +25,21 @@ export async function generateMetadata({ params }: { params: { locale: string } 
     alternates: {
       canonical: `/${params.locale}`,
       languages: Object.fromEntries(locales.map((locale) => [locale, `/${locale}`]))
+    },
+    openGraph: {
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      type: "website",
+      url: `/${params.locale}`,
+      images: ["/og.png"],
+      siteName: "OTIZ CAPITAL",
+      locale: params.locale
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      images: ["/og.png"]
     }
   };
 }
@@ -35,7 +49,7 @@ export default async function LocaleHomePage({ params }: { params: { locale: Loc
     notFound();
   }
 
-  const [dictionary, settings] = await Promise.all([getHomeContent(params.locale), getYieldSettings()]);
+  const dictionary = await getHomeContent(params.locale);
 
-  return <HomePage dictionary={dictionary} locale={params.locale} annualRate={settings.annualRatePercent} />;
+  return <HomePage dictionary={dictionary} locale={params.locale} />;
 }

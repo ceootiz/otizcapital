@@ -133,7 +133,7 @@ export function ReinvestPreferenceControl({ locale, initialEnabled }: { locale: 
   const [enabled, setEnabled] = React.useState(initialEnabled);
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.currentPreference}</p>
       <p className="mt-2 text-2xl font-semibold text-foreground">{enabled ? t.reinvestEnabled : t.reinvestDisabled}</p>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.reinvestNote}</p>
@@ -175,7 +175,7 @@ export function InvestorWithdrawalForm({
 
   if (locked) {
     return (
-      <div className="rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-5">
+      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-5">
         <p className="font-semibold text-gold-100">{t.lockTitle}</p>
         <p className="mt-2 text-sm leading-6 text-gold-100/90">
           {unlockDate ? t.lockBodyWithDate.replace("{date}", fmt.date(unlockDate)) : t.lockBodyNoDate}
@@ -186,7 +186,7 @@ export function InvestorWithdrawalForm({
 
   if (submitted) {
     return (
-      <div className="rounded-[1.5rem] border border-emerald-400/25 bg-emerald-400/10 p-5">
+      <div className="rounded-[1.35rem] border border-emerald-400/25 bg-emerald-400/10 p-5">
         <p className="font-semibold text-emerald-200">{t.successTitle}</p>
         <p className="mt-2 text-sm leading-6 text-emerald-100/90">{t.successBody}</p>
         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => { setSubmitted(false); setAmount(""); setAddress(""); setNote(""); }}>
@@ -241,7 +241,7 @@ export function InvestorWithdrawalForm({
     "h-[3rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
 
   return (
-    <form className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5" onSubmit={onSubmit} noValidate>
+    <form className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5" onSubmit={onSubmit} noValidate>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.requestTitle}</p>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.requestSubtitle}</p>
       <p className="mt-3 text-sm text-foreground">
@@ -330,7 +330,7 @@ export function InvestorDepositAddresses({ locale, addresses }: { locale: Locale
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{currency}</p>
           <div className="grid gap-4">
             {groupAddresses.map((address) => (
-              <div key={address.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+              <div key={address.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.network}</p>

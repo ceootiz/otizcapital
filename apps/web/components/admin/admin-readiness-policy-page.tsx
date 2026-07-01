@@ -245,7 +245,7 @@ function formatMetadataPreview(metadata: Record<string, unknown>) {
 
 function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="flex items-start justify-between gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+    <label className="flex items-start justify-between gap-4 rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
       <span>
         <span className="block text-sm font-semibold text-foreground">{label}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
@@ -254,7 +254,7 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 size-5 accent-[#d6b56d]"
+        className="mt-1 size-5 accent-gold-300"
       />
     </label>
   );
@@ -397,9 +397,9 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(214,181,109,0.12),transparent_28%),linear-gradient(135deg,#050505,#151515_48%,#0d0d0d)] px-5 py-8 text-foreground md:px-8">
+    <main className="min-h-screen bg-background px-5 py-8 text-foreground micro-noise md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="flex flex-col gap-5 rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur md:flex-row md:items-end md:justify-between">
+        <section className="flex flex-col gap-5 rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.ADMIN_SETTINGS}</p>
             <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.H1_TITLE}</h1>
@@ -429,15 +429,15 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                 </div>
                 <Separator />
                 <div className="grid gap-3">
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.REQUIRED_PROOFS}</p>
                     <p className="mt-2 text-sm text-foreground">{currentActivePolicy.requiredProofCategories.join(", ") || t.NONE}</p>
                   </div>
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.WARNING_PROOFS}</p>
                     <p className="mt-2 text-sm text-foreground">{currentActivePolicy.warningProofCategories.join(", ") || t.NONE}</p>
                   </div>
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.COMPLETENESS_THRESHOLD}</p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">{currentActivePolicy.minimumProofCompletenessScore}%</p>
                   </div>
@@ -452,11 +452,11 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
               </CardHeader>
               <CardContent className="space-y-3">
                 {policies.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
+                  <div className="rounded-[1.35rem] border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
                     {t.NO_DB_POLICIES}
                   </div>
                 ) : policies.map((policy) => (
-                  <div key={policy.id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                  <div key={policy.id} className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{policy.name}</p>
@@ -505,19 +505,19 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                   </label>
                 </div>
 
-                {auditError ? <div className="rounded-3xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">{auditError}</div> : null}
+                {auditError ? <div className="rounded-[1.35rem] border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">{auditError}</div> : null}
                 {isAuditLoading ? (
                   <div className="space-y-3">
-                    {[0, 1, 2].map((item) => <div key={item} className="h-20 animate-pulse rounded-3xl border border-white/10 bg-white/[0.04]" />)}
+                    {[0, 1, 2].map((item) => <div key={item} className="h-20 animate-pulse rounded-[1.35rem] border border-white/10 bg-white/[0.04]" />)}
                   </div>
                 ) : auditEvents.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
+                  <div className="rounded-[1.35rem] border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
                     {t.NO_AUDIT_EVENTS}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {auditEvents.map((event) => (
-                      <div key={event.id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                      <div key={event.id} className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-foreground">{event.summary}</p>
@@ -545,8 +545,8 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              {notice ? <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div> : null}
-              {error ? <div className="rounded-3xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">{error}</div> : null}
+              {notice ? <div className="rounded-[1.35rem] border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100">{notice}</div> : null}
+              {error ? <div className="rounded-[1.35rem] border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">{error}</div> : null}
 
               <label className="block space-y-2 text-sm">
                 <span className="font-semibold text-foreground">{t.LABEL_POLICY_NAME}</span>

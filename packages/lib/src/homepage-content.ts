@@ -55,6 +55,7 @@ export type HomeDictionary = {
     faq: string;
     reports: string;
     cta: string;
+    calculator: string;
   };
   hero: {
     headline: string;
@@ -143,6 +144,7 @@ export type HomeDictionary = {
   footer: {
     description: string;
     legal: string;
+    about: string;
     reports: string;
     transparency: string;
     contact: string;
@@ -164,7 +166,8 @@ const english: HomeDictionary = {
     process: "Process",
     faq: "FAQ",
     reports: "Reports",
-    cta: "Become Investor"
+    cta: "Become Investor",
+    calculator: "Calculator"
   },
   hero: {
     headline: "Invest in Real Electronics Commerce",
@@ -288,6 +291,7 @@ const english: HomeDictionary = {
   footer: {
     description: "OTIZ CAPITAL is a premium commerce capital platform for electronics allocations, logistics, marketplace reporting, and distribution visibility.",
     legal: "Legal",
+    about: "About",
     reports: "Reports",
     transparency: "Transparency",
     contact: "Contact",
@@ -326,7 +330,7 @@ const spanish: HomeDictionary = {
     title: "Asignaciones de comercio real de electrónica",
     description: "Capital para comercio real de electrónica con asignaciones, logística, informes y transparencia operativa."
   },
-  nav: { operations: "Operaciones", transparency: "Transparencia", process: "Proceso", faq: "FAQ", reports: "Informes", cta: "Ser inversor" },
+  nav: { operations: "Operaciones", transparency: "Transparencia", process: "Proceso", faq: "FAQ", reports: "Informes", cta: "Ser inversor", calculator: "Calculadora" },
   hero: {
     headline: "Invierte en comercio real de electrónica",
     subheadline: "OTIZ CAPITAL asigna capital a inventario tangible, ventas en marketplaces, logística e informes operativos claros.",
@@ -353,7 +357,7 @@ const spanish: HomeDictionary = {
   finalCta: { title: "Entra en un modelo más calmado de capital comercial.", subtitle: "Solicita acceso para revisar asignaciones, informes y documentación operativa.", cta: "Ser inversor" },
   footer: {
     description: "OTIZ CAPITAL es una plataforma premium para asignaciones de electrónica, logística, informes marketplace y visibilidad de distribución.",
-    legal: "Legal", reports: "Informes", transparency: "Transparencia", contact: "Contacto", creators: "Creadores", social: "Social", language: "Idioma",
+    legal: "Legal", about: "Sobre nosotros", reports: "Informes", transparency: "Transparencia", contact: "Contacto", creators: "Creadores", social: "Social", language: "Idioma",
     disclaimer: "Las ofertas privadas pueden depender de elegibilidad, jurisdicción y términos. No se garantiza retorno."
   }
 };
@@ -361,7 +365,7 @@ const spanish: HomeDictionary = {
 const german: HomeDictionary = {
   ...english,
   meta: { title: "Reale Elektronik-Commerce-Allokationen", description: "Kapital fuer realen Elektronikhandel mit Allokationen, Logistik, Reporting und operativer Transparenz." },
-  nav: { operations: "Operationen", transparency: "Transparenz", process: "Prozess", faq: "FAQ", reports: "Reports", cta: "Investor werden" },
+  nav: { operations: "Operationen", transparency: "Transparenz", process: "Prozess", faq: "FAQ", reports: "Reports", cta: "Investor werden", calculator: "Rechner" },
   hero: {
     headline: "Investieren in realen Elektronik-Commerce",
     subheadline: "OTIZ CAPITAL allokiert Kapital in greifbare Elektronikbestände, Marktplatzverkäufe, Logistik und klares operatives Reporting.",
@@ -378,13 +382,13 @@ const german: HomeDictionary = {
     ]
   },
   finalCta: { title: "Ein ruhigeres Modell fuer Commerce-Kapital.", subtitle: "Beantragen Sie Zugang zu Allokationen, Reporting-Standards und operativer Dokumentation.", cta: "Investor werden" },
-  footer: { description: "OTIZ CAPITAL ist eine Premium-Plattform fuer Elektronik-Allokationen, Logistik, Marktplatzreporting und Ausschüttungstransparenz.", legal: "Legal", reports: "Reports", transparency: "Transparenz", contact: "Kontakt", creators: "Creator Partnerships", social: "Social", language: "Sprache", disclaimer: "Private Angebote koennen Eignung, Jurisdiktion und Vertragsbedingungen unterliegen. Keine Rendite ist garantiert." }
+  footer: { description: "OTIZ CAPITAL ist eine Premium-Plattform fuer Elektronik-Allokationen, Logistik, Marktplatzreporting und Ausschüttungstransparenz.", legal: "Legal", about: "Über uns", reports: "Reports", transparency: "Transparenz", contact: "Kontakt", creators: "Creator Partnerships", social: "Social", language: "Sprache", disclaimer: "Private Angebote koennen Eignung, Jurisdiktion und Vertragsbedingungen unterliegen. Keine Rendite ist garantiert." }
 };
 
 const russian: HomeDictionary = {
   ...english,
   meta: { title: "Реальные аллокации в электронной коммерции", description: "Капитал для реальной торговли электроникой: аллокации, логистика, отчётность и операционная прозрачность." },
-  nav: { operations: "Операции", transparency: "Прозрачность", process: "Процесс", faq: "FAQ", reports: "Отчёты", cta: "Стать инвестором" },
+  nav: { operations: "Операции", transparency: "Прозрачность", process: "Процесс", faq: "FAQ", reports: "Отчёты", cta: "Стать инвестором", calculator: "Калькулятор" },
   hero: { headline: "Инвестируйте в реальную торговлю электроникой", subheadline: "OTIZ CAPITAL направляет капитал в материальный товарный запас, продажи на маркетплейсах, логистику и понятную операционную отчётность.", cta: "Стать инвестором", secondary: "Модель прозрачности", dashboardTitle: "Панель коммерческих аллокаций", dashboardSubtitle: "Операционный обзор, не спекуляция.", activeAllocations: "Активный капитал", commerceVolume: "Объём торговли", deliveredDevices: "Доставленные устройства", monthlyReporting: "Ежемесячный отчёт" },
   trust: { title: "Институциональная ясность в каждом торговом цикле.", subtitle: "Капитал, товары, продажи, доставка и отчётность связаны в единой операционной модели.", items: [
     { label: "Объём торговли", value: "$16.2M", detail: "Продажи на маркетплейсах" }, { label: "Активный капитал", value: "$12.8M", detail: "В текущих циклах" }, { label: "Завершённые доставки", value: "48.6K", detail: "Сериализованные устройства" }, { label: "Активные аллокации", value: "36", detail: "Циклы поставок" }, { label: "Прозрачность", value: "Ежемесячно", detail: "Отчёты и подтверждения" }
@@ -467,7 +471,7 @@ const russian: HomeDictionary = {
     ]
   },
   finalCta: { title: "Войдите в более спокойную модель коммерческого капитала.", subtitle: "Подайте заявку, чтобы изучить доступ, стандарты отчётности и операционную документацию OTIZ CAPITAL.", cta: "Стать инвестором" },
-  footer: { description: "OTIZ CAPITAL - премиальная платформа для аллокаций в электронике, логистики, отчётов маркетплейсов и видимости распределений.", legal: "Правовая информация", reports: "Отчёты", transparency: "Прозрачность", contact: "Контакты", creators: "Партнёрства с авторами", social: "Соцсети", language: "Язык", disclaimer: "Частные предложения могут зависеть от пригодности, юрисдикции и условий соглашения. Доходность не гарантируется." },
+  footer: { description: "OTIZ CAPITAL - премиальная платформа для аллокаций в электронике, логистики, отчётов маркетплейсов и видимости распределений.", legal: "Правовая информация", about: "О компании", reports: "Отчёты", transparency: "Прозрачность", contact: "Контакты", creators: "Партнёрства с авторами", social: "Соцсети", language: "Язык", disclaimer: "Частные предложения могут зависеть от пригодности, юрисдикции и условий соглашения. Доходность не гарантируется." },
   dashboard: {
     liveOps: "Онлайн-операции",
     trendLabel: "Тренд капитала / объёма",
@@ -495,13 +499,13 @@ const russian: HomeDictionary = {
 const chinese: HomeDictionary = {
   ...english,
   meta: { title: "真实电子商务配置", description: "围绕真实电子产品、市场销售、物流、报告和配置透明度的资本平台。" },
-  nav: { operations: "运营", transparency: "透明度", process: "流程", faq: "FAQ", reports: "报告", cta: "成为投资人" },
+  nav: { operations: "运营", transparency: "透明度", process: "流程", faq: "FAQ", reports: "报告", cta: "成为投资人", calculator: "计算器" },
   hero: { headline: "投资真实电子商务", subheadline: "OTIZ CAPITAL 将资本配置到真实电子库存、市场销售周期、物流和清晰的运营报告。", cta: "成为投资人", secondary: "查看透明度模型", dashboardTitle: "商务配置台", dashboardSubtitle: "运营视图，而非市场投机。", activeAllocations: "活跃资本", commerceVolume: "商务规模", deliveredDevices: "已交付设备", monthlyReporting: "月度报告" },
   trust: { title: "每个商务周期都有机构级清晰度。", subtitle: "资本、产品、销售、交付和报告在同一运营模型中连接。", items: [
     { label: "商务规模", value: "$16.2M", detail: "已跟踪市场销售" }, { label: "活跃资本", value: "$12.8M", detail: "配置于实时周期" }, { label: "完成交付", value: "48.6K", detail: "序列化设备流转" }, { label: "活跃配置", value: "36", detail: "当前供应周期" }, { label: "报告透明度", value: "Monthly", detail: "周期报表与证明" }
   ] },
   finalCta: { title: "进入更平静的商务资本模型。", subtitle: "申请查看 OTIZ CAPITAL 配置访问、报告标准和运营文件。", cta: "成为投资人" },
-  footer: { description: "OTIZ CAPITAL 是围绕电子产品配置、物流、市场报告和分配可见性的高端商务资本平台。", legal: "法律", reports: "报告", transparency: "透明度", contact: "联系", creators: "创作者合作", social: "社交", language: "语言", disclaimer: "私募机会可能受资格、司法辖区和协议条款限制。不保证收益。" }
+  footer: { description: "OTIZ CAPITAL 是围绕电子产品配置、物流、市场报告和分配可见性的高端商务资本平台。", legal: "法律", about: "关于我们", reports: "报告", transparency: "透明度", contact: "联系", creators: "创作者合作", social: "社交", language: "语言", disclaimer: "私募机会可能受资格、司法辖区和协议条款限制。不保证收益。" }
 };
 
 export const dictionaries: Record<Locale, HomeDictionary> = {

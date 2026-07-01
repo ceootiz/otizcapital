@@ -25,6 +25,21 @@ export async function generateMetadata({ params }: { params: { locale: string } 
     alternates: {
       canonical: `/${params.locale}/apply`,
       languages: Object.fromEntries(locales.map((locale) => [locale, `/${locale}/apply`]))
+    },
+    openGraph: {
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      type: "website",
+      url: `/${params.locale}/apply`,
+      images: ["/og.png"],
+      siteName: "OTIZ CAPITAL",
+      locale: params.locale
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      images: ["/og.png"]
     }
   };
 }

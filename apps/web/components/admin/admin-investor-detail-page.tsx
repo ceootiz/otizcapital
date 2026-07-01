@@ -499,7 +499,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
             <AdminNavigation locale={locale} activeSection="investors" />
           </div>
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p>
@@ -525,7 +525,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
           <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
             <div className="grid gap-6">
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.EDIT_INVESTOR_TITLE}</CardTitle>
                   <CardDescription>{t.EDIT_INVESTOR_DESC}</CardDescription>
@@ -554,28 +554,28 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.SOURCE_APPLICATION_TITLE}</CardTitle>
                   <CardDescription>{t.SOURCE_APPLICATION_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {investor.sourceApplication ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                       <p className="font-semibold text-foreground">{investor.sourceApplication.fullName}</p>
                       <p className="mt-2 text-sm text-muted-foreground">{investor.sourceApplication.email || t.NO_EMAIL} · {enumLabel("applicationStatus", investor.sourceApplication.status, locale)}</p>
                       <p className="mt-2 text-sm text-muted-foreground">{t.PLANNED_ALLOCATION} {formatMoney(investor.sourceApplication.plannedAllocationAmount)}</p>
                       <Link href={`/${locale}/admin/applications?search=${investor.sourceApplication.id}`} className="mt-3 inline-flex text-sm font-semibold text-gold-100">{t.OPEN_SOURCE_APPLICATION}</Link>
                     </div>
                   ) : (
-                    <p className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{t.NO_SOURCE_APPLICATION}</p>
+                    <p className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{t.NO_SOURCE_APPLICATION}</p>
                   )}
                 </CardContent>
               </Card>
             </div>
 
             <div className="grid gap-6">
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.CREATE_ALLOCATION_TITLE}</CardTitle>
                   <CardDescription>{t.CREATE_ALLOCATION_DESC}</CardDescription>
@@ -607,21 +607,21 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.ALLOCATIONS_TITLE}</CardTitle>
                   <CardDescription>{t.ALLOCATIONS_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   {investor.allocations.length === 0 ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6 text-center">
+                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center">
                       <ShieldCheck className="mx-auto size-8 text-gold-100" />
                       <p className="mt-4 font-semibold text-foreground">{t.NO_ALLOCATIONS_TITLE}</p>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_ALLOCATIONS_DESC}</p>
                     </div>
                   ) : (
                     investor.allocations.map((allocation) => (
-                      <div key={allocation.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <div key={allocation.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                         <Link href={`/${locale}/admin/allocations/${allocation.id}`} className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
@@ -653,7 +653,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.REPORTS_TITLE}</CardTitle>
                   <CardDescription>{t.REPORTS_DESC}</CardDescription>
@@ -680,13 +680,13 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                   </div>
                   <Separator />
                   {investor.monthlyReports.length === 0 ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6 text-center">
+                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center">
                       <p className="font-semibold text-foreground">{t.NO_REPORTS_TITLE}</p>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_REPORTS_DESC}</p>
                     </div>
                   ) : (
                     investor.monthlyReports.map((report) => (
-                      <div key={report.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <div key={report.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{report.month}</p>
@@ -722,7 +722,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="rounded-[1.5rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
@@ -751,7 +751,7 @@ function CrmInput({ label, value, onChange, placeholder, type = "text" }: { labe
 
 function AdminNotice({ tone, message }: { tone: "success" | "error"; message: string }) {
   return (
-    <div className={`mb-6 rounded-[1.5rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>
+    <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>
       {message}
     </div>
   );

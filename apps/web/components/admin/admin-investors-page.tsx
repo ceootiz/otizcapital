@@ -88,7 +88,7 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
             <AdminNavigation locale={locale} activeSection="investors" className="flex flex-wrap items-center gap-2" />
           </div>
 
-          <Card className="rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardHeader className="pb-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -99,7 +99,7 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-[1.5rem] border border-white/10">
+              <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
                 <div className="hidden grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
                   <span>{t.COL_NAME}</span>
                   <span>{t.COL_CONTACT}</span>

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, BellRing, CheckCircle2, Clock3, Download, FileText, LogOut, Save, Search, ShieldCheck, Sparkles, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, BellRing, CheckCircle2, Clock3, Download, FileText, LogOut, Save, Search, Sparkles, UserPlus, Users } from "lucide-react";
 import {
   APPLICATION_SLA_FILTERS,
   DEFAULT_CRM_CONFIG,
@@ -1196,16 +1196,6 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          <div className="mb-8 rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-5 text-gold-100">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-0.5 size-5 shrink-0" />
-              <div>
-                <p className="font-semibold">{t.adminAccessProtected}</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{t.adminAccessDesc}</p>
-              </div>
-            </div>
-          </div>
-
           <CrmRulesCard config={crmConfig} locale={locale} />
 
           <NotificationProcessorPanel
@@ -1232,7 +1222,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(25rem,0.84fr)]">
-            <Card className="overflow-hidden rounded-[2rem] bg-graphite-900/[0.78]">
+            <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
@@ -1273,7 +1263,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                     );
                   })}
                 </div>
-                <div className="mb-4 flex flex-wrap gap-2 rounded-[1.5rem] border border-white/10 bg-black/15 p-3">
+                <div className="mb-4 flex flex-wrap gap-2 rounded-[1.35rem] border border-white/10 bg-black/15 p-3">
                   {SLA_QUICK_FILTER_KEYS.map((filterKey) => {
                     const isActive = slaFilter === filterKey;
                     const description = filterKey === "first-contact-overdue" ? t.slaDescFirstContact : filterKey === "due-soon" ? t.slaDescDueSoon : t.slaDescHighValue;
@@ -1350,7 +1340,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                 {notice ? <AdminNotice tone="success" message={notice} /> : null}
                 {error ? <AdminNotice tone="error" message={error} /> : null}
 
-                <div className="overflow-hidden rounded-[1.5rem] border border-white/10">
+                <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
                   <div className="hidden grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
                     <span>{t.colLead}</span>
                     <span>{t.colPriority}</span>
@@ -1399,7 +1389,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   )}
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-5 flex flex-col gap-3 rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                   <span>{t.pageLabel} {pageInfo.page} {t.ofLabel} {pageInfo.totalPages} · {applications.length} {t.shownLabel} · {pageInfo.total} {t.totalSuffix}</span>
                   <div className="flex gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasPreviousPage} onClick={() => setPage((current) => Math.max(1, current - 1))}>{t.previous}</Button>
@@ -1433,7 +1423,7 @@ function CrmRulesCard({ config, locale }: { config: CrmConfig; locale: Locale })
   const f = createAdminFormatters(locale);
 
   return (
-    <Card className="mb-6 rounded-[1.5rem] border border-white/10 bg-graphite-900/[0.58]">
+    <Card className="mb-6 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.58]">
       <CardContent className="grid gap-4 px-5 py-4 sm:grid-cols-2 xl:grid-cols-4">
         <RuleMetric label={t.ruleFirstContactSla} value={formatHours(config.firstContactSlaHours, f, t)} />
         <RuleMetric label={t.ruleDueSoonWindow} value={formatHours(config.nextActionDueSoonHours, f, t)} />
@@ -1476,7 +1466,7 @@ function NotificationProcessorPanel({
   const isDisabled = isLoading || isProcessing || pendingCount === 0;
 
   return (
-    <Card className="mb-6 rounded-[1.5rem] border border-white/10 bg-graphite-900/[0.64]">
+    <Card className="mb-6 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.64]">
       <CardContent className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">
@@ -1511,7 +1501,7 @@ function NotificationProcessorPanel({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="rounded-[1.2rem] border border-white/10 bg-graphite-900/[0.64]">
+    <Card className="rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.64]">
       <CardContent className="px-5 py-4">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
@@ -1608,7 +1598,7 @@ function PriorityReasonsPanel({ reasons, locale }: { reasons: ApplicationPriorit
   const t = getStrings(locale);
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.whyPrioritized}</p>
       {reasons.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2">
@@ -1631,7 +1621,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
 
   if (application.investor) {
     return (
-      <div className="rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-4">
+      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-4">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/25 bg-black/20 text-gold-100">
             <Users className="size-4" />
@@ -1651,7 +1641,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
 
   if (application.status !== "APPROVED") {
     return (
-      <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+      <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.approveBeforeCreate}</p>
       </div>
@@ -1659,7 +1649,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
   }
 
   return (
-    <div className="rounded-[1.5rem] border border-gold-200/25 bg-gold-200/10 p-4">
+    <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
@@ -1679,7 +1669,7 @@ function SlaIndicatorPanel({ state, locale }: { state: ApplicationSlaState; loca
   const t = getStrings(locale);
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.slaIndicators}</p>
       {state.badges.length > 0 ? (
         <SlaBadges state={state} locale={locale} />
@@ -1751,7 +1741,7 @@ function ApplicationDetail({
 
   if (!application) {
     return (
-      <Card className="rounded-[2rem] bg-white/[0.035]">
+      <Card className="rounded-[1.35rem] bg-white/[0.035]">
         <CardContent className="flex min-h-96 flex-col items-center justify-center p-8 text-center">
           <FileText className="size-10 text-gold-100" />
           <p className="mt-5 font-semibold text-foreground">{t.selectApplication}</p>
@@ -1818,7 +1808,7 @@ function ApplicationDetail({
   }
 
   return (
-    <Card className="rounded-[2rem] bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
+    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -1838,7 +1828,7 @@ function ApplicationDetail({
 
         <InvestorLinkPanel application={application} isCreating={isCreatingInvestor} onCreate={createInvestorAccount} locale={locale} />
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "CONTACTED"} onClick={() => runQuickAction({ status: "CONTACTED" }, t.markedContacted)}>{t.markContacted}</Button>

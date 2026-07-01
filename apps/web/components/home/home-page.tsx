@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -19,7 +19,6 @@ import {
   X
 } from "lucide-react";
 import {
-  createAdminFormatters,
   localeNames,
   localeShortNames,
   locales,
@@ -47,15 +46,7 @@ import { ThemeToggle } from "./theme-toggle";
 const flowIcons = [CircleDollarSign, BarChart3, Factory, Globe2, FileCheck2];
 const proofIcons = [Truck, Factory, BarChart3, ShieldCheck, CheckCircle2, PackageCheck];
 
-export function HomePage({
-  dictionary,
-  locale,
-  annualRate
-}: {
-  dictionary: HomeDictionary;
-  locale: Locale;
-  annualRate: number;
-}) {
+export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   return (
     <main className="relative overflow-hidden micro-noise">
       <Header dictionary={dictionary} activeLocale={locale} />
@@ -68,7 +59,6 @@ export function HomePage({
       <InvestorProcess dictionary={dictionary} />
       <Testimonials dictionary={dictionary} />
       <FAQ dictionary={dictionary} />
-      <YieldCalculator locale={locale} annualRate={annualRate} />
       <FinalCTA dictionary={dictionary} locale={locale} />
       <Footer dictionary={dictionary} activeLocale={locale} />
     </main>
@@ -81,7 +71,8 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
     { label: dictionary.nav.operations, href: "#operations" },
     { label: dictionary.nav.transparency, href: "#transparency" },
     { label: dictionary.nav.process, href: "#process" },
-    { label: dictionary.nav.faq, href: "#faq" }
+    { label: dictionary.nav.faq, href: "#faq" },
+    { label: dictionary.nav.calculator, href: `/${activeLocale}/calculator` }
   ];
 
   return (
@@ -146,7 +137,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 h-full w-full bg-graphite-950/80 backdrop-blur"
           />
-          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto rounded-l-[1.5rem] border-l border-white/10 bg-graphite-900/[0.96] p-6 shadow-premium backdrop-blur-2xl">
+          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto rounded-l-[1.35rem] border-l border-white/10 bg-graphite-900/[0.96] p-6 shadow-premium backdrop-blur-2xl">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold tracking-[0.24em] text-foreground">OTIZ CAPITAL</span>
               <button
@@ -298,7 +289,7 @@ function HowItWorks({ dictionary }: { dictionary: HomeDictionary }) {
           const Icon = flowIcons[index] ?? CheckCircle2;
           return (
             <Reveal key={step.title} delay={index * 0.06}>
-              <div className="relative flex h-full flex-col gap-5 rounded-[1.75rem] border border-white/10 bg-graphite-900/[0.62] p-6 shadow-premium">
+              <div className="relative flex h-full flex-col gap-5 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.62] p-6 shadow-premium">
                 <div className="flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100 [&_svg]:size-5">
                   <Icon />
                 </div>
@@ -321,13 +312,13 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
     <SectionShell id="transparency" title={dictionary.transparency.title} subtitle={dictionary.transparency.subtitle}>
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <Reveal>
-          <Card className="sticky top-28 overflow-hidden rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="sticky top-28 overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardHeader>
               <CardTitle>{dictionary.transparency.request}</CardTitle>
               <CardDescription>{dictionary.transparency.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+              <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
                 <div className="mb-5 flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{dictionary.transparency.proofChain}</span>
                   <Badge variant="secondary">{dictionary.transparency.operational}</Badge>
@@ -386,7 +377,7 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
     <SectionShell id="operations" title={dictionary.live.title} subtitle={dictionary.live.subtitle} className="bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,95,0.09),transparent_34rem)]">
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Reveal>
-          <Card className="overflow-hidden rounded-[2rem]">
+          <Card className="overflow-hidden rounded-[1.35rem]">
             <CardHeader className="flex-row items-start justify-between gap-6">
               <div>
                 <CardTitle>{dictionary.live.currentAllocations}</CardTitle>
@@ -395,7 +386,7 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
               <Badge>{dictionary.live.activeCount}</Badge>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-[1.5rem] border border-white/10">
+              <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
                 {dictionary.commerce.allocations.map((row) => (
                   <div key={row.id} className="grid gap-4 border-b border-white/10 bg-white/[0.025] p-5 last:border-b-0 md:grid-cols-[1fr_0.75fr_0.5fr] md:items-center">
                     <div>
@@ -417,7 +408,7 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
           </Card>
         </Reveal>
         <Reveal delay={0.08}>
-          <Card className="h-full rounded-[2rem]">
+          <Card className="h-full rounded-[1.35rem]">
             <CardHeader>
               <CardTitle>{dictionary.live.recentOperations}</CardTitle>
               <CardDescription>{dictionary.live.eventsSubtitle}</CardDescription>
@@ -451,8 +442,8 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
     <SectionShell title={dictionary.realCommerce.title} subtitle={dictionary.realCommerce.subtitle}>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Reveal>
-          <div className="relative min-h-[34rem] overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-8 shadow-premium">
-            <div className="absolute inset-8 rounded-[2rem] border border-gold-200/10" />
+          <div className="relative min-h-[34rem] overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-8 shadow-premium">
+            <div className="absolute inset-8 rounded-[1.35rem] border border-gold-200/10" />
             <div className="absolute -right-20 top-12 size-72 rounded-full bg-gold-300/15 blur-3xl" />
             <div className="relative z-10 flex h-full flex-col justify-between gap-12">
               <div>
@@ -491,11 +482,11 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
 function InvestorProcess({ dictionary }: { dictionary: HomeDictionary }) {
   return (
     <SectionShell title={dictionary.investor.title} subtitle={dictionary.investor.subtitle} className="bg-white/[0.015]">
-      <div className="mx-auto max-w-6xl rounded-[2.25rem] border border-white/10 bg-graphite-900/[0.62] p-4 shadow-premium sm:p-6">
+      <div className="mx-auto max-w-6xl rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.62] p-4 shadow-premium sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {dictionary.investor.steps.map((step, index) => (
             <Reveal key={step} delay={index * 0.035}>
-              <div className="group min-h-36 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-5 transition-colors hover:bg-white/[0.06]">
+              <div className="group min-h-36 rounded-[1.35rem] border border-white/10 bg-white/[0.035] p-5 transition-colors hover:bg-white/[0.06]">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{String(index + 1).padStart(2, "0")}</span>
                   <span className="h-px flex-1 bg-white/10 transition-colors group-hover:bg-gold-200/30" />
@@ -537,7 +528,7 @@ function FAQ({ dictionary }: { dictionary: HomeDictionary }) {
   return (
     <SectionShell id="faq" title={dictionary.faq.title} subtitle={dictionary.faq.subtitle} className="bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_34rem)]">
       <Reveal>
-        <Card className="mx-auto max-w-4xl rounded-[2rem] bg-graphite-900/[0.74]">
+        <Card className="mx-auto max-w-4xl rounded-[1.35rem] bg-graphite-900/[0.74]">
           <CardContent className="p-4 sm:p-8">
             <Accordion type="single" collapsible className="w-full">
               {dictionary.faq.items.map((item, index) => (
@@ -554,169 +545,12 @@ function FAQ({ dictionary }: { dictionary: HomeDictionary }) {
   );
 }
 
-const YIELD_STRINGS = {
-  en: {
-    heading: "Yield calculator",
-    subtitle: "Model your monthly-compounding projection at the current allocation rate.",
-    amount: "Investment amount (USD)",
-    months: "Term (months)",
-    monthUnit: "mo",
-    colMonth: "Month",
-    colStarting: "Starting balance",
-    colProfit: "Profit",
-    colCumulative: "Cumulative profit",
-    colEnding: "Ending balance",
-    totalProfit: "Total profit",
-    totalReturn: "Total return",
-    rateNote: "Effective annual rate: {rate}"
-  },
-  ru: {
-    heading: "Калькулятор доходности",
-    subtitle: "Смоделируйте прогноз с ежемесячной капитализацией по текущей ставке аллокации.",
-    amount: "Сумма инвестиций (USD)",
-    months: "Срок (месяцев)",
-    monthUnit: "мес",
-    colMonth: "Месяц",
-    colStarting: "Начальный баланс",
-    colProfit: "Прибыль",
-    colCumulative: "Накопленная прибыль",
-    colEnding: "Итоговый баланс",
-    totalProfit: "Итоговая прибыль",
-    totalReturn: "Итоговая доходность",
-    rateNote: "Эффективная годовая ставка: {rate}"
-  }
-};
-
-type YieldStrings = typeof YIELD_STRINGS.en;
-const getYieldStrings = (locale: Locale): YieldStrings =>
-  (YIELD_STRINGS as unknown as Record<string, YieldStrings>)[locale] ?? YIELD_STRINGS.en;
-
-function YieldCalculator({ locale, annualRate }: { locale: Locale; annualRate: number }) {
-  const t = getYieldStrings(locale);
-  const fmt = useMemo(() => createAdminFormatters(locale), [locale]);
-  const [amount, setAmount] = useState(10000);
-  const [months, setMonths] = useState(12);
-
-  const { rows, totalProfit, totalReturnPct } = useMemo(() => {
-    const principal = Number.isFinite(amount) && amount > 0 ? amount : 0;
-    const monthlyRate = annualRate / 100 / 12;
-    const built: { month: number; starting: number; profit: number; cumulative: number; ending: number }[] = [];
-    let balance = principal;
-    for (let month = 1; month <= months; month += 1) {
-      const starting = balance;
-      const profit = starting * monthlyRate;
-      const ending = starting + profit;
-      built.push({ month, starting, profit, cumulative: ending - principal, ending });
-      balance = ending;
-    }
-    const totalP = balance - principal;
-    return {
-      rows: built,
-      totalProfit: totalP,
-      totalReturnPct: principal > 0 ? (totalP / principal) * 100 : 0
-    };
-  }, [amount, months, annualRate]);
-
-  return (
-    <section id="calculator" className="relative py-24">
-      <div className="container">
-        <Reveal>
-          <div className="mx-auto max-w-5xl">
-            <div className="mb-10 text-center">
-              <h2 className="font-display text-4xl font-medium tracking-[-0.05em] text-foreground sm:text-5xl">
-                {t.heading}
-              </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">{t.subtitle}</p>
-              <p className="mt-4 inline-flex rounded-full border border-gold-200/25 bg-gold-200/10 px-4 py-1.5 text-xs font-semibold text-gold-100">
-                {t.rateNote.replace("{rate}", fmt.percent(annualRate / 100, annualRate % 1 === 0 ? 0 : 2))}
-              </p>
-            </div>
-
-            <div className="glass-panel rounded-2xl border border-white/10 p-6 sm:p-8">
-              <div className="grid gap-6 sm:grid-cols-2">
-                <label className="flex flex-col gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.amount}</span>
-                  <input
-                    type="number"
-                    min={0}
-                    step={100}
-                    value={amount}
-                    onChange={(event) => setAmount(event.target.value === "" ? 0 : Math.max(0, Number(event.target.value)))}
-                    className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
-                  />
-                </label>
-                <label className="flex flex-col gap-2">
-                  <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    <span>{t.months}</span>
-                    <span className="text-gold-100">
-                      {months} {t.monthUnit}
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min={1}
-                    max={24}
-                    step={1}
-                    value={months}
-                    onChange={(event) => setMonths(Number(event.target.value))}
-                    className="accent-gold-200"
-                  />
-                </label>
-              </div>
-
-              <div className="mt-8 overflow-x-auto">
-                <table className="w-full min-w-[36rem] border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-white/10 text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                      <th className="py-3 pr-4 font-semibold">{t.colMonth}</th>
-                      <th className="py-3 pr-4 text-right font-semibold">{t.colStarting}</th>
-                      <th className="py-3 pr-4 text-right font-semibold">{t.colProfit}</th>
-                      <th className="py-3 pr-4 text-right font-semibold">{t.colCumulative}</th>
-                      <th className="py-3 text-right font-semibold">{t.colEnding}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.month} className="border-b border-white/[0.06] text-foreground">
-                        <td className="py-2.5 pr-4 text-muted-foreground">{row.month}</td>
-                        <td className="py-2.5 pr-4 text-right">{fmt.currency(row.starting)}</td>
-                        <td className="py-2.5 pr-4 text-right text-gold-100">{fmt.currency(row.profit)}</td>
-                        <td className="py-2.5 pr-4 text-right text-gold-100">{fmt.currency(row.cumulative)}</td>
-                        <td className="py-2.5 text-right font-semibold">{fmt.currency(row.ending)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-gold-200/10 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.totalProfit}</p>
-                  <p className="mt-2 font-display text-3xl font-medium tracking-[-0.04em] text-gold-100">
-                    {fmt.currency(totalProfit)}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.totalReturn}</p>
-                  <p className="mt-2 font-display text-3xl font-medium tracking-[-0.04em] text-foreground">
-                    {fmt.percent(totalReturnPct / 100, 2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 function FinalCTA({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   return (
     <section id="apply" className="relative px-4 py-24 sm:py-32">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/60 to-transparent" />
       <Reveal>
-        <div className="container relative overflow-hidden rounded-[2.5rem] border border-gold-200/[0.18] bg-[linear-gradient(145deg,rgba(212,175,95,0.18),rgba(255,255,255,0.045)_36%,rgba(5,6,7,0.9))] p-8 text-center shadow-premium sm:p-14 lg:p-20">
+        <div className="container relative overflow-hidden rounded-[1.35rem] border border-gold-200/[0.18] bg-[linear-gradient(145deg,rgba(212,175,95,0.18),rgba(255,255,255,0.045)_36%,rgba(5,6,7,0.9))] p-8 text-center shadow-premium sm:p-14 lg:p-20">
           <div className="absolute left-1/2 top-0 size-[30rem] -translate-x-1/2 rounded-full bg-gold-300/[0.14] blur-3xl" />
           <div className="relative z-10 mx-auto max-w-3xl">
             <h2 className="font-display text-5xl font-medium leading-tight tracking-[-0.055em] text-balance text-foreground sm:text-6xl">
@@ -739,9 +573,18 @@ function FinalCTA({ dictionary, locale }: { dictionary: HomeDictionary; locale: 
 }
 
 function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; activeLocale: Locale }) {
-  const columns = [
-    [dictionary.footer.legal, dictionary.footer.reports, dictionary.footer.transparency],
-    [dictionary.footer.contact, dictionary.footer.creators, dictionary.footer.social]
+  const columns: { label: string; href: string; internal?: boolean }[][] = [
+    [
+      { label: dictionary.footer.legal, href: `/${activeLocale}/legal`, internal: true },
+      { label: dictionary.footer.about, href: `/${activeLocale}/about`, internal: true },
+      { label: dictionary.footer.reports, href: "#" },
+      { label: dictionary.footer.transparency, href: "#transparency" }
+    ],
+    [
+      { label: dictionary.footer.contact, href: `/${activeLocale}/contact`, internal: true },
+      { label: dictionary.footer.creators, href: "#" },
+      { label: dictionary.footer.social, href: "#" }
+    ]
   ];
 
   return (
@@ -758,11 +601,25 @@ function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
         <div className="grid gap-8 sm:grid-cols-3">
           {columns.map((column, index) => (
             <div key={index} className="flex flex-col gap-3">
-              {column.map((item) => (
-                <a key={item} href="#" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  {item}
-                </a>
-              ))}
+              {column.map((item) =>
+                item.internal ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {item.label}
+                  </a>
+                )
+              )}
             </div>
           ))}
           <div className="flex flex-col gap-3">

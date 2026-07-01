@@ -86,7 +86,7 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
           <ArrowLeft className="size-4" />
           {t.backToHomepage}
         </Link>
-        <Card className="overflow-hidden rounded-[2rem] bg-graphite-900/[0.78]">
+        <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
           <CardHeader>
             <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100">

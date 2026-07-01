@@ -1,5 +1,31 @@
 import { prisma } from "./client";
 
+// Generic audit-log writer. Every admin action (login, approvals, edits) should
+// record one of these. Best-effort: never throws into the caller's flow.
+export async function createAuditLogEntry(input: {
+  actor: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  beforeJson?: string | null;
+  afterJson?: string | null;
+}) {
+  try {
+    return await prisma.auditLog.create({
+      data: {
+        actor: input.actor,
+        action: input.action,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        beforeJson: input.beforeJson ?? null,
+        afterJson: input.afterJson ?? null
+      }
+    });
+  } catch {
+    return null;
+  }
+}
+
 type LedgerCsvExportAuditFilters = {
   ledgerType?: string | null;
   entryType?: string | null;

@@ -186,7 +186,7 @@ export function ApplicationPage({
               animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.95, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Card className="overflow-hidden rounded-[2rem] border-white/[0.12] bg-graphite-900/[0.78]">
+              <Card className="overflow-hidden rounded-[1.35rem] border-white/[0.12] bg-graphite-900/[0.78]">
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl">{dictionary.form.title}</CardTitle>
@@ -321,7 +321,7 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
 
 function SuccessState({ dictionary, receivedId, onReset }: { dictionary: ApplyDictionary; receivedId: string; onReset: () => void }) {
   return (
-    <div className="rounded-[1.75rem] border border-gold-200/20 bg-gold-200/10 p-7 text-center">
+    <div className="rounded-[1.35rem] border border-gold-200/20 bg-gold-200/10 p-7 text-center">
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-gold-200 text-graphite-950">
         <Mail className="size-6" />
       </div>
@@ -337,7 +337,7 @@ function SuccessState({ dictionary, receivedId, onReset }: { dictionary: ApplyDi
 
 function ApplyFAQ({ dictionary }: { dictionary: ApplyDictionary }) {
   return (
-    <Card className="mt-6 rounded-[2rem] bg-white/[0.035]">
+    <Card className="mt-6 rounded-[1.35rem] bg-white/[0.035]">
       <CardHeader>
         <CardTitle>{dictionary.faq.title}</CardTitle>
       </CardHeader>

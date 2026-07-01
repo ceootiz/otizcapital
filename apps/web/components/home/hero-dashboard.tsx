@@ -16,8 +16,8 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
       transition={{ duration: 1.05, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
       className="relative mx-auto w-full max-w-xl lg:mx-0"
     >
-      <div className="absolute -inset-8 rounded-[2.5rem] bg-gold-300/10 blur-3xl" />
-      <Card className="relative overflow-hidden rounded-[2rem] border-white/[0.12] bg-graphite-900/80">
+      <div className="absolute -inset-8 rounded-[1.35rem] bg-gold-300/10 blur-3xl" />
+      <Card className="relative overflow-hidden rounded-[1.35rem] border-white/[0.12] bg-graphite-900/80">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
@@ -33,7 +33,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
             <MetricBlock icon={<ShieldCheck />} label={dictionary.hero.activeAllocations} value="$12.8M" />
             <MetricBlock icon={<PackageCheck />} label={dictionary.hero.commerceVolume} value="$16.2M" />
           </div>
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+          <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
             <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
               <span>{dictionary.dashboard.trendLabel}</span>
               <span className="text-gold-100">{dictionary.dashboard.trendRange}</span>

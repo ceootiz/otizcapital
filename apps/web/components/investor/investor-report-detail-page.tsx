@@ -227,7 +227,7 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -244,14 +244,14 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <CardTitle>{t.lifecycleTitle}</CardTitle>
             <CardDescription>{t.lifecycleDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
             {lifecycle.map((item) => (
-              <div key={item.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+              <div key={item.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold text-foreground">{item.label}</p>
@@ -265,7 +265,7 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
         </Card>
       </div>
 
-      <Card className="mt-6 rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="mt-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.proofSummaryTitle}</CardTitle>
           <CardDescription>{t.proofSummaryDescription}</CardDescription>
@@ -276,16 +276,16 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
         </CardContent>
       </Card>
 
-      <Card className="mt-6 rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="mt-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.linkedAllocationTitle}</CardTitle>
           <CardDescription>{t.linkedAllocationDescription}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {report.allocationSnapshot.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-6 text-center text-sm text-muted-foreground">{t.noAllocationSummary}</div>
+            <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center text-sm text-muted-foreground">{t.noAllocationSummary}</div>
           ) : report.allocationSnapshot.map((allocation) => (
-            <div key={allocation.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+            <div key={allocation.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
@@ -311,7 +311,7 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
                 <ReportLine label={t.riskVisibility} value={allocation.risk ? `${allocation.risk.level} · ${allocation.risk.score}/100` : t.underManagerReview} />
                 <ReportLine label={t.riskSummary} value={allocation.risk?.summary || t.riskUnderReview} />
               </div>
-              {allocation.reconciliation?.exceptionNotice ? <div className="mt-4 rounded-[1.5rem] border border-gold-200/20 bg-gold-200/10 p-4 text-sm leading-6 text-gold-100">{allocation.reconciliation.exceptionNotice}</div> : null}
+              {allocation.reconciliation?.exceptionNotice ? <div className="mt-4 rounded-[1.35rem] border border-gold-200/20 bg-gold-200/10 p-4 text-sm leading-6 text-gold-100">{allocation.reconciliation.exceptionNotice}</div> : null}
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <ProofBreakdown locale={locale} title={t.availableAllocationProofs} summary={allocation.proofSummaryBreakdown.available} emptyText={t.noAvailableAllocationProofs} />
                 <ProofBreakdown locale={locale} title={t.verifiedAllocationProofs} summary={allocation.proofSummaryBreakdown.verified} emptyText={t.noVerifiedAllocationProofs} />
@@ -337,7 +337,7 @@ function ProofBreakdown({ locale, title, summary, emptyText }: { locale: Locale;
   const entries = proofEntries(summary);
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
       <div className="mb-4 flex items-center gap-2">
         <FileText className="size-4 text-gold-100" />
         <p className="text-sm font-semibold text-foreground">{title}</p>

@@ -149,7 +149,7 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
             <AdminNavigation locale={locale} activeSection="withdrawals" />
           </div>
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
@@ -163,7 +163,7 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.5rem] border border-white/10 bg-black/20 p-2">
+          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-white/10 bg-black/20 p-2">
             {STATUS_FILTERS.map((status) => (
               <button key={status} type="button" onClick={() => setFilter(status)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${filter === status ? "bg-gold-200/15 text-gold-100" : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"}`}>{enumLabel("withdrawalStatus", status, locale)}</button>
             ))}
@@ -171,9 +171,9 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
 
           <div className="grid gap-4">
             {visibleWithdrawals.length === 0 ? (
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.emptyTitle}</p><p className="mt-2 text-sm text-muted-foreground">{t.emptyDesc}</p></CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.emptyTitle}</p><p className="mt-2 text-sm text-muted-foreground">{t.emptyDesc}</p></CardContent></Card>
             ) : visibleWithdrawals.map((withdrawal) => (
-              <Card key={withdrawal.id} className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card key={withdrawal.id} className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -223,5 +223,5 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.5rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
 }

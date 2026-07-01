@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /*/admin
+Disallow: /*/investor
+Sitemap: https://otiz-capital-web.vercel.app/sitemap.xml

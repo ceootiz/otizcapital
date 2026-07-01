@@ -330,7 +330,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
             <AdminNavigation locale={locale} activeSection="incidents" />
           </div>
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p>
@@ -348,7 +348,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.72]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
             <CardContent className="grid gap-3 p-4 md:grid-cols-3">
               <Filter label={t.SEVERITY} value={severity} onChange={setSeverity} options={SEVERITIES} group="incidentSeverity" locale={locale} />
               <Filter label={t.STATUS} value={status} onChange={setStatus} options={STATUSES} group="incidentStatus" locale={locale} />
@@ -358,7 +358,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
 
           <div className="grid gap-4">
             {visibleIncidents.length === 0 ? (
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CheckCircle2 className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm text-muted-foreground">{t.EMPTY_BODY}</p></CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CheckCircle2 className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm text-muted-foreground">{t.EMPTY_BODY}</p></CardContent></Card>
             ) : visibleIncidents.map((incident) => {
               const metadata = parseIncidentMetadata(incident.metadataJson);
               const autoCreated = metadata.autoCreated === true ? t.AUTO_CREATED : t.MANUAL;
@@ -367,7 +367,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
               const detail = detailsById[incident.id];
               const detailsOpen = selectedDetailId === incident.id;
               return (
-              <Card key={incident.id} className="rounded-[2rem] bg-graphite-900/[0.72]">
+              <Card key={incident.id} className="rounded-[1.35rem] bg-graphite-900/[0.72]">
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -445,19 +445,19 @@ function EntityLink({ label, href, value }: { label: string; href: string | null
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.5rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
 }
 
 function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { locale: Locale; detail?: IncidentDetail; loading: boolean; t: Strings; formatters: ReturnType<typeof createAdminFormatters> }) {
   if (loading) {
-    return <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.LOADING_DETAIL}</div>;
+    return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.LOADING_DETAIL}</div>;
   }
   if (!detail) {
-    return <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.NO_CONTEXT_LOADED}</div>;
+    return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.NO_CONTEXT_LOADED}</div>;
   }
 
   return (
-    <div className="grid gap-4 rounded-[1.75rem] border border-gold-200/15 bg-black/25 p-5">
+    <div className="grid gap-4 rounded-[1.35rem] border border-gold-200/15 bg-black/25 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{t.INCIDENT_DETAIL}</p>

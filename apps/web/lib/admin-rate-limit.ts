@@ -25,7 +25,12 @@ function getWindowMs() {
 }
 
 function getMaxAttempts() {
-  return readPositiveInteger(process.env.ADMIN_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, 5);
+  return readPositiveInteger(process.env.ADMIN_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, 3);
+}
+
+// After the max is hit, the IP is locked out for this long (default 1 hour).
+function getLockoutMs() {
+  return readPositiveInteger(process.env.ADMIN_LOGIN_LOCKOUT_MS, 1000 * 60 * 60);
 }
 
 function getClientKey(request: Request) {
@@ -80,6 +85,12 @@ export function checkAdminLoginRateLimit(request: Request) {
 export function recordAdminLoginFailure(request: Request) {
   const { entry } = getEntry(request);
   entry.attempts += 1;
+
+  // Lockout: once the attempt ceiling is reached, extend the window to a full
+  // lockout period (default 1 hour) for this IP.
+  if (entry.attempts >= getMaxAttempts()) {
+    entry.resetAt = Date.now() + getLockoutMs();
+  }
 }
 
 export function resetAdminLoginRateLimit(request: Request) {

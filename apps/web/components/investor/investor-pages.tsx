@@ -218,14 +218,14 @@ export function InvestorShell({
             </div>
           </div>
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.72]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{eyebrow}</p>
                 <h1 className="mt-3 max-w-3xl font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{title}</h1>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{description}</p>
               </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+              <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorLabel}</p>
                 <p className="mt-2 font-semibold text-foreground">{investor.fullName}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{investor.email}</p>
@@ -234,7 +234,7 @@ export function InvestorShell({
             </CardContent>
           </Card>
 
-          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.5rem] border border-white/10 bg-black/20 p-2">
+          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-white/10 bg-black/20 p-2">
             {(Object.keys(t.nav) as InvestorPageKey[]).map((key) => {
               const isActive = key === active;
 
@@ -277,7 +277,7 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <CardTitle>{t.dash.activeTitle}</CardTitle>
             <CardDescription>{t.dash.activeDesc}</CardDescription>
@@ -290,14 +290,14 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
             )}
           </CardContent>
         </Card>
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <CardTitle>{t.dash.latestTitle}</CardTitle>
             <CardDescription>{t.dash.latestDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {data.latestPublishedMonthlyReport ? (
-              <Link href={`/${locale}/investor/reports/${data.latestPublishedMonthlyReport.id}`} className="block rounded-[1.5rem] border border-white/10 bg-black/20 p-4 transition-colors hover:border-gold-200/30">
+              <Link href={`/${locale}/investor/reports/${data.latestPublishedMonthlyReport.id}`} className="block rounded-[1.35rem] border border-white/10 bg-black/20 p-4 transition-colors hover:border-gold-200/30">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{data.latestPublishedMonthlyReport.month}</p>
                 <p className="mt-2 font-semibold text-foreground">{data.latestPublishedMonthlyReport.title}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{data.latestPublishedMonthlyReport.summary}</p>
@@ -320,7 +320,7 @@ export function InvestorDepositPage({ locale, addresses }: { locale: Locale; add
 
   return (
     <div className="grid gap-6">
-      <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.deposit.instructionTitle}</CardTitle>
           <CardDescription>{t.deposit.instruction}</CardDescription>
@@ -359,7 +359,7 @@ export function InvestorReportsPage({ locale, reports }: { locale: Locale; repor
         <InvestorEmptyState title={t.reportsList.noReportsTitle} description={t.reportsList.noReportsDesc} />
       ) : reports.map((report) => (
         <Link key={report.id} href={`/${locale}/investor/reports/${report.id}`} className="block">
-          <Card className="rounded-[2rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
+          <Card className="rounded-[1.35rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -415,7 +415,7 @@ export function InvestorWithdrawalsPage({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-      <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.withdraw.availabilityTitle}</CardTitle>
           <CardDescription>{t.withdraw.availabilityDesc}</CardDescription>
@@ -427,7 +427,7 @@ export function InvestorWithdrawalsPage({
           <InvestorWithdrawalForm locale={locale} availableAmount={available} locked={locked} unlockDate={unlockDate} />
         </CardContent>
       </Card>
-      <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.withdraw.historyTitle}</CardTitle>
           <CardDescription>{t.withdraw.historyDesc}</CardDescription>
@@ -454,7 +454,7 @@ export function InvestorReinvestPage({ locale, enabled }: { locale: Locale; enab
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
       <ReinvestPreferenceControl locale={locale} initialEnabled={enabled} />
-      <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.reinvest.approachTitle}</CardTitle>
           <CardDescription>{t.reinvest.approachDesc}</CardDescription>
@@ -471,7 +471,7 @@ export function InvestorReinvestPage({ locale, enabled }: { locale: Locale; enab
 
 function KpiCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <Card className="rounded-[1.5rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <div className="mb-5 flex size-10 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">{icon}</div>
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
@@ -487,7 +487,7 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
 
   return (
     <Link href={`/${locale}/investor/allocations/${allocation.id}`}>
-    <Card className="rounded-[1.5rem] bg-white/[0.035] transition-colors hover:bg-white/[0.055]">
+    <Card className="rounded-[1.35rem] bg-white/[0.035] transition-colors hover:bg-white/[0.055]">
       <CardContent className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -528,7 +528,7 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
 
 function InvestorEmptyState({ title, description }: { title: string; description: string }) {
   return (
-    <Card className="rounded-[1.5rem] bg-white/[0.035]">
+    <Card className="rounded-[1.35rem] bg-white/[0.035]">
       <CardContent className="p-8 text-center">
         <PackageCheck className="mx-auto size-9 text-gold-100" />
         <p className="mt-4 font-semibold text-foreground">{title}</p>
@@ -546,9 +546,9 @@ function WithdrawalGroup({ locale, title, withdrawals, emptyText }: { locale: Lo
     <div className="grid gap-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
       {withdrawals.length === 0 ? (
-        <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{emptyText}</div>
+        <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{emptyText}</div>
       ) : withdrawals.map((withdrawal) => (
-        <div key={withdrawal.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+        <div key={withdrawal.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-lg font-semibold text-foreground">{withdrawal.currency} {f.number(Number(withdrawal.amount || 0))}</p>
             <Badge variant="secondary">{enumLabel("withdrawalStatus", withdrawal.status, locale)}</Badge>

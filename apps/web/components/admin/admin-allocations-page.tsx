@@ -242,7 +242,7 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.72]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
             <CardHeader><CardTitle>{t.createTitle}</CardTitle><CardDescription>{t.createDesc}</CardDescription></CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <SelectField label={t.fieldInvestor} value={draft.investorId} options={investors.map((investor) => ({ label: `${investor.fullName} · ${investor.email}`, value: investor.id }))} onChange={(value) => setDraft((current) => ({ ...current, investorId: value }))} />
@@ -267,13 +267,13 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
 
           <div className="grid gap-4">
             {visibleAllocations.length === 0 ? (
-              <Card className="rounded-[2rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t.emptyState}</CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t.emptyState}</CardContent></Card>
             ) : visibleAllocations.map((allocation) => {
               const stage = stageFromStatus(allocation.status, allocation.payoutStatus);
               const progress = progressFromStage(stage);
               return (
                 <Link key={allocation.id} href={`/${locale}/admin/allocations/${allocation.id}`} className="block">
-                  <Card className="rounded-[2rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
+                  <Card className="rounded-[1.35rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
                     <CardContent className="p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode} · {allocation.investor.fullName}</p><h2 className="mt-2 text-xl font-semibold text-foreground">{allocation.productName}</h2></div>
@@ -314,5 +314,5 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.5rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
 }

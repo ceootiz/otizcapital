@@ -15,7 +15,9 @@ const STRINGS = {
     password: "Password",
     signIn: "Sign in",
     signingIn: "Signing in...",
-    unableToLogIn: "Unable to log in."
+    unableToLogIn: "Unable to log in.",
+    twoFactor: "2FA code",
+    twoFactorHint: "Enter the 6-digit code from your authenticator app."
   },
   ru: {
     heading: "Доступ администратора",
@@ -24,7 +26,9 @@ const STRINGS = {
     password: "Пароль",
     signIn: "Войти",
     signingIn: "Вход...",
-    unableToLogIn: "Не удалось войти."
+    unableToLogIn: "Не удалось войти.",
+    twoFactor: "Код 2FA",
+    twoFactorHint: "Введите 6-значный код из приложения-аутентификатора."
   }
 };
 
@@ -36,6 +40,8 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
   const t = getStrings(locale);
   const router = useRouter();
   const [password, setPassword] = React.useState("");
+  const [totpCode, setTotpCode] = React.useState("");
+  const [totpRequired, setTotpRequired] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -48,9 +54,16 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password })
+        body: JSON.stringify(totpRequired ? { password, totpCode } : { password })
       });
-      const payload = (await response.json()) as { ok: boolean; error?: string };
+      const payload = (await response.json()) as { ok: boolean; error?: string; totpRequired?: boolean };
+
+      if (payload.totpRequired) {
+        // Password accepted; a second factor is required.
+        setTotpRequired(true);
+        setError(totpCode ? payload.error || t.unableToLogIn : null);
+        return;
+      }
 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || t.unableToLogIn);
@@ -74,7 +87,7 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
           <ArrowLeft className="size-4" />
           {t.backToHomepage}
         </Link>
-        <Card className="overflow-hidden rounded-[2rem] bg-graphite-900/[0.78]">
+        <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
           <CardHeader>
             <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100">
@@ -95,6 +108,23 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
                   className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
                 />
               </label>
+              {totpRequired ? (
+                <label className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.twoFactor}</span>
+                  <input
+                    aria-label={t.twoFactor}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(event) => setTotpCode(event.target.value.replace(/[^0-9]/g, ""))}
+                    autoFocus
+                    className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center text-lg tracking-[0.5em] text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+                  />
+                  <span className="text-xs text-muted-foreground">{t.twoFactorHint}</span>
+                </label>
+              ) : null}
               {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-sm text-gold-100">{error}</p> : null}
               <Button type="submit" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? t.signingIn : t.signIn}

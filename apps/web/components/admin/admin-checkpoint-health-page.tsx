@@ -187,7 +187,7 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 
 function HealthCard({ title, description, icon, children }: { title: string; description: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
       <CardHeader>
         <div className="flex items-start gap-3">
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-gold-100">{icon}</div>
@@ -218,7 +218,7 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
             <AdminNavigation locale={locale} activeSection="checkpoint-health" />
           </div>
 
-          <Card className="mb-6 rounded-[2rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
@@ -288,7 +288,7 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
             </HealthCard>
           </div>
 
-          <Card className="mt-4 rounded-[2rem] bg-graphite-900/[0.72]">
+          <Card className="mt-4 rounded-[1.35rem] bg-graphite-900/[0.72]">
             <CardHeader>
               <div className="flex items-start gap-3">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-gold-100"><Activity className="size-5" /></div>
@@ -307,16 +307,16 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
           </Card>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-            <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
               <CardHeader>
                 <CardTitle>{t.issueListTitle}</CardTitle>
                 <CardDescription>{t.issueListDesc}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
                 {snapshot.issues.length === 0 ? (
-                  <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noIssues}</div>
+                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noIssues}</div>
                 ) : snapshot.issues.map((issue) => (
-                  <div key={issue.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                  <div key={issue.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -333,16 +333,16 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
               </CardContent>
             </Card>
 
-            <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
               <CardHeader>
                 <CardTitle>{t.recommendedTitle}</CardTitle>
                 <CardDescription>{t.recommendedDesc}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
                 {snapshot.recommendedActions.length === 0 ? (
-                  <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noAction}</div>
+                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noAction}</div>
                 ) : snapshot.recommendedActions.map((action, index) => (
-                  <div key={action} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                  <div key={action} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{t.actionPrefix} {index + 1}</p>
                     <Separator className="my-3" />
                     <p className="text-sm leading-6 text-foreground">{action}</p>

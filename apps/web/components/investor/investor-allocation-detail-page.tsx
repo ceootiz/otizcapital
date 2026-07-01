@@ -117,7 +117,7 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
         <Link href={`/${locale}/investor/allocations`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToAllocations}</Link>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div><CardTitle>{allocation.productName}</CardTitle><CardDescription>{allocation.marketplace || t.marketplacePending}</CardDescription></div>
@@ -140,19 +140,19 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
+        <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
           <CardHeader><CardTitle>{t.operationalTimeline}</CardTitle><CardDescription>{t.operationalTimelineDesc}</CardDescription></CardHeader>
           <CardContent><div className="grid gap-3">{["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED"].map((step) => <div key={step} className={`rounded-2xl border p-3 text-sm ${step === allocation.status ? "border-gold-200/35 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/20 text-muted-foreground"}`}>{enumLabel("allocationStatus", step, locale)}</div>)}</div></CardContent>
         </Card>
       </div>
 
-      <Card className="mt-6 rounded-[2rem] bg-graphite-900/[0.72]">
+      <Card className="mt-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
         <CardHeader><CardTitle>{t.proofPlaceholders}</CardTitle><CardDescription>{t.proofPlaceholdersDesc}</CardDescription></CardHeader>
         <CardContent className="grid gap-4">
           {allocation.proofs.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-8 text-center"><PackageCheck className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.noProofsTitle}</p><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.noProofsBody}</p></div>
+            <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-8 text-center"><PackageCheck className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.noProofsTitle}</p><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.noProofsBody}</p></div>
           ) : allocation.proofs.map((proof) => (
-            <div key={proof.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+            <div key={proof.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{enumLabel("proofType", proof.type, locale)}</p><p className="mt-2 font-semibold text-foreground">{proof.title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{proof.description || t.availableProofMetadata}</p></div><Badge>{enumLabel("proofStatus", proof.status, locale)}</Badge></div>
               {proof.proofUrl ? <><Separator className="my-4" /><p className="break-words text-xs text-gold-100"><FileText className="mr-2 inline size-3" />{proof.proofUrl}</p></> : null}
             </div>
