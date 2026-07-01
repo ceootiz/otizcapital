@@ -79,14 +79,9 @@ export const apiInvestorApplicationSubmitter: InvestorApplicationSubmitter = {
 
 export const investorApplicationSubmitter: InvestorApplicationSubmitter = {
   async submit(application: InvestorApplication): Promise<InvestorApplicationResult> {
-    try {
-      return await apiInvestorApplicationSubmitter.submit(application);
-    } catch (error) {
-      if (error instanceof TypeError) {
-        return localStorageInvestorApplicationSubmitter.submit(application);
-      }
-
-      throw error;
-    }
+    // Always go through the API so submissions reach the admin CRM. Failures are
+    // surfaced to the user (see onSubmit) rather than silently saved to
+    // localStorage, where they would never reach an admin.
+    return apiInvestorApplicationSubmitter.submit(application);
   }
 };

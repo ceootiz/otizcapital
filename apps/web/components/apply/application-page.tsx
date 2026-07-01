@@ -70,19 +70,19 @@ export function ApplicationPage({ dictionary, locale }: { dictionary: ApplyDicti
 
   function validate(): FormErrors {
     const nextErrors: FormErrors = {};
-    const requiredFields: Array<keyof FormState> = [
-      "fullName",
-      "telegram",
-      "email",
-      "country",
-      "plannedAllocationAmount",
-      "heardFrom"
-    ];
+    const requiredFields: Array<keyof FormState> = ["fullName", "country", "plannedAllocationAmount", "heardFrom"];
 
     for (const field of requiredFields) {
       if (typeof form[field] === "string" && !form[field].trim()) {
         nextErrors[field] = dictionary.form.validationRequired;
       }
+    }
+
+    // Contact: telegram OR email is sufficient (mirrors the server). Only block
+    // when BOTH are empty; flag the field so the user sees where to act.
+    if (!form.telegram.trim() && !form.email.trim()) {
+      nextErrors.telegram = dictionary.form.validationRequired;
+      nextErrors.email = dictionary.form.validationRequired;
     }
 
     if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) {
@@ -127,8 +127,8 @@ export function ApplicationPage({ dictionary, locale }: { dictionary: ApplyDicti
       const result = await investorApplicationSubmitter.submit(application);
       setReceivedId(result.id);
       setForm(initialForm);
-    } catch {
-      setErrors({ form: dictionary.form.validationRequired });
+    } catch (error) {
+      setErrors({ form: error instanceof Error && error.message ? error.message : dictionary.form.validationRequired });
     } finally {
       setIsSubmitting(false);
     }
