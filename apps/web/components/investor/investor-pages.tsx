@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, BarChart3, CalendarClock, CheckCircle2, FileText, PackageCheck, RefreshCw, WalletCards } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarClock, CheckCircle2, FileText, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
-import type { Locale } from "@otiz/lib";
+import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdrawal } from "@/lib/investor-dashboard-data";
-import { InvestorLogoutButton, ReinvestPreferenceControl } from "./investor-actions";
+import { ThemeToggle } from "@/components/home/theme-toggle";
+import { InvestorLocaleSwitcher, InvestorLogoutButton, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 
 type InvestorPageKey = "dashboard" | "allocations" | "reports" | "withdrawals" | "reinvest";
 
@@ -19,33 +20,144 @@ type InvestorMonthlyReport = {
   publishedAt: string | null;
 };
 
-const navigation: Array<{ key: InvestorPageKey; label: string; href: string }> = [
-  { key: "dashboard", label: "Dashboard", href: "dashboard" },
-  { key: "allocations", label: "Allocations", href: "allocations" },
-  { key: "reports", label: "Reports", href: "reports" },
-  { key: "withdrawals", label: "Withdrawals", href: "withdrawals" },
-  { key: "reinvest", label: "Reinvest", href: "reinvest" }
-];
+const WITHDRAWAL_LOCK_DAYS = 90;
 
-const moneyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0
-});
-const dateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+// ---------------------------------------------------------------------------
+// Localized strings (EN + RU)
+// ---------------------------------------------------------------------------
 
-function formatMoney(value: number) {
-  return moneyFormatter.format(value);
+const INVESTOR_STRINGS = {
+  en: {
+    backHome: "Back to homepage",
+    brand: "OTIZ INVESTOR",
+    investorLabel: "Investor",
+    nav: { dashboard: "Dashboard", allocations: "Allocations", reports: "Reports", withdrawals: "Withdrawals", reinvest: "Reinvest" },
+    pages: {
+      dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
+      allocations: { eyebrow: "Supply cycle visibility", title: "Allocations", description: "Allocation cards show commerce supply IDs, product focus, cycle status, and latest operational update." },
+      reports: { eyebrow: "Monthly reporting", title: "Reports", description: "Monthly summaries keep the focus on allocations, performance, payouts, and operational notes." },
+      withdrawals: { eyebrow: "Manager-reviewed requests", title: "Withdrawals", description: "Request review and cooldown visibility with manager-controlled payout scheduling." },
+      reinvest: { eyebrow: "Instruction preference", title: "Reinvest", description: "A simple preference interface for reinvest instructions, intentionally separated from real money movement." }
+    },
+    kpi: {
+      activeCapital: "Active capital", totalInvested: "Total invested", realizedProfit: "Realized profit", expectedProfit: "Expected profit",
+      totalPayouts: "Total payouts", pendingPayouts: "Pending payouts", activeAllocations: "Active allocations", completedAllocations: "Completed allocations",
+      currentAverageRoi: "Current average ROI", nextExpectedPayout: "Next expected payout"
+    },
+    dash: {
+      activeTitle: "Active allocations", activeDesc: "Current capital assigned to managed electronics procurement, logistics, and marketplace sale operations.",
+      latestTitle: "Latest monthly report", latestDesc: "Published report visibility stays separate from internal audit and draft records.",
+      publishedPrefix: "Published", reinvestPreference: "Reinvest preference", enabled: "Enabled", disabled: "Disabled",
+      riskNote: "Risk note", riskNoteValue: "Allocation outcomes depend on operational commerce execution. No return is promised.",
+      noActiveTitle: "No active allocations yet.", noActiveDesc: "Managed allocations will appear here after OTIZ assigns capital to a real commerce supply cycle.",
+      noReportTitle: "No published report yet.", noReportDesc: "Published monthly reports will appear here after manager review. Draft reports remain hidden from investor access."
+    },
+    alloc: {
+      noActiveTitle: "No active allocations yet.", noActiveDesc: "Your investor profile is active. Allocations will appear once a manager assigns capital to an electronics commerce cycle.",
+      lifecycleProgress: "Lifecycle progress", invested: "Invested amount", expectedReturn: "Expected return", expectedPayout: "Expected payout",
+      updated: "Updated", proofHealth: "Proof health", riskVisibility: "Risk visibility", started: "Started", latestProof: "Latest proof", latestReport: "Latest report",
+      riskNote: "Risk note", underManagerReview: "Under manager review", noProofYet: "No investor-visible proof yet.", noReportYet: "No published report yet.",
+      managerReviewRequired: "Manager review required.", normalMonitoring: "Normal operational monitoring."
+    },
+    reportsList: {
+      noReportsTitle: "No published reports yet.", noReportsDesc: "Monthly reports will appear after OTIZ publishes an operational reporting summary for your investor profile.",
+      published: "Published", afterManagerReview: "after manager review", summary: "Summary", performance: "Performance", payouts: "Payouts", proofCategories: "Proof categories",
+      noPerformance: "No performance note published.", noPayout: "No payout note published.", noProofCats: "No available proof categories in this report."
+    },
+    withdraw: {
+      availabilityTitle: "Withdrawal availability", availabilityDesc: "Requests are manager-reviewed and use masked payout destination metadata only.",
+      available: "Available for withdrawal", pendingPayouts: "Pending payouts", scheduledNext: "Scheduled next payout",
+      historyTitle: "Withdrawal history", historyDesc: "Investor-safe payout request history with masked method and destination details.",
+      noRequestsTitle: "No withdrawal requests yet.", noRequestsDesc: "Manager-reviewed payout requests and paid history will appear here after a request is recorded.",
+      pendingReview: "Pending review", scheduledPayouts: "Scheduled payouts", paidHistory: "Paid history",
+      noPending: "No pending withdrawal requests.", noScheduled: "No scheduled payouts.", noPaid: "No paid withdrawals yet.",
+      requested: "Requested", scheduled: "Scheduled", paid: "Paid", method: "Method", destination: "Destination", investorNote: "Investor note",
+      noNote: "No investor-visible note.", notSet: "Not set"
+    },
+    reinvest: {
+      approachTitle: "Reinvest approach", approachDesc: "Reinvest instructions keep completed cycle proceeds inside future commerce allocations after manager review.",
+      whatChanges: "What it changes", whatChangesVal: "Eligible payouts can be rolled into future procurement cycles instead of being queued for withdrawal.",
+      whatNotChanges: "What it does not change", whatNotChangesVal: "It does not guarantee allocation availability, cycle timing, or commercial outcome.",
+      reviewModel: "Review model", reviewModelVal: "Manager confirmation remains required before permanent instruction changes."
+    },
+    common: { notScheduled: "Not scheduled", notAvailable: "Not available" }
+  },
+  ru: {
+    backHome: "На главную",
+    brand: "OTIZ INVESTOR",
+    investorLabel: "Инвестор",
+    nav: { dashboard: "Панель", allocations: "Аллокации", reports: "Отчёты", withdrawals: "Выводы", reinvest: "Реинвест" },
+    pages: {
+      dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
+      allocations: { eyebrow: "Видимость циклов поставок", title: "Аллокации", description: "Карточки аллокаций показывают ID поставки, продукт, статус цикла и последнее операционное обновление." },
+      reports: { eyebrow: "Ежемесячная отчётность", title: "Отчёты", description: "Ежемесячные сводки фокусируются на аллокациях, результатах, выплатах и операционных заметках." },
+      withdrawals: { eyebrow: "Запросы с проверкой менеджером", title: "Выводы", description: "Запрос проверки и видимость периода удержания с планированием выплат под контролем менеджера." },
+      reinvest: { eyebrow: "Предпочтение по инструкциям", title: "Реинвест", description: "Простой интерфейс предпочтений по реинвестированию, намеренно отделённый от реального движения средств." }
+    },
+    kpi: {
+      activeCapital: "Активный капитал", totalInvested: "Всего инвестировано", realizedProfit: "Реализованная прибыль", expectedProfit: "Ожидаемая прибыль",
+      totalPayouts: "Всего выплат", pendingPayouts: "Ожидающие выплаты", activeAllocations: "Активные аллокации", completedAllocations: "Завершённые аллокации",
+      currentAverageRoi: "Текущий средний ROI", nextExpectedPayout: "Следующая ожидаемая выплата"
+    },
+    dash: {
+      activeTitle: "Активные аллокации", activeDesc: "Текущий капитал, назначенный на управляемую закупку электроники, логистику и продажи на маркетплейсах.",
+      latestTitle: "Последний ежемесячный отчёт", latestDesc: "Видимость опубликованных отчётов отделена от внутреннего аудита и черновиков.",
+      publishedPrefix: "Опубликовано", reinvestPreference: "Предпочтение по реинвесту", enabled: "Включено", disabled: "Выключено",
+      riskNote: "Заметка о риске", riskNoteValue: "Результаты аллокаций зависят от операционного исполнения торговли. Доходность не гарантируется.",
+      noActiveTitle: "Пока нет активных аллокаций.", noActiveDesc: "Управляемые аллокации появятся здесь после того, как OTIZ назначит капитал на реальный торговый цикл поставок.",
+      noReportTitle: "Пока нет опубликованных отчётов.", noReportDesc: "Опубликованные ежемесячные отчёты появятся здесь после проверки менеджером. Черновики остаются скрытыми от инвестора."
+    },
+    alloc: {
+      noActiveTitle: "Пока нет активных аллокаций.", noActiveDesc: "Ваш профиль инвестора активен. Аллокации появятся, как только менеджер назначит капитал на торговый цикл электроники.",
+      lifecycleProgress: "Прогресс цикла", invested: "Сумма инвестиций", expectedReturn: "Ожидаемый возврат", expectedPayout: "Ожидаемая выплата",
+      updated: "Обновлено", proofHealth: "Состояние подтверждений", riskVisibility: "Видимость риска", started: "Начато", latestProof: "Последнее подтверждение", latestReport: "Последний отчёт",
+      riskNote: "Заметка о риске", underManagerReview: "На проверке у менеджера", noProofYet: "Пока нет видимых инвестору подтверждений.", noReportYet: "Пока нет опубликованного отчёта.",
+      managerReviewRequired: "Требуется проверка менеджера.", normalMonitoring: "Обычный операционный мониторинг."
+    },
+    reportsList: {
+      noReportsTitle: "Пока нет опубликованных отчётов.", noReportsDesc: "Ежемесячные отчёты появятся после того, как OTIZ опубликует операционную сводку для вашего профиля инвестора.",
+      published: "Опубликовано", afterManagerReview: "после проверки менеджером", summary: "Сводка", performance: "Результаты", payouts: "Выплаты", proofCategories: "Категории подтверждений",
+      noPerformance: "Заметка о результатах не опубликована.", noPayout: "Заметка о выплатах не опубликована.", noProofCats: "В этом отчёте нет доступных категорий подтверждений."
+    },
+    withdraw: {
+      availabilityTitle: "Доступность вывода", availabilityDesc: "Запросы проверяются менеджером и используют только маскированные метаданные назначения выплаты.",
+      available: "Доступно для вывода", pendingPayouts: "Ожидающие выплаты", scheduledNext: "Запланированная следующая выплата",
+      historyTitle: "История выводов", historyDesc: "Безопасная для инвестора история запросов выплат с маскированными данными метода и назначения.",
+      noRequestsTitle: "Пока нет запросов на вывод.", noRequestsDesc: "Проверенные менеджером запросы выплат и история появятся здесь после создания запроса.",
+      pendingReview: "На рассмотрении", scheduledPayouts: "Запланированные выплаты", paidHistory: "История выплат",
+      noPending: "Нет ожидающих запросов на вывод.", noScheduled: "Нет запланированных выплат.", noPaid: "Пока нет выплаченных выводов.",
+      requested: "Запрошено", scheduled: "Запланировано", paid: "Выплачено", method: "Метод", destination: "Назначение", investorNote: "Заметка инвестора",
+      noNote: "Нет видимой инвестору заметки.", notSet: "Не указано"
+    },
+    reinvest: {
+      approachTitle: "Подход к реинвестированию", approachDesc: "Инструкции по реинвесту оставляют доход завершённых циклов в будущих торговых аллокациях после проверки менеджером.",
+      whatChanges: "Что это меняет", whatChangesVal: "Подходящие выплаты могут быть направлены в будущие циклы закупок вместо постановки в очередь на вывод.",
+      whatNotChanges: "Что это не меняет", whatNotChangesVal: "Это не гарантирует доступность аллокаций, сроки цикла или коммерческий результат.",
+      reviewModel: "Модель проверки", reviewModelVal: "Подтверждение менеджера по-прежнему требуется до постоянного изменения инструкций."
+    },
+    common: { notScheduled: "Не запланировано", notAvailable: "Недоступно" }
+  }
+} as const;
+
+type InvestorStrings = typeof INVESTOR_STRINGS.en;
+
+export function getInvestorStrings(locale: Locale): InvestorStrings {
+  return (INVESTOR_STRINGS as unknown as Record<string, InvestorStrings>)[locale] ?? INVESTOR_STRINGS.en;
 }
 
-function formatDate(value: string | null) {
-  if (!value) return "Not scheduled";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Not scheduled" : dateFormatter.format(date);
-}
-
-function formatPercent(value: number | null) {
-  return value === null ? "Not available" : `${value.toFixed(1)}%`;
+function makeFormatters(locale: Locale, t: InvestorStrings) {
+  const fmt = createAdminFormatters(locale);
+  return {
+    money: (value: number) => fmt.currency(value),
+    date: (value: string | null) => {
+      if (!value) return t.common.notScheduled;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? t.common.notScheduled : fmt.date(date);
+    },
+    percent: (value: number | null) =>
+      value === null ? t.common.notAvailable : `${fmt.number(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`,
+    number: (value: number) => fmt.number(value)
+  };
 }
 
 function statusTone(status: string) {
@@ -70,6 +182,8 @@ export function InvestorShell({
   description: string;
   children: React.ReactNode;
 }) {
+  const t = getInvestorStrings(locale);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,175,95,0.13),transparent_34rem),radial-gradient(circle_at_88%_6%,rgba(255,255,255,0.07),transparent_30rem)]" />
@@ -79,10 +193,12 @@ export function InvestorShell({
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="size-4" />
-              Back to homepage
+              {t.backHome}
             </Link>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-semibold tracking-[0.24em] text-foreground">OTIZ INVESTOR</span>
+              <span className="text-sm font-semibold tracking-[0.24em] text-foreground">{t.brand}</span>
+              <InvestorLocaleSwitcher locale={locale} />
+              <ThemeToggle />
               <InvestorLogoutButton locale={locale} />
             </div>
           </div>
@@ -95,25 +211,25 @@ export function InvestorShell({
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{description}</p>
               </div>
               <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Investor</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorLabel}</p>
                 <p className="mt-2 font-semibold text-foreground">{investor.fullName}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{investor.email}</p>
-                <Badge className="mt-3" variant={statusTone(investor.status)}>{investor.status}</Badge>
+                <Badge className="mt-3" variant={statusTone(investor.status)}>{enumLabel("investorStatus", investor.status, locale)}</Badge>
               </div>
             </CardContent>
           </Card>
 
           <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.5rem] border border-white/10 bg-black/20 p-2">
-            {navigation.map((item) => {
-              const isActive = item.key === active;
+            {(Object.keys(t.nav) as InvestorPageKey[]).map((key) => {
+              const isActive = key === active;
 
               return (
                 <Link
-                  key={item.key}
-                  href={`/${locale}/investor/${item.href}`}
+                  key={key}
+                  href={`/${locale}/investor/${key}`}
                   className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${isActive ? "bg-gold-200/15 text-gold-100" : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"}`}
                 >
-                  {item.label}
+                  {t.nav[key]}
                 </Link>
               );
             })}
@@ -127,30 +243,33 @@ export function InvestorShell({
 }
 
 export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: InvestorDashboardData }) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <KpiCard icon={<WalletCards className="size-5" />} label="Active capital" value={formatMoney(data.summary.activeCapital)} />
-        <KpiCard icon={<BarChart3 className="size-5" />} label="Total invested" value={formatMoney(data.summary.totalInvested)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label="Realized profit" value={formatMoney(data.summary.realizedProfit)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label="Expected profit" value={formatMoney(data.summary.expectedProfit)} />
-        <KpiCard icon={<WalletCards className="size-5" />} label="Total payouts" value={formatMoney(data.summary.totalPayouts)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label="Pending payouts" value={formatMoney(data.summary.pendingPayouts)} />
-        <KpiCard icon={<PackageCheck className="size-5" />} label="Active allocations" value={String(data.summary.activeAllocationsCount)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label="Completed allocations" value={String(data.summary.completedAllocationsCount)} />
-        <KpiCard icon={<BarChart3 className="size-5" />} label="Current average ROI" value={formatPercent(data.summary.currentAverageRoi)} />
-        <KpiCard icon={<FileText className="size-5" />} label="Next expected payout" value={formatDate(data.summary.nextExpectedPayoutDate)} />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.activeCapital} value={f.money(data.summary.activeCapital)} />
+        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.totalInvested} value={f.money(data.summary.totalInvested)} />
+        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.realizedProfit} value={f.money(data.summary.realizedProfit)} />
+        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.expectedProfit} value={f.money(data.summary.expectedProfit)} />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalPayouts} value={f.money(data.summary.totalPayouts)} />
+        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.pendingPayouts} value={f.money(data.summary.pendingPayouts)} />
+        <KpiCard icon={<PackageCheck className="size-5" />} label={t.kpi.activeAllocations} value={f.number(data.summary.activeAllocationsCount)} />
+        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.completedAllocations} value={f.number(data.summary.completedAllocationsCount)} />
+        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.currentAverageRoi} value={f.percent(data.summary.currentAverageRoi)} />
+        <KpiCard icon={<FileText className="size-5" />} label={t.kpi.nextExpectedPayout} value={f.date(data.summary.nextExpectedPayoutDate)} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
           <CardHeader>
-            <CardTitle>Active allocations</CardTitle>
-            <CardDescription>Current capital assigned to managed electronics procurement, logistics, and marketplace sale operations.</CardDescription>
+            <CardTitle>{t.dash.activeTitle}</CardTitle>
+            <CardDescription>{t.dash.activeDesc}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             {data.activeAllocations.length === 0 ? (
-              <InvestorEmptyState title="No active allocations yet." description="Managed allocations will appear here after OTIZ assigns capital to a real commerce supply cycle." />
+              <InvestorEmptyState title={t.dash.noActiveTitle} description={t.dash.noActiveDesc} />
             ) : (
               data.activeAllocations.slice(0, 2).map((allocation) => <AllocationCard key={allocation.id} locale={locale} allocation={allocation} compact />)
             )}
@@ -158,8 +277,8 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
         </Card>
         <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
           <CardHeader>
-            <CardTitle>Latest monthly report</CardTitle>
-            <CardDescription>Published report visibility stays separate from internal audit and draft records.</CardDescription>
+            <CardTitle>{t.dash.latestTitle}</CardTitle>
+            <CardDescription>{t.dash.latestDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {data.latestPublishedMonthlyReport ? (
@@ -167,13 +286,13 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{data.latestPublishedMonthlyReport.month}</p>
                 <p className="mt-2 font-semibold text-foreground">{data.latestPublishedMonthlyReport.title}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{data.latestPublishedMonthlyReport.summary}</p>
-                <p className="mt-3 text-xs text-gold-100">Published {formatDate(data.latestPublishedMonthlyReport.publishedAt)}</p>
+                <p className="mt-3 text-xs text-gold-100">{t.dash.publishedPrefix} {f.date(data.latestPublishedMonthlyReport.publishedAt)}</p>
               </Link>
             ) : (
-              <InvestorEmptyState title="No published report yet." description="Published monthly reports will appear here after manager review. Draft reports remain hidden from investor access." />
+              <InvestorEmptyState title={t.dash.noReportTitle} description={t.dash.noReportDesc} />
             )}
-            <ProofLine label="Reinvest preference" value={data.summary.reinvestEnabled ? "Enabled" : "Disabled"} />
-            <ProofLine label="Risk note" value="Allocation outcomes depend on operational commerce execution. No return is promised." />
+            <ProofLine label={t.dash.reinvestPreference} value={data.summary.reinvestEnabled ? t.dash.enabled : t.dash.disabled} />
+            <ProofLine label={t.dash.riskNote} value={t.dash.riskNoteValue} />
           </CardContent>
         </Card>
       </div>
@@ -182,10 +301,12 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
 }
 
 export function InvestorAllocationsPage({ locale, data }: { locale: Locale; data: InvestorDashboardData }) {
+  const t = getInvestorStrings(locale);
+
   return (
     <div className="grid gap-4">
       {data.activeAllocations.length === 0 ? (
-        <InvestorEmptyState title="No active allocations yet." description="Your investor profile is active. Allocations will appear once a manager assigns capital to an electronics commerce cycle." />
+        <InvestorEmptyState title={t.alloc.noActiveTitle} description={t.alloc.noActiveDesc} />
       ) : (
         data.activeAllocations.map((allocation) => <AllocationCard key={allocation.id} locale={locale} allocation={allocation} />)
       )}
@@ -194,10 +315,13 @@ export function InvestorAllocationsPage({ locale, data }: { locale: Locale; data
 }
 
 export function InvestorReportsPage({ locale, reports }: { locale: Locale; reports: InvestorMonthlyReport[] }) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
   return (
     <div className="grid gap-4">
       {reports.length === 0 ? (
-        <InvestorEmptyState title="No published reports yet." description="Monthly reports will appear after OTIZ publishes an operational reporting summary for your investor profile." />
+        <InvestorEmptyState title={t.reportsList.noReportsTitle} description={t.reportsList.noReportsDesc} />
       ) : reports.map((report) => (
         <Link key={report.id} href={`/${locale}/investor/reports/${report.id}`} className="block">
           <Card className="rounded-[2rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
@@ -205,16 +329,16 @@ export function InvestorReportsPage({ locale, reports }: { locale: Locale; repor
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <CardTitle>{report.title}</CardTitle>
-                  <CardDescription>{report.month} · Published {report.publishedAt ? formatDate(report.publishedAt) : "after manager review"}</CardDescription>
+                  <CardDescription>{report.month} · {t.reportsList.published} {report.publishedAt ? f.date(report.publishedAt) : t.reportsList.afterManagerReview}</CardDescription>
                 </div>
-                <Badge variant="secondary">Published</Badge>
+                <Badge variant="secondary">{t.reportsList.published}</Badge>
               </div>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
-              <ProofLine label="Summary" value={report.summary} />
-              <ProofLine label="Performance" value={report.performanceNote || "No performance note published."} />
-              <ProofLine label="Payouts" value={report.payoutNote || "No payout note published."} />
-              <ProofLine label="Proof categories" value={Object.keys(report.proofSummary).length ? Object.entries(report.proofSummary).map(([type, count]) => `${type}: ${count}`).join(", ") : "No available proof categories in this report."} />
+              <ProofLine label={t.reportsList.summary} value={report.summary} />
+              <ProofLine label={t.reportsList.performance} value={report.performanceNote || t.reportsList.noPerformance} />
+              <ProofLine label={t.reportsList.payouts} value={report.payoutNote || t.reportsList.noPayout} />
+              <ProofLine label={t.reportsList.proofCategories} value={Object.keys(report.proofSummary).length ? Object.entries(report.proofSummary).map(([type, count]) => `${enumLabel("proofType", type, locale)}: ${count}`).join(", ") : t.reportsList.noProofCats} />
             </CardContent>
           </Card>
         </Link>
@@ -223,41 +347,64 @@ export function InvestorReportsPage({ locale, reports }: { locale: Locale; repor
   );
 }
 
-export function InvestorWithdrawalsPage({ withdrawals, summary }: { withdrawals: InvestorWithdrawal[]; summary: InvestorDashboardData["summary"] }) {
+export function InvestorWithdrawalsPage({
+  locale,
+  allocations,
+  withdrawals,
+  summary
+}: {
+  locale: Locale;
+  allocations: InvestorDashboardAllocation[];
+  withdrawals: InvestorWithdrawal[];
+  summary: InvestorDashboardData["summary"];
+}) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
   const pending = withdrawals.filter((withdrawal) => ["REQUESTED", "APPROVED"].includes(withdrawal.status));
   const scheduled = withdrawals.filter((withdrawal) => withdrawal.status === "SCHEDULED");
   const paid = withdrawals.filter((withdrawal) => withdrawal.status === "PAID");
+
+  const available = Math.max(0, summary.realizedProfit - summary.totalPayouts - summary.pendingPayouts);
+
+  // 90-day lock: withdrawals unlock 90 days after the earliest allocation start.
+  const startedTimes = allocations
+    .map((allocation) => allocation.startedAt)
+    .filter((value): value is string => Boolean(value))
+    .map((value) => new Date(value).getTime())
+    .filter((time) => Number.isFinite(time));
+  const earliestStart = startedTimes.length ? Math.min(...startedTimes) : null;
+  const unlockTime = earliestStart !== null ? earliestStart + WITHDRAWAL_LOCK_DAYS * 24 * 60 * 60 * 1000 : null;
+  const locked = unlockTime === null ? true : Date.now() < unlockTime;
+  const unlockDate = unlockTime !== null ? new Date(unlockTime).toISOString() : null;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
       <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
         <CardHeader>
-          <CardTitle>Withdrawal availability</CardTitle>
-          <CardDescription>Requests are manager-reviewed and use masked payout destination metadata only.</CardDescription>
+          <CardTitle>{t.withdraw.availabilityTitle}</CardTitle>
+          <CardDescription>{t.withdraw.availabilityDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <ProofLine label="Available for withdrawal" value={formatMoney(Math.max(0, summary.realizedProfit - summary.totalPayouts - summary.pendingPayouts))} />
-          <ProofLine label="Pending payouts" value={formatMoney(summary.pendingPayouts)} />
-          <ProofLine label="Scheduled next payout" value={formatDate(summary.nextExpectedPayoutDate)} />
-          <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-            <p className="font-semibold text-foreground">Request form disabled</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">Self-service withdrawal creation is intentionally disabled until available balance rules are finalized. Managers can record requests from the admin payout schedule.</p>
-          </div>
+          <ProofLine label={t.withdraw.available} value={f.money(available)} />
+          <ProofLine label={t.withdraw.pendingPayouts} value={f.money(summary.pendingPayouts)} />
+          <ProofLine label={t.withdraw.scheduledNext} value={f.date(summary.nextExpectedPayoutDate)} />
+          <InvestorWithdrawalForm locale={locale} availableAmount={available} locked={locked} unlockDate={unlockDate} />
         </CardContent>
       </Card>
       <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
         <CardHeader>
-          <CardTitle>Withdrawal history</CardTitle>
-          <CardDescription>Investor-safe payout request history with masked method and destination details.</CardDescription>
+          <CardTitle>{t.withdraw.historyTitle}</CardTitle>
+          <CardDescription>{t.withdraw.historyDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {withdrawals.length === 0 ? (
-            <InvestorEmptyState title="No withdrawal requests yet." description="Manager-reviewed payout requests and paid history will appear here after a request is recorded." />
+            <InvestorEmptyState title={t.withdraw.noRequestsTitle} description={t.withdraw.noRequestsDesc} />
           ) : (
             <>
-              <WithdrawalGroup title="Pending review" withdrawals={pending} emptyText="No pending withdrawal requests." />
-              <WithdrawalGroup title="Scheduled payouts" withdrawals={scheduled} emptyText="No scheduled payouts." />
-              <WithdrawalGroup title="Paid history" withdrawals={paid} emptyText="No paid withdrawals yet." />
+              <WithdrawalGroup locale={locale} title={t.withdraw.pendingReview} withdrawals={pending} emptyText={t.withdraw.noPending} />
+              <WithdrawalGroup locale={locale} title={t.withdraw.scheduledPayouts} withdrawals={scheduled} emptyText={t.withdraw.noScheduled} />
+              <WithdrawalGroup locale={locale} title={t.withdraw.paidHistory} withdrawals={paid} emptyText={t.withdraw.noPaid} />
             </>
           )}
         </CardContent>
@@ -266,19 +413,21 @@ export function InvestorWithdrawalsPage({ withdrawals, summary }: { withdrawals:
   );
 }
 
-export function InvestorReinvestPage({ enabled }: { enabled: boolean }) {
+export function InvestorReinvestPage({ locale, enabled }: { locale: Locale; enabled: boolean }) {
+  const t = getInvestorStrings(locale);
+
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-      <ReinvestPreferenceControl initialEnabled={enabled} />
+      <ReinvestPreferenceControl locale={locale} initialEnabled={enabled} />
       <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
         <CardHeader>
-          <CardTitle>Reinvest approach</CardTitle>
-          <CardDescription>Reinvest instructions keep completed cycle proceeds inside future commerce allocations after manager review.</CardDescription>
+          <CardTitle>{t.reinvest.approachTitle}</CardTitle>
+          <CardDescription>{t.reinvest.approachDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <ProofLine label="What it changes" value="Eligible payouts can be rolled into future procurement cycles instead of being queued for withdrawal." />
-          <ProofLine label="What it does not change" value="It does not guarantee allocation availability, cycle timing, or commercial outcome." />
-          <ProofLine label="Review model" value="Manager confirmation remains required before permanent instruction changes." />
+          <ProofLine label={t.reinvest.whatChanges} value={t.reinvest.whatChangesVal} />
+          <ProofLine label={t.reinvest.whatNotChanges} value={t.reinvest.whatNotChangesVal} />
+          <ProofLine label={t.reinvest.reviewModel} value={t.reinvest.reviewModelVal} />
         </CardContent>
       </Card>
     </div>
@@ -298,6 +447,9 @@ function KpiCard({ icon, label, value }: { icon: React.ReactNode; label: string;
 }
 
 function AllocationCard({ locale, allocation, compact = false }: { locale: Locale; allocation: InvestorDashboardAllocation; compact?: boolean }) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
   return (
     <Link href={`/${locale}/investor/allocations/${allocation.id}`}>
     <Card className="rounded-[1.5rem] bg-white/[0.035] transition-colors hover:bg-white/[0.055]">
@@ -308,13 +460,13 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
             <h3 className="mt-2 text-lg font-semibold text-foreground">{allocation.product}</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge>{allocation.currentStage}</Badge>
-            <Badge variant="secondary">{allocation.riskLevel}</Badge>
+            <Badge>{enumLabel("allocationStatus", allocation.currentStage, locale)}</Badge>
+            <Badge variant="secondary">{enumLabel("riskLevel", allocation.riskLevel, locale)}</Badge>
           </div>
         </div>
         <div className="mt-5">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span>Lifecycle progress</span>
+            <span>{t.alloc.lifecycleProgress}</span>
             <span>{allocation.progressPercent}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-white/10">
@@ -322,16 +474,16 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
           </div>
         </div>
         <div className={`mt-5 grid gap-3 ${compact ? "sm:grid-cols-2" : "md:grid-cols-4"}`}>
-          <ProofLine label="Invested amount" value={formatMoney(allocation.investedAmount)} />
-          <ProofLine label="Expected return" value={allocation.expectedReturnNote} />
-          <ProofLine label="Expected payout" value={formatDate(allocation.expectedPayoutAt)} />
-          <ProofLine label="Updated" value={formatDate(allocation.updatedAt)} />
-          <ProofLine label="Proof health" value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : "Under manager review"} />
-          <ProofLine label="Risk visibility" value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : "Under manager review"} />
-          {!compact ? <ProofLine label="Started" value={formatDate(allocation.startedAt)} /> : null}
-          {!compact ? <ProofLine label="Latest proof" value={allocation.latestProofReference ? `${allocation.latestProofReference.type}: ${allocation.latestProofReference.title}` : "No investor-visible proof yet."} /> : null}
-          {!compact ? <ProofLine label="Latest report" value={allocation.latestReportReference ? allocation.latestReportReference.title : "No published report yet."} /> : null}
-          {!compact ? <ProofLine label="Risk note" value={allocation.riskHealth?.summary || (allocation.riskLevel === "elevated" ? "Manager review required." : "Normal operational monitoring.")} /> : null}
+          <ProofLine label={t.alloc.invested} value={f.money(allocation.investedAmount)} />
+          <ProofLine label={t.alloc.expectedReturn} value={allocation.expectedReturnNote} />
+          <ProofLine label={t.alloc.expectedPayout} value={f.date(allocation.expectedPayoutAt)} />
+          <ProofLine label={t.alloc.updated} value={f.date(allocation.updatedAt)} />
+          <ProofLine label={t.alloc.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : t.alloc.underManagerReview} />
+          <ProofLine label={t.alloc.riskVisibility} value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : t.alloc.underManagerReview} />
+          {!compact ? <ProofLine label={t.alloc.started} value={f.date(allocation.startedAt)} /> : null}
+          {!compact ? <ProofLine label={t.alloc.latestProof} value={allocation.latestProofReference ? `${enumLabel("proofType", allocation.latestProofReference.type, locale)}: ${allocation.latestProofReference.title}` : t.alloc.noProofYet} /> : null}
+          {!compact ? <ProofLine label={t.alloc.latestReport} value={allocation.latestReportReference ? allocation.latestReportReference.title : t.alloc.noReportYet} /> : null}
+          {!compact ? <ProofLine label={t.alloc.riskNote} value={allocation.riskHealth?.summary || (allocation.riskLevel === "elevated" ? t.alloc.managerReviewRequired : t.alloc.normalMonitoring)} /> : null}
         </div>
       </CardContent>
     </Card>
@@ -351,7 +503,10 @@ function InvestorEmptyState({ title, description }: { title: string; description
   );
 }
 
-function WithdrawalGroup({ title, withdrawals, emptyText }: { title: string; withdrawals: InvestorWithdrawal[]; emptyText: string }) {
+function WithdrawalGroup({ locale, title, withdrawals, emptyText }: { locale: Locale; title: string; withdrawals: InvestorWithdrawal[]; emptyText: string }) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
   return (
     <div className="grid gap-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
@@ -360,17 +515,17 @@ function WithdrawalGroup({ title, withdrawals, emptyText }: { title: string; wit
       ) : withdrawals.map((withdrawal) => (
         <div key={withdrawal.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-lg font-semibold text-foreground">{withdrawal.currency} {Number(withdrawal.amount || 0).toLocaleString("en-US")}</p>
-            <Badge variant="secondary">{withdrawal.status}</Badge>
+            <p className="text-lg font-semibold text-foreground">{withdrawal.currency} {f.number(Number(withdrawal.amount || 0))}</p>
+            <Badge variant="secondary">{enumLabel("withdrawalStatus", withdrawal.status, locale)}</Badge>
           </div>
           <Separator className="my-4" />
           <div className="grid gap-3 sm:grid-cols-2">
-            <ProofLine label="Requested" value={formatDate(withdrawal.requestedAt)} />
-            <ProofLine label="Scheduled" value={formatDate(withdrawal.scheduledFor)} />
-            <ProofLine label="Paid" value={formatDate(withdrawal.paidAt)} />
-            <ProofLine label="Method" value={withdrawal.method || "Not set"} />
-            <ProofLine label="Destination" value={withdrawal.destinationMasked || "Not set"} />
-            <ProofLine label="Investor note" value={withdrawal.investorNote || withdrawal.rejectionReason || "No investor-visible note."} />
+            <ProofLine label={t.withdraw.requested} value={f.date(withdrawal.requestedAt)} />
+            <ProofLine label={t.withdraw.scheduled} value={f.date(withdrawal.scheduledFor)} />
+            <ProofLine label={t.withdraw.paid} value={f.date(withdrawal.paidAt)} />
+            <ProofLine label={t.withdraw.method} value={withdrawal.method || t.withdraw.notSet} />
+            <ProofLine label={t.withdraw.destination} value={withdrawal.destinationMasked || t.withdraw.notSet} />
+            <ProofLine label={t.withdraw.investorNote} value={withdrawal.investorNote || withdrawal.rejectionReason || t.withdraw.noNote} />
           </div>
         </div>
       ))}

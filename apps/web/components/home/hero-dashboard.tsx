@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, PackageCheck, ShieldCheck } from "lucide-react";
-import { allocationRows, type HomeDictionary } from "@otiz/lib";
+import { type HomeDictionary } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import { CommerceChart } from "./commerce-chart";
 
@@ -25,7 +25,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
               <CardTitle className="text-xl">{dictionary.hero.dashboardTitle}</CardTitle>
               <CardDescription>{dictionary.hero.dashboardSubtitle}</CardDescription>
             </div>
-            <Badge>Live ops</Badge>
+            <Badge>{dictionary.dashboard.liveOps}</Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
@@ -35,13 +35,18 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
           </div>
           <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
             <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Capital / volume trend</span>
-              <span className="text-gold-100">8 mo.</span>
+              <span>{dictionary.dashboard.trendLabel}</span>
+              <span className="text-gold-100">{dictionary.dashboard.trendRange}</span>
             </div>
-            <CommerceChart compact />
+            <CommerceChart
+              compact
+              months={dictionary.commerce.chartMonths}
+              capitalLabel={dictionary.dashboard.chartCapital}
+              volumeLabel={dictionary.dashboard.chartVolume}
+            />
           </div>
           <div className="flex flex-col gap-3">
-            {allocationRows.map((row) => (
+            {dictionary.commerce.allocations.map((row) => (
               <div key={row.id} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -75,7 +80,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
               <p>{dictionary.hero.deliveredDevices}</p>
             </div>
             <div>
-              <p className="font-semibold text-foreground">Monthly</p>
+              <p className="font-semibold text-foreground">{dictionary.dashboard.monthlyValue}</p>
               <p>{dictionary.hero.monthlyReporting}</p>
             </div>
           </div>

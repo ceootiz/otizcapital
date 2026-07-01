@@ -6,10 +6,15 @@ import { getInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Investor Login | OTIZ CAPITAL",
-  description: "Investor access for OTIZ CAPITAL commerce capital reporting."
-};
+const META = {
+  en: { title: "Investor Login | OTIZ CAPITAL", description: "Investor access for OTIZ CAPITAL commerce capital reporting." },
+  ru: { title: "Вход для инвестора | OTIZ CAPITAL", description: "Доступ инвестора к отчётности OTIZ CAPITAL по коммерческому капиталу." }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
+  return { title: meta.title, description: meta.description };
+}
 
 export default function InvestorLoginRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {

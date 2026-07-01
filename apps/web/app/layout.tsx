@@ -31,9 +31,16 @@ export const metadata: Metadata = {
   }
 };
 
+// Applies the persisted theme before paint so there is no light/dark flash.
+// Defaults to dark (the site's base) unless the visitor explicitly chose light.
+const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement; const stored = localStorage.getItem('otiz-theme'); if (stored === 'light') { root.classList.remove('dark'); root.style.colorScheme = 'light'; } else { root.classList.add('dark'); root.style.colorScheme = 'dark'; } } catch (e) {} })();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={`${sans.variable} ${display.variable} font-sans`}>{children}</body>
     </html>
   );

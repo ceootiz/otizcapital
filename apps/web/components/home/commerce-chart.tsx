@@ -3,11 +3,25 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { commerceChartData } from "@otiz/lib";
 
-export function CommerceChart({ compact = false }: { compact?: boolean }) {
+export function CommerceChart({
+  compact = false,
+  months,
+  capitalLabel = "Active capital",
+  volumeLabel = "Commerce volume"
+}: {
+  compact?: boolean;
+  months?: string[];
+  capitalLabel?: string;
+  volumeLabel?: string;
+}) {
+  const data = months
+    ? commerceChartData.map((point, index) => ({ ...point, month: months[index] ?? point.month }))
+    : commerceChartData;
+
   return (
     <div className={compact ? "h-44" : "h-72"}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={commerceChartData} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
+        <AreaChart data={data} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
           <defs>
             <linearGradient id="capitalFill" x1="0" x2="0" y1="0" y2="1">
               <stop offset="5%" stopColor="#d4af5f" stopOpacity={0.36} />
@@ -39,7 +53,7 @@ export function CommerceChart({ compact = false }: { compact?: boolean }) {
             labelStyle={{ color: "#d4af5f", fontWeight: 700 }}
             formatter={(value, name) => {
               const numericValue = Number(value);
-              return ["$" + numericValue.toFixed(1) + "M", name === "capital" ? "Active capital" : "Commerce volume"];
+              return ["$" + numericValue.toFixed(1) + "M", name === "capital" ? capitalLabel : volumeLabel];
             }}
           />
           <Area type="monotone" dataKey="volume" stroke="rgba(255,255,255,0.42)" strokeWidth={1.4} fill="url(#volumeFill)" />

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
-import { InvestorAllocationsPage, InvestorShell } from "@/components/investor/investor-pages";
+import { InvestorAllocationsPage, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Investor Allocations | OTIZ CAPITAL",
-  description: "Investor allocation cycles for electronics commerce operations."
-};
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  if (!isLocale(params.locale)) return {};
+  const page = getInvestorStrings(params.locale).pages.allocations;
+  return { title: `${page.title} | OTIZ CAPITAL`, description: page.description };
+}
 
 export default async function InvestorAllocationsRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {
@@ -19,9 +20,10 @@ export default async function InvestorAllocationsRoute({ params }: { params: { l
 
   const investor = await requireInvestorSession(params.locale);
   const data = await getInvestorDashboardData(investor);
+  const page = getInvestorStrings(params.locale).pages.allocations;
 
   return (
-    <InvestorShell locale={params.locale} investor={investor} active="allocations" eyebrow="Supply cycle visibility" title="Allocations" description="Allocation cards show commerce supply IDs, product focus, cycle status, and latest operational update.">
+    <InvestorShell locale={params.locale} investor={investor} active="allocations" eyebrow={page.eyebrow} title={page.title} description={page.description}>
       <InvestorAllocationsPage locale={params.locale} data={data} />
     </InvestorShell>
   );

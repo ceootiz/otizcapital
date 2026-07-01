@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
-import { InvestorShell, InvestorWithdrawalsPage } from "@/components/investor/investor-pages";
+import { InvestorShell, InvestorWithdrawalsPage, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Investor Withdrawals | OTIZ CAPITAL",
-  description: "Withdrawal request foundation for OTIZ CAPITAL investors."
-};
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  if (!isLocale(params.locale)) return {};
+  const page = getInvestorStrings(params.locale).pages.withdrawals;
+  return { title: `${page.title} | OTIZ CAPITAL`, description: page.description };
+}
 
 export default async function InvestorWithdrawalsRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {
@@ -19,10 +20,11 @@ export default async function InvestorWithdrawalsRoute({ params }: { params: { l
 
   const investor = await requireInvestorSession(params.locale);
   const data = await getInvestorDashboardData(investor);
+  const page = getInvestorStrings(params.locale).pages.withdrawals;
 
   return (
-    <InvestorShell locale={params.locale} investor={investor} active="withdrawals" eyebrow="Manager-reviewed requests" title="Withdrawals" description="Request review and cooldown visibility without real payment processing or money movement.">
-      <InvestorWithdrawalsPage withdrawals={data.withdrawals} summary={data.summary} />
+    <InvestorShell locale={params.locale} investor={investor} active="withdrawals" eyebrow={page.eyebrow} title={page.title} description={page.description}>
+      <InvestorWithdrawalsPage locale={params.locale} allocations={data.allocations} withdrawals={data.withdrawals} summary={data.summary} />
     </InvestorShell>
   );
 }

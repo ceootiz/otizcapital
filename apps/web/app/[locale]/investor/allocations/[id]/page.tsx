@@ -7,10 +7,15 @@ import { requireInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Investor Allocation Detail | OTIZ CAPITAL",
-  description: "Investor allocation proof and status detail."
-};
+const META = {
+  en: { title: "Investor Allocation Detail | OTIZ CAPITAL", description: "Investor allocation proof and status detail." },
+  ru: { title: "Детали аллокации инвестора | OTIZ CAPITAL", description: "Подтверждения и статус аллокации инвестора." }
+} as const;
+
+export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+  const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
+  return { title: meta.title, description: meta.description };
+}
 
 export default async function InvestorAllocationDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
   if (!isLocale(params.locale)) notFound();

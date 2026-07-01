@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, FileText, PackageCheck } from "lucide-react";
 import type { Investor } from "@prisma/client";
-import type { Locale } from "@otiz/lib";
+import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import { InvestorShell } from "./investor-pages";
 
@@ -39,56 +39,121 @@ type AllocationDetail = {
   } | null;
 };
 
-const moneyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-const dateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
-
-function formatMoney(value: string | number | null | undefined) { const amount = Number(value || 0); return moneyFormatter.format(Number.isFinite(amount) ? amount : 0); }
-function formatDate(value: string | null) { if (!value) return "-"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "-" : dateFormatter.format(date); }
+const STRINGS = {
+  en: {
+    eyebrow: "Allocation visibility",
+    description: "A focused view of one managed electronics commerce allocation, proof availability, and payout or reinvest state.",
+    backToAllocations: "Back to allocations",
+    marketplacePending: "Marketplace pending",
+    allocationAmount: "Allocation amount",
+    expectedCycle: "Expected cycle",
+    days: "days",
+    notSet: "Not set",
+    estimatedResult: "Estimated result",
+    notEstimated: "Not estimated",
+    actualProfit: "Actual profit",
+    visibleAfterCompletion: "Visible after completion",
+    payoutStatus: "Payout status",
+    reinvestDecision: "Reinvest decision",
+    started: "Started",
+    completed: "Completed",
+    proofHealth: "Proof health",
+    underManagerReview: "Under manager review",
+    evidenceSummary: "Evidence summary",
+    evidenceCoverageReview: "Evidence coverage is under manager review.",
+    riskVisibility: "Risk visibility",
+    riskSummary: "Risk summary",
+    operationalRiskReview: "Operational risk is under manager review.",
+    operationalTimeline: "Operational timeline",
+    operationalTimelineDesc: "Current lifecycle view without trading-style noise.",
+    proofPlaceholders: "Proof placeholders",
+    proofPlaceholdersDesc: "Only available or verified proof metadata is visible here.",
+    noProofsTitle: "No available proofs yet",
+    noProofsBody: "Shipment documentation, warehouse media, marketplace reporting, and serial verification placeholders appear after manager review.",
+    availableProofMetadata: "Available proof metadata."
+  },
+  ru: {
+    eyebrow: "Видимость аллокации",
+    description: "Сфокусированный обзор одной управляемой аллокации в коммерции электроники, доступности подтверждений и статуса выплаты или реинвеста.",
+    backToAllocations: "Назад к аллокациям",
+    marketplacePending: "Маркетплейс не назначен",
+    allocationAmount: "Сумма аллокации",
+    expectedCycle: "Ожидаемый цикл",
+    days: "дн.",
+    notSet: "Не задано",
+    estimatedResult: "Ожидаемый результат",
+    notEstimated: "Не оценено",
+    actualProfit: "Фактическая прибыль",
+    visibleAfterCompletion: "Доступно после завершения",
+    payoutStatus: "Статус выплаты",
+    reinvestDecision: "Решение о реинвесте",
+    started: "Начато",
+    completed: "Завершено",
+    proofHealth: "Состояние подтверждений",
+    underManagerReview: "На проверке у менеджера",
+    evidenceSummary: "Сводка по подтверждениям",
+    evidenceCoverageReview: "Полнота подтверждений на проверке у менеджера.",
+    riskVisibility: "Видимость рисков",
+    riskSummary: "Сводка по рискам",
+    operationalRiskReview: "Операционный риск на проверке у менеджера.",
+    operationalTimeline: "Операционный таймлайн",
+    operationalTimelineDesc: "Текущий обзор жизненного цикла без биржевого шума.",
+    proofPlaceholders: "Заготовки подтверждений",
+    proofPlaceholdersDesc: "Здесь видны только доступные или проверенные метаданные подтверждений.",
+    noProofsTitle: "Пока нет доступных подтверждений",
+    noProofsBody: "Заготовки для документов об отгрузке, складских материалов, отчётов маркетплейса и проверки серийных номеров появятся после проверки менеджером.",
+    availableProofMetadata: "Доступные метаданные подтверждения."
+  }
+} as const;
+type Strings = typeof STRINGS.en;
+const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
 export function InvestorAllocationDetailPage({ locale, investor, allocation }: { locale: Locale; investor: Investor; allocation: AllocationDetail }) {
+  const t = getStrings(locale);
+  const fmt = createAdminFormatters(locale);
   return (
-    <InvestorShell locale={locale} investor={investor} active="allocations" eyebrow="Allocation visibility" title={allocation.supplyCode} description="A focused view of one managed electronics commerce allocation, proof availability, and payout or reinvest state.">
+    <InvestorShell locale={locale} investor={investor} active="allocations" eyebrow={t.eyebrow} title={allocation.supplyCode} description={t.description}>
       <div className="mb-6">
-        <Link href={`/${locale}/investor/allocations`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />Back to allocations</Link>
+        <Link href={`/${locale}/investor/allocations`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToAllocations}</Link>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div><CardTitle>{allocation.productName}</CardTitle><CardDescription>{allocation.marketplace || "Marketplace pending"}</CardDescription></div>
-              <Badge>{allocation.status}</Badge>
+              <div><CardTitle>{allocation.productName}</CardTitle><CardDescription>{allocation.marketplace || t.marketplacePending}</CardDescription></div>
+              <Badge>{enumLabel("allocationStatus", allocation.status, locale)}</Badge>
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <ProofLine label="Allocation amount" value={formatMoney(allocation.allocationAmount)} />
-            <ProofLine label="Expected cycle" value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} days` : "Not set"} />
-            <ProofLine label="Estimated result" value={allocation.estimatedResult || "Not estimated"} />
-            <ProofLine label="Actual profit" value={allocation.status === "COMPLETED" && allocation.actualProfit ? formatMoney(allocation.actualProfit) : "Visible after completion"} />
-            <ProofLine label="Payout status" value={allocation.payoutStatus} />
-            <ProofLine label="Reinvest decision" value={allocation.reinvestDecision} />
-            <ProofLine label="Started" value={formatDate(allocation.startedAt)} />
-            <ProofLine label="Completed" value={formatDate(allocation.completedAt)} />
-            <ProofLine label="Proof health" value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : "Under manager review"} />
-            <ProofLine label="Evidence summary" value={allocation.proofHealth?.investorSafeSummary || "Evidence coverage is under manager review."} />
-            <ProofLine label="Risk visibility" value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : "Under manager review"} />
-            <ProofLine label="Risk summary" value={allocation.riskHealth?.summary || "Operational risk is under manager review."} />
+            <ProofLine label={t.allocationAmount} value={fmt.currency(Number(allocation.allocationAmount || 0))} />
+            <ProofLine label={t.expectedCycle} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.days}` : t.notSet} />
+            <ProofLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} />
+            <ProofLine label={t.actualProfit} value={allocation.status === "COMPLETED" && allocation.actualProfit ? fmt.currency(Number(allocation.actualProfit || 0)) : t.visibleAfterCompletion} />
+            <ProofLine label={t.payoutStatus} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
+            <ProofLine label={t.reinvestDecision} value={enumLabel("reinvestDecision", allocation.reinvestDecision, locale)} />
+            <ProofLine label={t.started} value={fmt.date(allocation.startedAt)} />
+            <ProofLine label={t.completed} value={fmt.date(allocation.completedAt)} />
+            <ProofLine label={t.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : t.underManagerReview} />
+            <ProofLine label={t.evidenceSummary} value={allocation.proofHealth?.investorSafeSummary || t.evidenceCoverageReview} />
+            <ProofLine label={t.riskVisibility} value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : t.underManagerReview} />
+            <ProofLine label={t.riskSummary} value={allocation.riskHealth?.summary || t.operationalRiskReview} />
           </CardContent>
         </Card>
 
         <Card className="rounded-[2rem] bg-graphite-900/[0.72]">
-          <CardHeader><CardTitle>Operational timeline</CardTitle><CardDescription>Current lifecycle view without trading-style noise.</CardDescription></CardHeader>
-          <CardContent><div className="grid gap-3">{["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED"].map((step) => <div key={step} className={`rounded-2xl border p-3 text-sm ${step === allocation.status ? "border-gold-200/35 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/20 text-muted-foreground"}`}>{step}</div>)}</div></CardContent>
+          <CardHeader><CardTitle>{t.operationalTimeline}</CardTitle><CardDescription>{t.operationalTimelineDesc}</CardDescription></CardHeader>
+          <CardContent><div className="grid gap-3">{["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED"].map((step) => <div key={step} className={`rounded-2xl border p-3 text-sm ${step === allocation.status ? "border-gold-200/35 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/20 text-muted-foreground"}`}>{enumLabel("allocationStatus", step, locale)}</div>)}</div></CardContent>
         </Card>
       </div>
 
       <Card className="mt-6 rounded-[2rem] bg-graphite-900/[0.72]">
-        <CardHeader><CardTitle>Proof placeholders</CardTitle><CardDescription>Only available or verified proof metadata is visible here.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>{t.proofPlaceholders}</CardTitle><CardDescription>{t.proofPlaceholdersDesc}</CardDescription></CardHeader>
         <CardContent className="grid gap-4">
           {allocation.proofs.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-8 text-center"><PackageCheck className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">No available proofs yet</p><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Shipment documentation, warehouse media, marketplace reporting, and serial verification placeholders appear after manager review.</p></div>
+            <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-8 text-center"><PackageCheck className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.noProofsTitle}</p><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.noProofsBody}</p></div>
           ) : allocation.proofs.map((proof) => (
             <div key={proof.id} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{proof.type}</p><p className="mt-2 font-semibold text-foreground">{proof.title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{proof.description || "Available proof metadata."}</p></div><Badge>{proof.status}</Badge></div>
+              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{enumLabel("proofType", proof.type, locale)}</p><p className="mt-2 font-semibold text-foreground">{proof.title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{proof.description || t.availableProofMetadata}</p></div><Badge>{enumLabel("proofStatus", proof.status, locale)}</Badge></div>
               {proof.proofUrl ? <><Separator className="my-4" /><p className="break-words text-xs text-gold-100"><FileText className="mr-2 inline size-3" />{proof.proofUrl}</p></> : null}
             </div>
           ))}

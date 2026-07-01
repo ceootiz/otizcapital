@@ -4,6 +4,29 @@
 
 @layer base {
   :root {
+    --background: 40 33% 96%;
+    --foreground: 216 28% 12%;
+    --card: 40 33% 99%;
+    --card-foreground: 216 28% 12%;
+    --popover: 40 33% 99%;
+    --popover-foreground: 216 28% 12%;
+    --primary: 40 54% 44%;
+    --primary-foreground: 42 40% 98%;
+    --secondary: 40 22% 89%;
+    --secondary-foreground: 216 24% 18%;
+    --muted: 40 22% 90%;
+    --muted-foreground: 216 12% 40%;
+    --accent: 40 42% 82%;
+    --accent-foreground: 216 26% 18%;
+    --destructive: 0 66% 44%;
+    --destructive-foreground: 42 40% 98%;
+    --border: 216 16% 80%;
+    --input: 216 16% 80%;
+    --ring: 40 54% 44%;
+    --radius: 1.35rem;
+  }
+
+  .dark {
     --background: 216 22% 5%;
     --foreground: 42 24% 92%;
     --card: 216 17% 8%;
@@ -23,7 +46,6 @@
     --border: 42 18% 18%;
     --input: 42 18% 18%;
     --ring: 40 56% 62%;
-    --radius: 1.35rem;
   }
 
   * {
@@ -32,12 +54,23 @@
 
   html {
     scroll-behavior: smooth;
-    background: #050607;
+    background: hsl(var(--background));
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
+    background:
+      radial-gradient(circle at 80% -10%, rgba(212, 175, 95, 0.16), transparent 32rem),
+      radial-gradient(circle at 10% 0%, rgba(17, 20, 25, 0.05), transparent 28rem),
+      linear-gradient(180deg, #f7f4ec 0%, #efeae1 42%, #f7f4ec 100%);
+  }
+
+  html.dark {
+    background: #050607;
+  }
+
+  html.dark body {
     background:
       radial-gradient(circle at 80% -10%, rgba(212, 175, 95, 0.2), transparent 32rem),
       radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.08), transparent 28rem),

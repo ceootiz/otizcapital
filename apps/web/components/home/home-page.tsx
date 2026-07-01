@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -11,17 +12,16 @@ import {
   FileCheck2,
   Globe2,
   Languages,
+  Menu,
   PackageCheck,
   ShieldCheck,
-  Truck
+  Truck,
+  X
 } from "lucide-react";
 import {
-  allocationRows,
   localeNames,
   localeShortNames,
   locales,
-  operationEvents,
-  proofSignals,
   type HomeDictionary,
   type Locale
 } from "@otiz/lib";
@@ -41,6 +41,7 @@ import {
 } from "@otiz/ui";
 import { HeroDashboard } from "./hero-dashboard";
 import { Reveal, SectionShell } from "./section-shell";
+import { ThemeToggle } from "./theme-toggle";
 
 const flowIcons = [CircleDollarSign, BarChart3, Factory, Globe2, FileCheck2];
 const proofIcons = [Truck, Factory, BarChart3, ShieldCheck, CheckCircle2, PackageCheck];
@@ -65,6 +66,7 @@ export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; l
 }
 
 function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; activeLocale: Locale }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const nav = [
     { label: dictionary.nav.operations, href: "#operations" },
     { label: dictionary.nav.transparency, href: "#transparency" },
@@ -73,6 +75,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
   ];
 
   return (
+    <>
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-graphite-950/[0.62] backdrop-blur-2xl">
       <div className="container flex h-20 items-center justify-between gap-6">
         <Link href={`/${activeLocale}`} className="flex items-center gap-3" aria-label="OTIZ CAPITAL home">
@@ -106,12 +109,86 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
               </Link>
             ))}
           </div>
+          <ThemeToggle />
+          <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+            <a href={`/${activeLocale}/investor/login`}>Кабинет инвестора</a>
+          </Button>
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <a href={`/${activeLocale}/apply`}>{dictionary.nav.cta}</a>
           </Button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-foreground transition-colors hover:bg-white/[0.08] lg:hidden [&_svg]:size-5"
+          >
+            <Menu />
+          </button>
         </div>
       </div>
     </header>
+      {menuOpen ? (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+            className="absolute inset-0 h-full w-full bg-graphite-950/80 backdrop-blur"
+          />
+          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto rounded-l-[1.5rem] border-l border-white/10 bg-graphite-900/[0.96] p-6 shadow-premium backdrop-blur-2xl">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold tracking-[0.24em] text-foreground">OTIZ CAPITAL</span>
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+                className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-foreground transition-colors hover:bg-white/[0.08] [&_svg]:size-5"
+              >
+                <X />
+              </button>
+            </div>
+            <nav className="mt-2 flex flex-col gap-1 text-foreground" aria-label="Mobile navigation">
+              {nav.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-2xl px-4 py-2.5 text-2xl font-medium tracking-[-0.01em] text-foreground transition-colors hover:bg-white/[0.05] hover:text-gold-100"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+            <div className="mt-auto flex flex-col gap-4 border-t border-white/10 pt-6">
+              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1" aria-label={dictionary.footer.language}>
+                {locales.map((nextLocale) => (
+                  <Link
+                    key={nextLocale}
+                    href={`/${nextLocale}`}
+                    title={localeNames[nextLocale]}
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex-1 rounded-full px-3 py-1.5 text-center text-[0.68rem] font-semibold transition-colors ${
+                      activeLocale === nextLocale ? "bg-gold-200 text-graphite-950" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {localeShortNames[nextLocale]}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button asChild variant="outline" size="lg" className="w-full">
+                  <a href={`/${activeLocale}/investor/login`} onClick={() => setMenuOpen(false)}>Кабинет инвестора</a>
+                </Button>
+                <Button asChild size="lg" className="w-full">
+                  <a href={`/${activeLocale}/apply`} onClick={() => setMenuOpen(false)}>Стать инвестором</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -121,7 +198,7 @@ function Hero({ dictionary, locale }: { dictionary: HomeDictionary; locale: Loca
     { label: dictionary.hero.activeAllocations, value: "$12.8M" },
     { label: dictionary.hero.commerceVolume, value: "$16.2M" },
     { label: dictionary.hero.deliveredDevices, value: "48.6K" },
-    { label: dictionary.hero.monthlyReporting, value: "Monthly" }
+    { label: dictionary.hero.monthlyReporting, value: dictionary.dashboard.monthlyValue }
   ];
 
   return (
@@ -242,11 +319,11 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
             <CardContent className="flex flex-col gap-5">
               <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
                 <div className="mb-5 flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Proof chain</span>
-                  <Badge variant="secondary">Operational</Badge>
+                  <span className="text-sm text-muted-foreground">{dictionary.transparency.proofChain}</span>
+                  <Badge variant="secondary">{dictionary.transparency.operational}</Badge>
                 </div>
                 <div className="flex flex-col gap-4">
-                  {proofSignals.map((signal, index) => (
+                  {dictionary.commerce.proofSignals.map((signal, index) => (
                     <div key={signal} className="flex items-center gap-3">
                       <span className="flex size-7 items-center justify-center rounded-full bg-gold-200/10 text-[0.68rem] font-semibold text-gold-100">
                         {index + 1}
@@ -260,12 +337,12 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="font-semibold text-foreground">QC media</p>
-                  <p className="mt-2 text-muted-foreground">Warehouse capture</p>
+                  <p className="font-semibold text-foreground">{dictionary.transparency.qcMedia}</p>
+                  <p className="mt-2 text-muted-foreground">{dictionary.transparency.qcMediaDetail}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="font-semibold text-foreground">Settlement</p>
-                  <p className="mt-2 text-muted-foreground">Cycle matched</p>
+                  <p className="font-semibold text-foreground">{dictionary.transparency.settlement}</p>
+                  <p className="mt-2 text-muted-foreground">{dictionary.transparency.settlementDetail}</p>
                 </div>
               </div>
             </CardContent>
@@ -303,13 +380,13 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
             <CardHeader className="flex-row items-start justify-between gap-6">
               <div>
                 <CardTitle>{dictionary.live.currentAllocations}</CardTitle>
-                <CardDescription>Defined supply cycles with calm operational status.</CardDescription>
+                <CardDescription>{dictionary.live.allocationsSubtitle}</CardDescription>
               </div>
-              <Badge>36 active</Badge>
+              <Badge>{dictionary.live.activeCount}</Badge>
             </CardHeader>
             <CardContent>
               <div className="overflow-hidden rounded-[1.5rem] border border-white/10">
-                {allocationRows.map((row) => (
+                {dictionary.commerce.allocations.map((row) => (
                   <div key={row.id} className="grid gap-4 border-b border-white/10 bg-white/[0.025] p-5 last:border-b-0 md:grid-cols-[1fr_0.75fr_0.5fr] md:items-center">
                     <div>
                       <p className="font-semibold text-foreground">{row.cycle}</p>
@@ -333,10 +410,10 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
           <Card className="h-full rounded-[2rem]">
             <CardHeader>
               <CardTitle>{dictionary.live.recentOperations}</CardTitle>
-              <CardDescription>Proof-oriented events from the current commerce day.</CardDescription>
+              <CardDescription>{dictionary.live.eventsSubtitle}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
-              {operationEvents.map((event) => (
+              {dictionary.commerce.operations.map((event) => (
                 <div key={event.title} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-xs font-semibold text-gold-100">
@@ -369,11 +446,11 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
             <div className="absolute -right-20 top-12 size-72 rounded-full bg-gold-300/15 blur-3xl" />
             <div className="relative z-10 flex h-full flex-col justify-between gap-12">
               <div>
-                <p className="font-display text-5xl font-medium tracking-[-0.055em] text-foreground">Commerce infrastructure</p>
-                <p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground">Real inventory creates visible proof: purchase orders, shipment events, marketplace settlements, payout records, and cycle reporting.</p>
+                <p className="font-display text-5xl font-medium tracking-[-0.055em] text-foreground">{dictionary.realCommerce.infrastructureTitle}</p>
+                <p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground">{dictionary.realCommerce.infrastructureBody}</p>
               </div>
               <div className="grid gap-3">
-                {proofSignals.slice(0, 4).map((signal) => (
+                {dictionary.commerce.proofSignals.slice(0, 4).map((signal) => (
                   <div key={signal} className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 p-4">
                     <span className="text-sm text-foreground">{signal}</span>
                     <CheckCircle2 className="size-4 text-gold-100" />
