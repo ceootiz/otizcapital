@@ -22,3 +22,4 @@ export * from "./investor-sessions";
 export * from "./investor-notifications";
 export * from "./investor-file-reports";
 export * from "./investor-documents";
+export * from "./password-reset-tokens";

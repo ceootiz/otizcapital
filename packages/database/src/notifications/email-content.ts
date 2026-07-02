@@ -124,6 +124,24 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
       return { subject: "О вашей заявке в OTIZ Capital", html: shell(heading, paragraphs(lines)), text: toText(heading, lines) };
     }
 
+    case "PASSWORD_RESET": {
+      const heading = "Сброс пароля";
+      const token = str(payload, "token");
+      const locale = str(payload, "locale") || "ru";
+      const resetUrl = `${base}/${locale}/investor/reset-password?token=${encodeURIComponent(token)}`;
+      const lines = [
+        `${greeting} Мы получили запрос на сброс пароля для вашего кабинета OTIZ Capital.`,
+        "Нажмите кнопку ниже, чтобы задать новый пароль. Ссылка действительна в течение 1 часа.",
+        "Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо — ваш пароль останется прежним."
+      ];
+      const html = shell(heading, paragraphs(lines) + button(resetUrl, "Сбросить пароль"));
+      return {
+        subject: "Сброс пароля — OTIZ Capital",
+        html,
+        text: toText(heading, [...lines, `Ссылка: ${resetUrl}`])
+      };
+    }
+
     case "INVESTOR_DOCUMENT_READY": {
       const heading = "Документы готовы к подписанию";
       const documentsUrl = `${base}/ru/investor/documents`;

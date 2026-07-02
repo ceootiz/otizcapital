@@ -23,6 +23,7 @@ const STRINGS = {
     password: "Password",
     passwordPlaceholder: "Your password",
     signInWithPassword: "Sign in with password",
+    forgotPassword: "Forgot password?",
     useAccessCode: "Use access code instead",
     accessCode: "Access code",
     accessCodePlaceholder: "Configured temporary code",
@@ -48,6 +49,7 @@ const STRINGS = {
     password: "Пароль",
     passwordPlaceholder: "Ваш пароль",
     signInWithPassword: "Войти с паролем",
+    forgotPassword: "Забыли пароль?",
     useAccessCode: "Использовать код доступа",
     accessCode: "Код доступа",
     accessCodePlaceholder: "Настроенный временный код",
@@ -226,19 +228,27 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
               </div>
 
               {mode === "password" ? (
-                <label className="flex flex-col gap-2">
-                  <span className={labelClass}>{t.password}</span>
-                  <input
-                    ref={passwordRef}
-                    aria-label={t.password}
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder={t.passwordPlaceholder}
-                    className={inputClass}
-                  />
-                </label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex flex-col gap-2">
+                    <span className={labelClass}>{t.password}</span>
+                    <input
+                      ref={passwordRef}
+                      aria-label={t.password}
+                      type="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder={t.passwordPlaceholder}
+                      className={inputClass}
+                    />
+                  </label>
+                  <Link
+                    href={`/${locale}/investor/forgot-password`}
+                    className="self-start text-xs font-medium text-muted-foreground transition-colors hover:text-amber-700 dark:hover:text-gold-100"
+                  >
+                    {t.forgotPassword}
+                  </Link>
+                </div>
               ) : (
                 <label className="flex flex-col gap-2">
                   <span className={labelClass}>{t.accessCode}</span>

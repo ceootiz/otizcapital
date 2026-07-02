@@ -108,10 +108,27 @@ model Investor {
   notifications       InvestorNotification[]
   fileReports         InvestorFileReport[]
   documents           InvestorDocument[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
+}
+
+// Single-use, 1-hour password reset tokens for the investor "forgot password"
+// flow. A token is spent when usedAt is set; a successful reset also invalidates
+// every other unused token for the investor.
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  investorId String
+  token      String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+  investor   Investor  @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+  @@index([token])
 }
 
 // Admin-uploaded XLSX report files (distinct from the text-based MonthlyReport).

@@ -47,8 +47,13 @@ export function middleware(request: NextRequest) {
 
   const { locale, rest } = splitLocale(request.nextUrl.pathname);
 
-  // Login pages must remain reachable without a session.
-  if (rest === "/admin/login" || rest === "/investor/login") {
+  // Login and password-recovery pages must remain reachable without a session.
+  if (
+    rest === "/admin/login" ||
+    rest === "/investor/login" ||
+    rest === "/investor/forgot-password" ||
+    rest === "/investor/reset-password"
+  ) {
     return NextResponse.next();
   }
 

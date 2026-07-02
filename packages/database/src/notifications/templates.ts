@@ -203,6 +203,18 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
       html: paragraph(text),
       telegramText: text
     };
+  },
+  PASSWORD_RESET: () => {
+    // Investor-facing content is built in email-content.ts; this internal
+    // template exists only to satisfy the type-complete registry.
+    const text = "A password reset link was requested for an investor account.";
+
+    return {
+      subject: "Password reset requested",
+      text,
+      html: paragraph(text),
+      telegramText: text
+    };
   }
 };
 
