@@ -3,6 +3,7 @@ import { getApplicationPriorityScore, getCrmConfig, type CrmConfig } from "@otiz
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
 import { processPendingEmailNotificationEvents } from "./notification-processor";
+import { getSiteSettings } from "./site-settings";
 
 export const APPLICATION_STATUSES = ["NEW", "REVIEWED", "APPROVED", "REJECTED", "CONTACTED"] as const;
 export const APPLICATION_PRIORITIES = ["LOW", "NORMAL", "HIGH", "VIP"] as const;
@@ -60,6 +61,9 @@ export type UpdateInvestorApplicationInput = {
 };
 
 export async function createInvestorApplicationRecord(input: CreateInvestorApplicationInput) {
+  // Read the contact handle up front so it can be embedded in the confirmation
+  // email (the email builder has no DB access).
+  const { contactTelegram } = await getSiteSettings();
   const application = await prisma.$transaction(async (transaction) => {
     const application = await transaction.investorApplication.create({
       data: {
@@ -105,7 +109,7 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
           recipient: application.email,
           entityType: "InvestorApplication",
           entityId: application.id,
-          payload: { applicationId: application.id, fullName: application.fullName },
+          payload: { applicationId: application.id, fullName: application.fullName, contactTelegram },
           status: "PENDING"
         },
         transaction

@@ -10,7 +10,8 @@ export type AdminNavigationSection =
   | "readiness-policy"
   | "checkpoint-health"
   | "deposit-addresses"
-  | "content";
+  | "content"
+  | "contact-settings";
 
 const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale: Locale) => string }> = [
   { key: "applications", href: (locale) => `/${locale}/admin/applications` },
@@ -21,7 +22,8 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
   { key: "readiness-policy", href: (locale) => `/${locale}/admin/settings/readiness-policy` },
   { key: "checkpoint-health", href: (locale) => `/${locale}/admin/checkpoint-health` },
   { key: "deposit-addresses", href: (locale) => `/${locale}/admin/deposit-addresses` },
-  { key: "content", href: (locale) => `/${locale}/admin/content` }
+  { key: "content", href: (locale) => `/${locale}/admin/content` },
+  { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` }
 ];
 
 const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
@@ -34,7 +36,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     "readiness-policy": "Readiness policy",
     "checkpoint-health": "Checkpoint health",
     "deposit-addresses": "Deposits",
-    content: "Content"
+    content: "Content",
+    "contact-settings": "Contact"
   },
   ru: {
     applications: "Заявки",
@@ -45,7 +48,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     "readiness-policy": "Политика готовности",
     "checkpoint-health": "Контроль состояния",
     "deposit-addresses": "Пополнение",
-    content: "Контент"
+    content: "Контент",
+    "contact-settings": "Контакты"
   }
 };
 

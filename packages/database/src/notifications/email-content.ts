@@ -82,13 +82,44 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
   switch (event.type) {
     case "INVESTOR_APPLICATION_CREATED": {
       const heading = "Заявка получена";
-      const lines = [
-        `${greeting} Мы получили вашу заявку в OTIZ Capital.`,
-        "Каждая заявка проходит ручную проверку нашей команды — мы свяжемся с вами лично, чтобы обсудить детали.",
-        "Обратите внимание: подача заявки не гарантирует одобрение, решение принимается индивидуально.",
-        "Спасибо за интерес к OTIZ Capital."
+      const contactTelegram = str(payload, "contactTelegram") || "otizceo";
+      const telegramUrl = `https://t.me/${contactTelegram}`;
+      const intro = [
+        `${greeting} Мы получили вашу заявку в OTIZ Capital и уже начали её рассмотрение.`,
+        "Обычно отвечаем в течение 24–48 часов."
       ];
-      return { subject: "Ваша заявка получена — OTIZ Capital", html: shell(heading, paragraphs(lines)), text: toText(heading, lines) };
+      // Numbered "what happens next" timeline (email-safe inline styles).
+      const steps = [
+        "Заявка получена",
+        "Команда свяжется с вами в течение 24–48 часов",
+        "Проверка пригодности",
+        "Одобрение и доступ к кабинету"
+      ];
+      const timelineHtml = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;">${steps
+        .map(
+          (step, index) =>
+            `<tr><td style="padding:6px 12px 6px 0;vertical-align:top;color:${GOLD};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;">${index + 1}.</td><td style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${INK};">${escapeHtml(step)}</td></tr>`
+        )
+        .join("")}</table>`;
+      const closing = "Обратите внимание: подача заявки не гарантирует одобрение — решение принимается индивидуально.";
+      const contactLine = `Если у вас есть вопросы — напишите нам в Telegram.`;
+
+      const html = shell(
+        heading,
+        paragraphs(intro) +
+          `<p style="margin:18px 0 6px 0;font-weight:600;color:${INK};">Что дальше:</p>` +
+          timelineHtml +
+          paragraphs([closing, contactLine]) +
+          button(telegramUrl, "Написать в Telegram")
+      );
+      const text = toText(heading, [
+        ...intro,
+        "Что дальше:",
+        ...steps.map((step, index) => `${index + 1}. ${step}`),
+        closing,
+        `${contactLine} ${telegramUrl}`
+      ]);
+      return { subject: "Ваша заявка получена — OTIZ Capital", html, text };
     }
 
     case "INVESTOR_CREATED": {

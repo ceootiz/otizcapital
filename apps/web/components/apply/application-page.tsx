@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, FileCheck2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import {
@@ -62,6 +63,7 @@ export function ApplicationPage({
   countryOptions: CountryOption[];
 }) {
   const reduceMotion = useReducedMotion();
+  const router = useRouter();
   const [form, setForm] = React.useState<FormState>(initialForm);
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -133,9 +135,13 @@ export function ApplicationPage({
         heardFrom: form.heardFrom.trim(),
         message: form.message.trim()
       });
-      const result = await investorApplicationSubmitter.submit(application);
-      setReceivedId(result.id);
+      const submittedEmail = application.email?.trim() || "";
+      await investorApplicationSubmitter.submit(application);
       setForm(initialForm);
+      // Redirect to the bookmarkable post-application status page. The email
+      // (if provided) is passed so the page can show a masked confirmation.
+      const query = submittedEmail ? `?email=${encodeURIComponent(submittedEmail)}` : "";
+      router.push(`/${locale}/apply/status${query}`);
     } catch (error) {
       setErrors({ form: error instanceof Error && error.message ? error.message : dictionary.form.validationRequired });
     } finally {

@@ -7,6 +7,7 @@ import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separ
 import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdrawal } from "@/lib/investor-dashboard-data";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
+import { ContactManagerButton } from "./contact-manager-button";
 
 type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "withdrawals" | "reinvest" | "settings";
 
@@ -265,6 +266,7 @@ export function InvestorShell({
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-semibold tracking-[0.24em] text-foreground">{t.brand}</span>
+              <ContactManagerButton locale={locale} />
               <InvestorLocaleSwitcher locale={locale} />
               <InvestorNotificationBell locale={locale} />
               <ThemeToggle />

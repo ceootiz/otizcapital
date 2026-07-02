@@ -46,6 +46,15 @@ model YieldSettings {
   updatedAt         DateTime @updatedAt
 }
 
+// Singleton global site settings (locale-agnostic). Holds the admin-configurable
+// Telegram contact handle shown as the "Contact manager" button + on the
+// post-application status page and confirmation email.
+model SiteSettings {
+  id              String   @id @default("default")
+  contactTelegram String   @default("otizceo")
+  updatedAt       DateTime @updatedAt
+}
+
 model InvestorApplication {
   id                      String   @id @default(cuid())
   investorId              String?
