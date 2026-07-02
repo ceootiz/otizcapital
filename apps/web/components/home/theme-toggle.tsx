@@ -37,7 +37,7 @@ export function ThemeToggle() {
       aria-checked={isDark}
       aria-label="Toggle dark and light theme"
       onClick={toggleTheme}
-      className="relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:border-gold-300/40"
+      className="relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border border-foreground/20 bg-foreground/[0.04] transition-colors hover:border-gold-300/40 dark:border-white/10 dark:bg-white/[0.04]"
     >
       <Sun className="absolute left-1.5 size-3.5 text-muted-foreground" aria-hidden="true" />
       <Moon className="absolute right-1.5 size-3.5 text-muted-foreground" aria-hidden="true" />

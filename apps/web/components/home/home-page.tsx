@@ -80,7 +80,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-2xl">
       <div className="container flex h-20 items-center justify-between gap-6">
         <Link href={`/${activeLocale}`} className="flex items-center gap-3" aria-label="OTIZ CAPITAL home">
-          <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-sm font-semibold text-gold-100 shadow-gold">
+          <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-sm font-semibold text-amber-700 shadow-gold dark:bg-gold-200/10 dark:text-gold-100">
             O
           </span>
           <span className="flex flex-col leading-none">
@@ -155,7 +155,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-2xl px-4 py-2.5 text-2xl font-medium tracking-[-0.01em] text-foreground transition-colors hover:bg-muted/50 hover:text-gold-100"
+                  className="rounded-2xl px-4 py-2.5 text-2xl font-medium tracking-[-0.01em] text-foreground transition-colors hover:bg-muted/50 hover:text-amber-700 dark:hover:text-gold-100"
                 >
                   {item.label}
                 </a>
@@ -289,12 +289,12 @@ function HowItWorks({ dictionary }: { dictionary: HomeDictionary }) {
           const Icon = flowIcons[index] ?? CheckCircle2;
           return (
             <Reveal key={step.title} delay={index * 0.06}>
-              <div className="relative flex h-full flex-col gap-5 rounded-[1.35rem] border border-border bg-card p-6 shadow-premium">
-                <div className="flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100 [&_svg]:size-5">
+              <div className="relative flex h-full flex-col gap-5 rounded-[1.35rem] border border-foreground/15 bg-card p-6 shadow-premium dark:border-white/[0.08]">
+                <div className="flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-amber-700 [&_svg]:size-5 dark:bg-gold-200/10 dark:text-gold-100">
                   <Icon />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">0{index + 1}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-foreground/40 dark:text-gold-100/40">0{index + 1}</p>
                   <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-foreground">{step.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">{step.body}</p>
                 </div>
@@ -326,12 +326,12 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
                 <div className="flex flex-col gap-4">
                   {dictionary.commerce.proofSignals.map((signal, index) => (
                     <div key={signal} className="flex items-center gap-3">
-                      <span className="flex size-7 items-center justify-center rounded-full bg-gold-200/10 text-[0.68rem] font-semibold text-gold-100">
+                      <span className="flex size-7 items-center justify-center rounded-full bg-gold-300/20 text-[0.68rem] font-semibold text-amber-700 dark:bg-gold-200/10 dark:text-gold-100">
                         {index + 1}
                       </span>
                       <span className="text-sm text-foreground">{signal}</span>
-                      <span className="ml-auto h-px flex-1 bg-white/10" />
-                      <CheckCircle2 className="size-4 text-gold-100" />
+                      <span className="ml-auto h-px flex-1 bg-foreground/15 dark:bg-white/10" />
+                      <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
                     </div>
                   ))}
                 </div>
@@ -356,7 +356,7 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
               <Reveal key={item.title} delay={index * 0.04}>
                 <Card className="h-full bg-muted/30">
                   <CardContent className="p-6">
-                    <div className="mb-7 flex size-11 items-center justify-center rounded-full border border-border bg-muted/30 text-gold-100 [&_svg]:size-5">
+                    <div className="mb-7 flex size-11 items-center justify-center rounded-full border border-border bg-muted/30 text-amber-700 [&_svg]:size-5 dark:text-gold-100">
                       <Icon />
                     </div>
                     <h3 className="text-lg font-semibold tracking-[-0.025em] text-foreground">{item.title}</h3>
@@ -417,10 +417,10 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
               {dictionary.commerce.operations.map((event) => (
                 <div key={event.title} className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-xs font-semibold text-gold-100">
+                    <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-xs font-semibold text-amber-700 dark:bg-gold-200/10 dark:text-gold-100">
                       {event.time}
                     </span>
-                    <span className="mt-3 h-full w-px bg-white/10" />
+                    <span className="mt-3 h-full w-px bg-foreground/15 dark:bg-white/10" />
                   </div>
                   <div className="pb-6">
                     <Badge variant="secondary">{event.state}</Badge>
@@ -454,7 +454,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
                 {dictionary.commerce.proofSignals.slice(0, 4).map((signal) => (
                   <div key={signal} className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 p-4">
                     <span className="text-sm text-foreground">{signal}</span>
-                    <CheckCircle2 className="size-4 text-gold-100" />
+                    <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
                   </div>
                 ))}
               </div>
@@ -466,7 +466,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
             <Reveal key={point.title} delay={index * 0.05}>
               <Card className="h-full bg-muted/30">
                 <CardContent className="p-7">
-                  <p className="mb-8 text-xs font-semibold uppercase tracking-[0.24em] text-gold-100">0{index + 1}</p>
+                  <p className="mb-8 text-xs font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-gold-100">0{index + 1}</p>
                   <h3 className="text-xl font-semibold tracking-[-0.03em] text-foreground">{point.title}</h3>
                   <p className="mt-4 text-sm leading-7 text-muted-foreground">{point.body}</p>
                 </CardContent>
@@ -488,8 +488,8 @@ function InvestorProcess({ dictionary }: { dictionary: HomeDictionary }) {
             <Reveal key={step} delay={index * 0.035}>
               <div className="group min-h-36 rounded-[1.35rem] border border-border bg-muted/30 p-5 transition-colors hover:bg-muted/50">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="h-px flex-1 bg-white/10 transition-colors group-hover:bg-gold-200/30" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="h-px flex-1 bg-foreground/15 transition-colors group-hover:bg-gold-400/40 dark:bg-white/10 dark:group-hover:bg-gold-200/30" />
                 </div>
                 <p className="mt-9 text-lg font-semibold tracking-[-0.025em] text-foreground">{step}</p>
               </div>
@@ -548,7 +548,7 @@ function FAQ({ dictionary }: { dictionary: HomeDictionary }) {
 function FinalCTA({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   return (
     <section id="apply" className="relative px-4 py-24 sm:py-32">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/60 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/60" />
       <Reveal>
         <div className="container relative overflow-hidden rounded-[1.35rem] border border-gold-200/[0.18] bg-[linear-gradient(145deg,rgba(212,175,95,0.2),rgba(212,175,95,0.04))] p-8 text-center shadow-premium dark:bg-[linear-gradient(145deg,rgba(212,175,95,0.18),rgba(255,255,255,0.045)_36%,rgba(5,6,7,0.9))] sm:p-14 lg:p-20">
           <div className="absolute left-1/2 top-0 size-[30rem] -translate-x-1/2 rounded-full bg-gold-300/[0.14] blur-3xl" />
@@ -592,7 +592,7 @@ function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
       <div className="container grid gap-10 lg:grid-cols-[1fr_0.9fr]">
         <div>
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-sm font-semibold text-gold-100">O</span>
+            <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-sm font-semibold text-amber-700 dark:bg-gold-200/10 dark:text-gold-100">O</span>
             <span className="text-sm font-semibold tracking-[0.24em] text-foreground">OTIZ CAPITAL</span>
           </div>
           <p className="mt-6 max-w-xl text-sm leading-7 text-muted-foreground">{dictionary.footer.description}</p>
@@ -624,7 +624,7 @@ function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
           ))}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Languages className="size-4 text-gold-100" />
+              <Languages className="size-4 text-amber-700 dark:text-gold-100" />
               {dictionary.footer.language}
             </div>
             <div className="flex flex-wrap gap-2">

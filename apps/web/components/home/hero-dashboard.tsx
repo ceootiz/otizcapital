@@ -17,8 +17,8 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
       className="relative mx-auto w-full max-w-xl lg:mx-0"
     >
       <div className="absolute -inset-8 rounded-[1.35rem] bg-gold-300/10 blur-3xl" />
-      <Card className="relative overflow-hidden rounded-[1.35rem] border-border bg-card/80">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
+      <Card className="relative overflow-hidden rounded-[1.35rem] border-foreground/30 bg-card/80 dark:border-border">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
@@ -33,10 +33,10 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
             <MetricBlock icon={<ShieldCheck />} label={dictionary.hero.activeAllocations} value="$12.8M" />
             <MetricBlock icon={<PackageCheck />} label={dictionary.hero.commerceVolume} value="$16.2M" />
           </div>
-          <div className="rounded-[1.35rem] border border-border bg-muted/50 p-4">
+          <div className="rounded-[1.35rem] border border-foreground/30 bg-muted/50 p-4 dark:border-border">
             <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
               <span>{dictionary.dashboard.trendLabel}</span>
-              <span className="text-gold-100">{dictionary.dashboard.trendRange}</span>
+              <span className="text-gold-300 dark:text-gold-100">{dictionary.dashboard.trendRange}</span>
             </div>
             <CommerceChart
               compact
@@ -47,13 +47,13 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
           </div>
           <div className="flex flex-col gap-3">
             {dictionary.commerce.allocations.map((row) => (
-              <div key={row.id} className="rounded-2xl border border-border bg-muted/30 p-4">
+              <div key={row.id} className="rounded-2xl border border-foreground/20 bg-muted/30 p-4 dark:border-white/[0.08]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{row.cycle}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{row.id} · {row.marketplace}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-sm font-semibold text-gold-100">
+                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground dark:text-gold-100">
                     {row.capital}
                     <ArrowUpRight className="size-3.5" />
                   </div>
@@ -92,10 +92,10 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
 
 function MetricBlock({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-muted/30 p-4">
-      <div className="mb-5 flex items-center justify-between text-gold-100">
-        <div className="flex size-9 items-center justify-center rounded-full bg-gold-200/10 [&_svg]:size-4">{icon}</div>
-        <span className="size-2 rounded-full bg-gold-200 shadow-[0_0_20px_rgba(212,175,95,0.55)]" />
+    <div className="rounded-2xl border border-foreground/25 bg-muted/30 p-4 dark:border-border">
+      <div className="mb-5 flex items-center justify-between text-gold-300 dark:text-gold-100">
+        <div className="flex size-9 items-center justify-center rounded-full bg-gold-300/15 [&_svg]:size-4 dark:bg-gold-200/10">{icon}</div>
+        <span className="size-2 rounded-full bg-gold-300 shadow-[0_0_20px_rgba(212,175,95,0.55)] dark:bg-gold-200" />
       </div>
       <p className="text-2xl font-semibold tracking-[-0.04em] text-foreground">{value}</p>
       <p className="mt-1 text-xs text-muted-foreground">{label}</p>
