@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-session";
+import { clientIpFromRequest, hitRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import {
   APPLICATION_PRIORITIES,
   APPLICATION_SLA_FILTERS,
@@ -89,10 +90,10 @@ function parsePositiveInteger(value: string | null, fallback: number) {
 
 function validatePayload(payload: unknown): ValidationResult {
   const source = typeof payload === "object" && payload !== null ? (payload as Record<string, unknown>) : {};
-  const fullName = sanitizeString(source.fullName, 160);
+  const fullName = sanitizeString(source.fullName, 100);
   const telegram = sanitizeString(source.telegram, 80);
   const email = sanitizeString(source.email, 180).toLowerCase();
-  const country = sanitizeString(source.country, 120);
+  const country = sanitizeString(source.country, 100);
   const preferredContactMethod = sanitizeString(source.preferredContactMethod, 40);
   const plannedAllocationAmount = parseAmount(source.plannedAllocationAmount);
   const preferredDepositMethod = sanitizeString(source.preferredDepositMethod, 40);
@@ -139,6 +140,12 @@ function validatePayload(payload: unknown): ValidationResult {
 }
 
 export async function POST(request: Request) {
+  // Public endpoint: max 5 submissions per IP per hour.
+  const limit = hitRateLimit("investor-applications", clientIpFromRequest(request), { windowMs: 60 * 60 * 1000, max: 5 });
+  if (!limit.allowed) {
+    return rateLimitedResponse(limit.retryAfterSeconds);
+  }
+
   try {
     const payload = await request.json();
     const validated = validatePayload(payload);

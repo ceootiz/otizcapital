@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { updateInvestorPasswordHash } from "@otiz/database";
-import { requireInvestorApi } from "@/lib/investor-api-auth";
+import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // access-code login). If a password already exists, the current one must match.
 export async function POST(request: Request) {
   const auth = await requireInvestorApi();
-  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  if (!auth.ok) return investorApiErrorResponse(auth);
 
   const payload = (await request.json().catch(() => null)) as
     | { currentPassword?: unknown; newPassword?: unknown; confirmPassword?: unknown }

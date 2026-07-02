@@ -77,7 +77,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
 
   return (
     <>
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-graphite-950/[0.62] backdrop-blur-2xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-2xl">
       <div className="container flex h-20 items-center justify-between gap-6">
         <Link href={`/${activeLocale}`} className="flex items-center gap-3" aria-label="OTIZ CAPITAL home">
           <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-sm font-semibold text-gold-100 shadow-gold">
@@ -96,7 +96,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1 sm:flex" aria-label={dictionary.footer.language}>
+          <div className="hidden items-center gap-1 rounded-full border border-border bg-muted/30 p-1 sm:flex" aria-label={dictionary.footer.language}>
             {locales.map((nextLocale) => (
               <Link
                 key={nextLocale}
@@ -122,7 +122,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
             aria-expanded={menuOpen}
-            className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-foreground transition-colors hover:bg-white/[0.08] lg:hidden [&_svg]:size-5"
+            className="flex size-9 items-center justify-center rounded-full border border-border bg-muted/30 text-foreground transition-colors hover:bg-muted/50 lg:hidden [&_svg]:size-5"
           >
             <Menu />
           </button>
@@ -137,14 +137,14 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 h-full w-full bg-graphite-950/80 backdrop-blur"
           />
-          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto rounded-l-[1.35rem] border-l border-white/10 bg-graphite-900/[0.96] p-6 shadow-premium backdrop-blur-2xl">
+          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto rounded-l-[1.35rem] border-l border-border bg-card p-6 shadow-premium backdrop-blur-2xl">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold tracking-[0.24em] text-foreground">OTIZ CAPITAL</span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
                 aria-label="Close menu"
-                className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-foreground transition-colors hover:bg-white/[0.08] [&_svg]:size-5"
+                className="flex size-9 items-center justify-center rounded-full border border-border bg-muted/30 text-foreground transition-colors hover:bg-muted/50 [&_svg]:size-5"
               >
                 <X />
               </button>
@@ -155,14 +155,14 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-2xl px-4 py-2.5 text-2xl font-medium tracking-[-0.01em] text-foreground transition-colors hover:bg-white/[0.05] hover:text-gold-100"
+                  className="rounded-2xl px-4 py-2.5 text-2xl font-medium tracking-[-0.01em] text-foreground transition-colors hover:bg-muted/50 hover:text-gold-100"
                 >
                   {item.label}
                 </a>
               ))}
             </nav>
-            <div className="mt-auto flex flex-col gap-4 border-t border-white/10 pt-6">
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1" aria-label={dictionary.footer.language}>
+            <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
+              <div className="flex items-center gap-1 rounded-full border border-border bg-muted/30 p-1" aria-label={dictionary.footer.language}>
                 {locales.map((nextLocale) => (
                   <Link
                     key={nextLocale}
@@ -204,14 +204,14 @@ function Hero({ dictionary, locale }: { dictionary: HomeDictionary; locale: Loca
 
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden pb-20 pt-32 lg:pt-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(212,175,95,0.22),transparent_30rem),linear-gradient(180deg,rgba(5,6,7,0.45),rgba(5,6,7,0.96))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(212,175,95,0.16),transparent_30rem)] dark:bg-[radial-gradient(circle_at_72%_18%,rgba(212,175,95,0.22),transparent_30rem),linear-gradient(180deg,rgba(5,6,7,0.45),rgba(5,6,7,0.96))]" />
       <div className="macro-grid absolute inset-0 opacity-70" />
       <motion.div
         aria-hidden="true"
         initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
         animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
         transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute right-[-12rem] top-16 hidden h-[42rem] w-[42rem] rounded-full border border-white/10 bg-[conic-gradient(from_120deg,rgba(212,175,95,0.22),rgba(255,255,255,0.08),rgba(12,15,20,0.1),rgba(212,175,95,0.2))] opacity-[0.65] blur-[1px] lg:block"
+        className="absolute right-[-12rem] top-16 hidden h-[42rem] w-[42rem] rounded-full border border-border bg-[conic-gradient(from_120deg,rgba(212,175,95,0.22),rgba(255,255,255,0.08),rgba(12,15,20,0.1),rgba(212,175,95,0.2))] opacity-[0.65] blur-[1px] lg:block"
       />
       <div className="container relative z-10 grid items-center gap-14 lg:grid-cols-[1fr_0.9fr]">
         <motion.div
@@ -265,7 +265,7 @@ function TrustMetrics({ dictionary }: { dictionary: HomeDictionary }) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {dictionary.trust.items.map((item, index) => (
           <Reveal key={item.label} delay={index * 0.05}>
-            <Card className="h-full overflow-hidden bg-white/[0.045]">
+            <Card className="h-full overflow-hidden bg-muted/30">
               <CardContent className="p-6">
                 <div className="mb-8 h-px w-full bg-gradient-to-r from-gold-300/70 to-transparent" />
                 <p className="font-display text-4xl font-medium tracking-[-0.05em] text-foreground">{item.value}</p>
@@ -282,14 +282,14 @@ function TrustMetrics({ dictionary }: { dictionary: HomeDictionary }) {
 
 function HowItWorks({ dictionary }: { dictionary: HomeDictionary }) {
   return (
-    <SectionShell id="process" title={dictionary.how.title} subtitle={dictionary.how.subtitle} className="bg-white/[0.015]">
+    <SectionShell id="process" title={dictionary.how.title} subtitle={dictionary.how.subtitle} className="bg-muted/30">
       <div className="relative grid gap-4 lg:grid-cols-5">
         <div className="gold-line absolute left-[10%] right-[10%] top-11 hidden h-px origin-left animate-line-draw lg:block" />
         {dictionary.how.steps.map((step, index) => {
           const Icon = flowIcons[index] ?? CheckCircle2;
           return (
             <Reveal key={step.title} delay={index * 0.06}>
-              <div className="relative flex h-full flex-col gap-5 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.62] p-6 shadow-premium">
+              <div className="relative flex h-full flex-col gap-5 rounded-[1.35rem] border border-border bg-card p-6 shadow-premium">
                 <div className="flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100 [&_svg]:size-5">
                   <Icon />
                 </div>
@@ -312,13 +312,13 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
     <SectionShell id="transparency" title={dictionary.transparency.title} subtitle={dictionary.transparency.subtitle}>
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <Reveal>
-          <Card className="sticky top-28 overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="sticky top-28 overflow-hidden rounded-[1.35rem] bg-card">
             <CardHeader>
               <CardTitle>{dictionary.transparency.request}</CardTitle>
               <CardDescription>{dictionary.transparency.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
-              <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
+              <div className="rounded-[1.35rem] border border-border bg-muted/50 p-5">
                 <div className="mb-5 flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">{dictionary.transparency.proofChain}</span>
                   <Badge variant="secondary">{dictionary.transparency.operational}</Badge>
@@ -337,11 +337,11 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="rounded-2xl border border-border bg-muted/30 p-4">
                   <p className="font-semibold text-foreground">{dictionary.transparency.qcMedia}</p>
                   <p className="mt-2 text-muted-foreground">{dictionary.transparency.qcMediaDetail}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="rounded-2xl border border-border bg-muted/30 p-4">
                   <p className="font-semibold text-foreground">{dictionary.transparency.settlement}</p>
                   <p className="mt-2 text-muted-foreground">{dictionary.transparency.settlementDetail}</p>
                 </div>
@@ -354,9 +354,9 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
             const Icon = proofIcons[index] ?? ShieldCheck;
             return (
               <Reveal key={item.title} delay={index * 0.04}>
-                <Card className="h-full bg-white/[0.04]">
+                <Card className="h-full bg-muted/30">
                   <CardContent className="p-6">
-                    <div className="mb-7 flex size-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-gold-100 [&_svg]:size-5">
+                    <div className="mb-7 flex size-11 items-center justify-center rounded-full border border-border bg-muted/30 text-gold-100 [&_svg]:size-5">
                       <Icon />
                     </div>
                     <h3 className="text-lg font-semibold tracking-[-0.025em] text-foreground">{item.title}</h3>
@@ -386,9 +386,9 @@ function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
               <Badge>{dictionary.live.activeCount}</Badge>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
+              <div className="overflow-hidden rounded-[1.35rem] border border-border">
                 {dictionary.commerce.allocations.map((row) => (
-                  <div key={row.id} className="grid gap-4 border-b border-white/10 bg-white/[0.025] p-5 last:border-b-0 md:grid-cols-[1fr_0.75fr_0.5fr] md:items-center">
+                  <div key={row.id} className="grid gap-4 border-b border-border bg-muted/30 p-5 last:border-b-0 md:grid-cols-[1fr_0.75fr_0.5fr] md:items-center">
                     <div>
                       <p className="font-semibold text-foreground">{row.cycle}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{row.id} · {row.marketplace}</p>
@@ -442,7 +442,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
     <SectionShell title={dictionary.realCommerce.title} subtitle={dictionary.realCommerce.subtitle}>
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Reveal>
-          <div className="relative min-h-[34rem] overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-8 shadow-premium">
+          <div className="relative min-h-[34rem] overflow-hidden rounded-[1.35rem] border border-border bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-8 shadow-premium">
             <div className="absolute inset-8 rounded-[1.35rem] border border-gold-200/10" />
             <div className="absolute -right-20 top-12 size-72 rounded-full bg-gold-300/15 blur-3xl" />
             <div className="relative z-10 flex h-full flex-col justify-between gap-12">
@@ -452,7 +452,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
               </div>
               <div className="grid gap-3">
                 {dictionary.commerce.proofSignals.slice(0, 4).map((signal) => (
-                  <div key={signal} className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div key={signal} className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 p-4">
                     <span className="text-sm text-foreground">{signal}</span>
                     <CheckCircle2 className="size-4 text-gold-100" />
                   </div>
@@ -464,7 +464,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
         <div className="grid gap-4 sm:grid-cols-2">
           {dictionary.realCommerce.points.map((point, index) => (
             <Reveal key={point.title} delay={index * 0.05}>
-              <Card className="h-full bg-white/[0.04]">
+              <Card className="h-full bg-muted/30">
                 <CardContent className="p-7">
                   <p className="mb-8 text-xs font-semibold uppercase tracking-[0.24em] text-gold-100">0{index + 1}</p>
                   <h3 className="text-xl font-semibold tracking-[-0.03em] text-foreground">{point.title}</h3>
@@ -481,12 +481,12 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
 
 function InvestorProcess({ dictionary }: { dictionary: HomeDictionary }) {
   return (
-    <SectionShell title={dictionary.investor.title} subtitle={dictionary.investor.subtitle} className="bg-white/[0.015]">
-      <div className="mx-auto max-w-6xl rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.62] p-4 shadow-premium sm:p-6">
+    <SectionShell title={dictionary.investor.title} subtitle={dictionary.investor.subtitle} className="bg-muted/30">
+      <div className="mx-auto max-w-6xl rounded-[1.35rem] border border-border bg-card p-4 shadow-premium sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {dictionary.investor.steps.map((step, index) => (
             <Reveal key={step} delay={index * 0.035}>
-              <div className="group min-h-36 rounded-[1.35rem] border border-white/10 bg-white/[0.035] p-5 transition-colors hover:bg-white/[0.06]">
+              <div className="group min-h-36 rounded-[1.35rem] border border-border bg-muted/30 p-5 transition-colors hover:bg-muted/50">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{String(index + 1).padStart(2, "0")}</span>
                   <span className="h-px flex-1 bg-white/10 transition-colors group-hover:bg-gold-200/30" />
@@ -507,7 +507,7 @@ function Testimonials({ dictionary }: { dictionary: HomeDictionary }) {
       <div className="grid gap-5 lg:grid-cols-3">
         {dictionary.testimonials.items.map((item, index) => (
           <Reveal key={item.name} delay={index * 0.06}>
-            <Card className="h-full bg-white/[0.04]">
+            <Card className="h-full bg-muted/30">
               <CardContent className="flex h-full flex-col justify-between gap-10 p-7">
                 <p className="text-lg leading-8 text-foreground">“{item.quote}”</p>
                 <div>
@@ -528,7 +528,7 @@ function FAQ({ dictionary }: { dictionary: HomeDictionary }) {
   return (
     <SectionShell id="faq" title={dictionary.faq.title} subtitle={dictionary.faq.subtitle} className="bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_34rem)]">
       <Reveal>
-        <Card className="mx-auto max-w-4xl rounded-[1.35rem] bg-graphite-900/[0.74]">
+        <Card className="mx-auto max-w-4xl rounded-[1.35rem] bg-card">
           <CardContent className="p-4 sm:p-8">
             <Accordion type="single" collapsible className="w-full">
               {dictionary.faq.items.map((item, index) => (
@@ -550,7 +550,7 @@ function FinalCTA({ dictionary, locale }: { dictionary: HomeDictionary; locale: 
     <section id="apply" className="relative px-4 py-24 sm:py-32">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/60 to-transparent" />
       <Reveal>
-        <div className="container relative overflow-hidden rounded-[1.35rem] border border-gold-200/[0.18] bg-[linear-gradient(145deg,rgba(212,175,95,0.18),rgba(255,255,255,0.045)_36%,rgba(5,6,7,0.9))] p-8 text-center shadow-premium sm:p-14 lg:p-20">
+        <div className="container relative overflow-hidden rounded-[1.35rem] border border-gold-200/[0.18] bg-[linear-gradient(145deg,rgba(212,175,95,0.2),rgba(212,175,95,0.04))] p-8 text-center shadow-premium dark:bg-[linear-gradient(145deg,rgba(212,175,95,0.18),rgba(255,255,255,0.045)_36%,rgba(5,6,7,0.9))] sm:p-14 lg:p-20">
           <div className="absolute left-1/2 top-0 size-[30rem] -translate-x-1/2 rounded-full bg-gold-300/[0.14] blur-3xl" />
           <div className="relative z-10 mx-auto max-w-3xl">
             <h2 className="font-display text-5xl font-medium leading-tight tracking-[-0.055em] text-balance text-foreground sm:text-6xl">
@@ -588,7 +588,7 @@ function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
   ];
 
   return (
-    <footer className="border-t border-white/10 py-12">
+    <footer className="border-t border-border py-12">
       <div className="container grid gap-10 lg:grid-cols-[1fr_0.9fr]">
         <div>
           <div className="flex items-center gap-3">
@@ -635,7 +635,7 @@ function Footer({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
                   className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                     activeLocale === nextLocale
                       ? "border-gold-200 bg-gold-200 text-graphite-950"
-                      : "border-white/10 text-muted-foreground hover:text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {localeShortNames[nextLocale]}

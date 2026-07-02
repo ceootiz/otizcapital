@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { terminateAllInvestorSessions } from "@otiz/database";
-import { requireInvestorApi } from "@/lib/investor-api-auth";
+import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 import { clearInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // Other devices lose access on their next request (DB session check fails).
 export async function POST() {
   const auth = await requireInvestorApi();
-  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  if (!auth.ok) return investorApiErrorResponse(auth);
 
   await terminateAllInvestorSessions(auth.investor.id);
   clearInvestorSession();

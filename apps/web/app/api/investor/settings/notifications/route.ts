@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { updateInvestorEmailNotifications } from "@otiz/database";
-import { requireInvestorApi } from "@/lib/investor-api-auth";
+import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(request: Request) {
   const auth = await requireInvestorApi();
-  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  if (!auth.ok) return investorApiErrorResponse(auth);
 
   const payload = (await request.json().catch(() => null)) as { emailNotificationsEnabled?: unknown } | null;
   if (!payload || typeof payload.emailNotificationsEnabled !== "boolean") {

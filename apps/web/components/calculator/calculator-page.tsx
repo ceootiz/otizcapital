@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { animate, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileCheck, Lock, Shield, UserCheck } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import type { TooltipProps } from "recharts";
 import { createAdminFormatters, type Locale } from "@otiz/lib";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 
 const GOLD = "#c8b97a";
+const MUTED = "#8a8a8f";
 
 const STRINGS = {
   en: {
@@ -20,9 +21,20 @@ const STRINGS = {
     amountLabel: "Investment amount",
     durationLabel: "Duration",
     monthUnit: "mo",
-    totalProfitLabel: "Total profit",
-    totalReturnLabel: "Total return",
-    finalBalanceLabel: "Final balance"
+    simpleLabel: "Without reinvestment",
+    compoundLabel: "With reinvestment",
+    totalSimpleLabel: "Total without reinvestment",
+    totalCompoundLabel: "Total with reinvestment",
+    reinvestGainLabel: "Reinvestment gain",
+    securityHeading: "Why this is secure",
+    secRealTitle: "Real goods",
+    secRealDesc: "Capital is tied to physical devices, not speculation.",
+    secReportTitle: "Operational reporting",
+    secReportDesc: "Monthly reports with proof of goods movement.",
+    secReviewTitle: "Manual review",
+    secReviewDesc: "Every investor goes through manual review.",
+    secWithdrawTitle: "Controlled withdrawal",
+    secWithdrawDesc: "Withdrawals only after a 90-day holding period."
   },
   ru: {
     back: "На главную",
@@ -32,9 +44,20 @@ const STRINGS = {
     amountLabel: "Сумма инвестиций",
     durationLabel: "Срок",
     monthUnit: "мес",
-    totalProfitLabel: "Итоговая прибыль",
-    totalReturnLabel: "Итоговая доходность",
-    finalBalanceLabel: "Итоговый баланс"
+    simpleLabel: "Без реинвеста",
+    compoundLabel: "С реинвестом",
+    totalSimpleLabel: "Итого без реинвеста",
+    totalCompoundLabel: "Итого с реинвестом",
+    reinvestGainLabel: "Выгода от реинвеста",
+    securityHeading: "Почему это надёжно",
+    secRealTitle: "Реальный товар",
+    secRealDesc: "Капитал привязан к физическим устройствам, а не к спекуляциям.",
+    secReportTitle: "Операционная отчётность",
+    secReportDesc: "Ежемесячные отчёты с подтверждением движения товара.",
+    secReviewTitle: "Ручная проверка",
+    secReviewDesc: "Каждый инвестор проходит ручную проверку.",
+    secWithdrawTitle: "Контролируемый вывод",
+    secWithdrawDesc: "Вывод только после 90-дневного периода удержания."
   }
 } as const;
 
@@ -73,41 +96,51 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
   const [amount, setAmount] = useState(10000);
   const [months, setMonths] = useState(12);
 
-  const { chartData, totalProfit, totalReturnPct, finalBalance } = useMemo(() => {
+  const { chartData, simpleFinal, compoundFinal, reinvestGain, reinvestGainPct } = useMemo(() => {
     const principal = Number.isFinite(amount) && amount > 0 ? amount : 0;
     const monthlyRate = annualRate / 100 / 12;
-    // Month 0 is the starting point; principal === balance there.
-    const data: { month: number; principal: number; balance: number }[] = [{ month: 0, principal, balance: principal }];
-    let balance = principal;
-    for (let month = 1; month <= months; month += 1) {
-      balance = balance + balance * monthlyRate;
-      data.push({ month, principal, balance });
+    // Month 0 is the starting point; principal === balance for both series there.
+    const data: { month: number; simple: number; compound: number }[] = [];
+    for (let month = 0; month <= months; month += 1) {
+      const simple = principal + principal * monthlyRate * month; // linear, no compounding
+      const compound = principal * Math.pow(1 + monthlyRate, month); // exponential
+      data.push({ month, simple, compound });
     }
-    const totalP = balance - principal;
+    const sFinal = principal + principal * monthlyRate * months;
+    const cFinal = principal * Math.pow(1 + monthlyRate, months);
+    const gain = cFinal - sFinal;
     return {
       chartData: data,
-      totalProfit: totalP,
-      totalReturnPct: principal > 0 ? (totalP / principal) * 100 : 0,
-      finalBalance: balance
+      simpleFinal: sFinal,
+      compoundFinal: cFinal,
+      reinvestGain: gain,
+      reinvestGainPct: sFinal > 0 ? (gain / sFinal) * 100 : 0
     };
   }, [amount, months, annualRate]);
 
-  const animatedProfit = useAnimatedNumber(totalProfit, reduceMotion);
-  const animatedReturn = useAnimatedNumber(totalReturnPct, reduceMotion);
-  const animatedBalance = useAnimatedNumber(finalBalance, reduceMotion);
+  const animatedSimple = useAnimatedNumber(simpleFinal, reduceMotion);
+  const animatedCompound = useAnimatedNumber(compoundFinal, reduceMotion);
+  const animatedGain = useAnimatedNumber(reinvestGain, reduceMotion);
+  const animatedGainPct = useAnimatedNumber(reinvestGainPct, reduceMotion);
 
   const rateLabel = `${fmt.number(annualRate)}%`;
 
   const renderTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (!active || !payload || payload.length === 0) return null;
-    const balance = payload.find((p) => p.dataKey === "balance")?.value;
+    const simple = payload.find((p) => p.dataKey === "simple")?.value;
+    const compound = payload.find((p) => p.dataKey === "compound")?.value;
     return (
-      <div className="rounded-lg border border-white/10 bg-[#0b0b0d]/95 px-3.5 py-2.5 shadow-xl backdrop-blur-sm">
+      <div className="rounded-lg border border-border bg-popover px-3.5 py-2.5 text-popover-foreground shadow-xl">
         <p className="text-[0.65rem] uppercase tracking-[0.16em] text-muted-foreground">
           {label} {t.monthUnit}
         </p>
-        <p className="mt-1 text-sm font-medium tabular-nums" style={{ color: GOLD }}>
-          {typeof balance === "number" ? fmt.currency(Math.round(balance)) : ""}
+        <p className="mt-2 flex items-center justify-between gap-6 text-sm tabular-nums text-muted-foreground">
+          <span>{t.simpleLabel}</span>
+          <span className="font-medium">{typeof simple === "number" ? fmt.currency(Math.round(simple)) : ""}</span>
+        </p>
+        <p className="mt-1 flex items-center justify-between gap-6 text-sm font-medium tabular-nums" style={{ color: GOLD }}>
+          <span>{t.compoundLabel}</span>
+          <span>{typeof compound === "number" ? fmt.currency(Math.round(compound)) : ""}</span>
         </p>
       </div>
     );
@@ -195,28 +228,25 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
               </div>
             </div>
 
-            {/* Chart — the hero visual */}
+            {/* Chart — two reinvestment modes on one visual */}
             <div className="mt-14 h-[320px] w-full">
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
                   <defs>
-                    <linearGradient id="calcBalanceFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={GOLD} stopOpacity={0.35} />
+                    <linearGradient id="calcCompoundFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={GOLD} stopOpacity={0.3} />
                       <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="calcPrincipalFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity={0.04} />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis
                     dataKey="month"
-                    stroke="rgba(255,255,255,0.28)"
-                    tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
+                    stroke={MUTED}
+                    tick={{ fill: MUTED, fontSize: 11 }}
                     tickLine={false}
-                    axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                    axisLine={{ stroke: MUTED, strokeOpacity: 0.3 }}
                     tickMargin={10}
                     minTickGap={16}
+                    tickFormatter={(value) => `${value}`}
                   />
                   <Tooltip
                     content={renderTooltip}
@@ -224,52 +254,64 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
                   />
                   <Area
                     type="monotone"
-                    dataKey="principal"
-                    stroke="rgba(255,255,255,0.18)"
-                    strokeWidth={1}
-                    fill="url(#calcPrincipalFill)"
-                    fillOpacity={1}
+                    dataKey="simple"
+                    stroke={MUTED}
+                    strokeWidth={1.5}
+                    strokeDasharray="5 5"
+                    fill="none"
+                    fillOpacity={0}
                     dot={false}
                     activeDot={false}
                   />
                   <Area
                     type="monotone"
-                    dataKey="balance"
+                    dataKey="compound"
                     stroke={GOLD}
                     strokeWidth={2}
-                    fill="url(#calcBalanceFill)"
+                    fill="url(#calcCompoundFill)"
                     fillOpacity={1}
                     dot={false}
-                    activeDot={{ r: 4, fill: GOLD, stroke: "#0b0b0d", strokeWidth: 2 }}
+                    activeDot={{ r: 4, fill: GOLD, stroke: "currentColor", strokeWidth: 2 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Big animated profit number — below the chart */}
+            {/* Summary — the three key numbers */}
             <div className="mt-12 flex flex-col items-center text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">{t.totalProfitLabel}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">{t.totalCompoundLabel}</p>
               <p
-                className="mt-3 font-display font-medium uppercase leading-[0.95] tracking-[-0.04em] tabular-nums"
-                style={{ color: GOLD, fontSize: "clamp(3.5rem, 11vw, 6.25rem)" }}
+                className="mt-3 font-display font-medium leading-[0.95] tracking-[-0.04em] tabular-nums"
+                style={{ color: GOLD, fontSize: "clamp(3rem, 10vw, 5.5rem)" }}
               >
-                {fmt.currency(Math.round(animatedProfit))}
+                {fmt.currency(Math.round(animatedCompound))}
+              </p>
+              <p className="mt-4 text-xl tabular-nums text-muted-foreground">
+                {t.totalSimpleLabel}: {fmt.currency(Math.round(animatedSimple))}
+              </p>
+              <p className="mt-3 text-lg font-semibold tabular-nums sm:text-xl" style={{ color: GOLD }}>
+                {t.reinvestGainLabel}: +{fmt.currency(Math.round(animatedGain))} (+{fmt.number(Math.round(animatedGainPct * 10) / 10)}%)
               </p>
             </div>
 
-            {/* Two stats side by side */}
-            <div className="mx-auto mt-12 grid max-w-xl grid-cols-2 gap-6">
-              <div className="flex flex-col items-center border-r border-white/10 text-center">
-                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.totalReturnLabel}</p>
-                <p className="mt-2 font-display text-3xl font-medium tabular-nums text-gold-100 sm:text-4xl">
-                  {fmt.percent(animatedReturn / 100, 1)}
-                </p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.finalBalanceLabel}</p>
-                <p className="mt-2 font-display text-3xl font-medium tabular-nums text-foreground sm:text-4xl">
-                  {fmt.currency(Math.round(animatedBalance))}
-                </p>
+            {/* Security section */}
+            <div className="mt-16">
+              <h2 className="text-center font-display text-2xl font-medium tracking-[-0.03em] text-foreground sm:text-3xl">
+                {t.securityHeading}
+              </h2>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {[
+                  { Icon: Shield, title: t.secRealTitle, desc: t.secRealDesc },
+                  { Icon: FileCheck, title: t.secReportTitle, desc: t.secReportDesc },
+                  { Icon: UserCheck, title: t.secReviewTitle, desc: t.secReviewDesc },
+                  { Icon: Lock, title: t.secWithdrawTitle, desc: t.secWithdrawDesc }
+                ].map(({ Icon, title, desc }) => (
+                  <div key={title} className="rounded-[1.35rem] border border-border bg-card p-6">
+                    <Icon className="size-6 text-[#c8b97a]" />
+                    <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>

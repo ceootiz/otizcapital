@@ -17,7 +17,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
       className="relative mx-auto w-full max-w-xl lg:mx-0"
     >
       <div className="absolute -inset-8 rounded-[1.35rem] bg-gold-300/10 blur-3xl" />
-      <Card className="relative overflow-hidden rounded-[1.35rem] border-white/[0.12] bg-graphite-900/80">
+      <Card className="relative overflow-hidden rounded-[1.35rem] border-border bg-card/80">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
@@ -33,7 +33,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
             <MetricBlock icon={<ShieldCheck />} label={dictionary.hero.activeAllocations} value="$12.8M" />
             <MetricBlock icon={<PackageCheck />} label={dictionary.hero.commerceVolume} value="$16.2M" />
           </div>
-          <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+          <div className="rounded-[1.35rem] border border-border bg-muted/50 p-4">
             <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
               <span>{dictionary.dashboard.trendLabel}</span>
               <span className="text-gold-100">{dictionary.dashboard.trendRange}</span>
@@ -47,7 +47,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
           </div>
           <div className="flex flex-col gap-3">
             {dictionary.commerce.allocations.map((row) => (
-              <div key={row.id} className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4">
+              <div key={row.id} className="rounded-2xl border border-border bg-muted/30 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{row.cycle}</p>
@@ -59,7 +59,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
                   </div>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted/30">
                     <motion.div
                       initial={reduceMotion ? false : { width: 0 }}
                       whileInView={{ width: `${row.progress}%` }}
@@ -92,7 +92,7 @@ export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
 
 function MetricBlock({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+    <div className="rounded-2xl border border-border bg-muted/30 p-4">
       <div className="mb-5 flex items-center justify-between text-gold-100">
         <div className="flex size-9 items-center justify-center rounded-full bg-gold-200/10 [&_svg]:size-4">{icon}</div>
         <span className="size-2 rounded-full bg-gold-200 shadow-[0_0_20px_rgba(212,175,95,0.55)]" />

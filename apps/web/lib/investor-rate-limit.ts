@@ -25,7 +25,7 @@ function getWindowMs() {
 }
 
 function getMaxAttempts() {
-  return readPositiveInteger(process.env.INVESTOR_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, 10);
+  return readPositiveInteger(process.env.INVESTOR_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, 5);
 }
 
 function getClientKey(request: Request) {

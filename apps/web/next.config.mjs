@@ -67,7 +67,11 @@ const nextConfig = {
     }
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Keep admin pages out of search engines (belt-and-suspenders with robots.txt).
+      { source: "/:locale/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }
+    ];
   }
 };
 

@@ -7,14 +7,14 @@ import {
   serializeMonthlyReport
 } from "@otiz/database";
 import { createAdminFormatters, isLocale, type Locale } from "@otiz/lib";
-import { requireInvestorApi } from "@/lib/investor-api-auth";
+import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 import { buildAccountPdf } from "@/lib/account-pdf";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const auth = await requireInvestorApi();
-  if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  if (!auth.ok) return investorApiErrorResponse(auth);
 
   const url = new URL(request.url);
   const localeParam = url.searchParams.get("locale") || "en";
