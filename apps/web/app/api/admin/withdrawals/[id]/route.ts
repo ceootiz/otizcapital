@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { approveWithdrawalRequest, cancelWithdrawalRequest, markWithdrawalPaid, rejectWithdrawalRequest, scheduleWithdrawalRequest, serializeInvestorWithdrawalRequest } from "@otiz/database";
+import { approveWithdrawalRequest, cancelWithdrawalRequest, createInvestorNotification, markWithdrawalPaid, rejectWithdrawalRequest, scheduleWithdrawalRequest, serializeInvestorWithdrawalRequest } from "@otiz/database";
 import { verifyAdminCsrfToken } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
@@ -44,5 +44,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
               : { ok: false as const, status: 422 as const, error: "Unsupported withdrawal action." };
 
   if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+
+  // Notify the investor of the outcome (best-effort).
+  const notify = (type: "WITHDRAWAL_APPROVED" | "WITHDRAWAL_REJECTED" | "WITHDRAWAL_PAID", title: string, body: string) =>
+    createInvestorNotification({ investorId: result.request.investorId, type, title, body, linkHref: "/investor/withdrawals" });
+  if (action === "approve") await notify("WITHDRAWAL_APPROVED", "Withdrawal approved", "Your withdrawal request has been approved.");
+  else if (action === "reject") await notify("WITHDRAWAL_REJECTED", "Withdrawal rejected", "Your withdrawal request was not approved.");
+  else if (action === "mark-paid") await notify("WITHDRAWAL_PAID", "Payout completed", "Your withdrawal has been paid.");
+
   return NextResponse.json({ ok: true, data: serializeInvestorWithdrawalRequest(result.request) });
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
 import { InvestorLoginPage } from "@/components/investor/investor-login-page";
-import { getInvestorSession } from "@/lib/investor-session";
+import { getValidatedInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +16,14 @@ export function generateMetadata({ params }: { params: { locale: Locale } }): Me
   return { title: meta.title, description: meta.description };
 }
 
-export default function InvestorLoginRoute({ params }: { params: { locale: Locale } }) {
+export default async function InvestorLoginRoute({ params }: { params: { locale: Locale } }) {
   if (!isLocale(params.locale)) {
     redirect("/en/investor/login");
   }
 
-  if (getInvestorSession()) {
+  // DB-validated so a terminated-but-present cookie doesn't loop back to the
+  // cabinet (which would then bounce here again).
+  if (await getValidatedInvestorSession()) {
     redirect(`/${params.locale}/investor/dashboard`);
   }
 

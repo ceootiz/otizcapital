@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  createInvestorNotification,
   evaluateMonthlyReportReadiness,
   findInvestorById,
   getInvestorMonthlyReportDetailRecord,
@@ -133,6 +134,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   });
 
   if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+
+  // Notify the investor when a report becomes published (best-effort).
+  if (statusValue === "PUBLISHED") {
+    await createInvestorNotification({
+      investorId: result.report.investorId,
+      type: "REPORT_PUBLISHED",
+      title: "New report available",
+      body: "A new monthly report has been published to your account.",
+      linkHref: `/investor/reports/${reportId}`
+    });
+  }
 
   return NextResponse.json({ ok: true, data: serializeMonthlyReport(result.report) });
 }

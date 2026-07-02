@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
-import { findInvestorByEmail, serializeInvestor } from "@otiz/database";
-import { createInvestorSession, verifyInvestorAccessCode } from "@/lib/investor-session";
+import { createInvestorSessionRecord, findInvestorByEmail, serializeInvestor } from "@otiz/database";
+import { createInvestorSession, INVESTOR_SESSION_TTL_MS, verifyInvestorAccessCode } from "@/lib/investor-session";
 import { checkInvestorLoginRateLimit, recordInvestorLoginFailure, resetInvestorLoginRateLimit } from "@/lib/investor-rate-limit";
 
 export const dynamic = "force-dynamic";
+
+function clientIp(request: Request) {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip")?.trim() ||
+    "unknown"
+  );
+}
 
 function sanitizeString(value: unknown, maxLength = 160) {
   if (typeof value !== "string") {
@@ -52,7 +60,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Investor access is not active." }, { status: 403 });
   }
 
-  if (!createInvestorSession({ investorId: investor.id, email: investor.email })) {
+  const sessionRow = await createInvestorSessionRecord({
+    investorId: investor.id,
+    ip: clientIp(request),
+    userAgent: (request.headers.get("user-agent") || "unknown").slice(0, 400),
+    expiresAt: new Date(Date.now() + INVESTOR_SESSION_TTL_MS)
+  });
+
+  if (!createInvestorSession({ investorId: investor.id, email: investor.email, sessionId: sessionRow.id })) {
     return NextResponse.json({ ok: false, error: "Investor session is not available." }, { status: 500 });
   }
 

@@ -9,17 +9,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@otiz/database": "workspace:*",
     "@otiz/lib": "workspace:*",
     "@otiz/ui": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-slot": "^1.1.1",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
     "next": "^14.2.23",
     "otplib": "^13.4.1",
+    "pdfkit": "^0.19.1",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -27,7 +30,9 @@
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.10.2",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.3.16",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.20",

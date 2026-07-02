@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createWithdrawalRequest, findInvestorById, getInvestorWithdrawalRequests, serializeInvestorWithdrawalRequest } from "@otiz/database";
-import { clearInvestorSession, getInvestorSession } from "@/lib/investor-session";
+import { clearInvestorSession, getValidatedInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ function sanitizeString(value: unknown, maxLength = 1000) {
 }
 
 async function requireApiInvestor() {
-  const session = getInvestorSession();
+  const session = await getValidatedInvestorSession();
   if (!session) return { ok: false as const, status: 401 as const, error: "Unauthorized." };
   const investor = await findInvestorById(session.investorId);
   if (!investor || investor.email !== session.email || investor.status !== "ACTIVE") {

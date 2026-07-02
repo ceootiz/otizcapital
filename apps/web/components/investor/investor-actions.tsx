@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Bell } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createAdminFormatters, localeNames, localeShortNames, locales, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress } from "@otiz/database";
@@ -355,6 +356,144 @@ export function InvestorDepositAddresses({ locale, addresses }: { locale: Locale
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Notification bell + dropdown (investor cabinet header)
+// ---------------------------------------------------------------------------
+
+type InvestorNotificationItem = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  linkHref: string | null;
+  createdAt: string;
+};
+
+const NOTIFICATION_TITLES: Record<"en" | "ru", Record<string, string>> = {
+  en: {
+    ALLOCATION_UPDATED: "Allocation updated",
+    ALLOCATION_COMPLETED: "Allocation completed",
+    REPORT_PUBLISHED: "New report available",
+    WITHDRAWAL_APPROVED: "Withdrawal request approved",
+    WITHDRAWAL_PAID: "Payout completed",
+    WITHDRAWAL_REJECTED: "Withdrawal request declined"
+  },
+  ru: {
+    ALLOCATION_UPDATED: "Ваша аллокация обновлена",
+    ALLOCATION_COMPLETED: "Аллокация завершена",
+    REPORT_PUBLISHED: "Новый отчёт доступен",
+    WITHDRAWAL_APPROVED: "Запрос на вывод одобрен",
+    WITHDRAWAL_PAID: "Выплата произведена",
+    WITHDRAWAL_REJECTED: "Запрос на вывод отклонён"
+  }
+};
+
+const BELL_STRINGS = {
+  en: { title: "Notifications", empty: "No notifications yet.", ariaOpen: "Open notifications" },
+  ru: { title: "Уведомления", empty: "Пока нет уведомлений.", ariaOpen: "Открыть уведомления" }
+} as const;
+
+export function InvestorNotificationBell({ locale }: { locale: Locale }) {
+  const s = (BELL_STRINGS as unknown as Record<string, (typeof BELL_STRINGS)["en"]>)[locale] ?? BELL_STRINGS.en;
+  const titles = NOTIFICATION_TITLES[locale === "ru" ? "ru" : "en"];
+  const fmt = React.useMemo(() => createAdminFormatters(locale), [locale]);
+  const [open, setOpen] = React.useState(false);
+  const [items, setItems] = React.useState<InvestorNotificationItem[]>([]);
+  const [unread, setUnread] = React.useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/investor/notifications", { cache: "no-store" });
+      const body = await res.json();
+      if (res.ok && body.ok) {
+        setItems(body.notifications as InvestorNotificationItem[]);
+        setUnread(Number(body.unreadCount) || 0);
+      }
+    } catch {
+      // Silent: the bell degrades gracefully when the feed is unavailable.
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [open]);
+
+  async function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && unread > 0) {
+      setUnread(0);
+      setItems((current) => current.map((item) => ({ ...item, isRead: true })));
+      await fetch("/api/investor/notifications/mark-read", { method: "POST" }).catch(() => undefined);
+    }
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => void toggle()}
+        aria-label={s.ariaOpen}
+        aria-expanded={open}
+        className="relative flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:text-foreground [&_svg]:size-4"
+      >
+        <Bell />
+        {unread > 0 ? (
+          <span className="absolute -right-0.5 -top-0.5 flex min-w-[1.05rem] items-center justify-center rounded-full bg-gold-200 px-1 text-[0.6rem] font-semibold text-graphite-950">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        ) : null}
+      </button>
+
+      {open ? (
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.98] shadow-premium backdrop-blur-2xl">
+          <div className="border-b border-white/10 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{s.title}</p>
+          </div>
+          <div className="max-h-[24rem] overflow-y-auto">
+            {items.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">{s.empty}</p>
+            ) : (
+              items.map((item) => {
+                const title = titles[item.type] ?? item.title;
+                const inner = (
+                  <div className={`flex gap-3 px-4 py-3 transition-colors hover:bg-white/[0.04] ${item.isRead ? "" : "bg-white/[0.05]"}`}>
+                    <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${item.isRead ? "bg-transparent" : "bg-gold-200"}`} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{fmt.dateTime(item.createdAt)}</p>
+                    </div>
+                  </div>
+                );
+                return item.linkHref ? (
+                  <Link key={item.id} href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="block border-b border-white/[0.06] last:border-b-0">
+                    {inner}
+                  </Link>
+                ) : (
+                  <div key={item.id} className="border-b border-white/[0.06] last:border-b-0">
+                    {inner}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

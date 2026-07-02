@@ -39,6 +39,15 @@ export async function findInvestorByEmail(email: string) {
   return prisma.investor.findUnique({ where: { email: email.toLowerCase() } });
 }
 
+// Stores a pre-hashed password (hashing happens in the app layer via bcrypt).
+export async function updateInvestorPasswordHash(id: string, passwordHash: string) {
+  return prisma.investor.update({ where: { id }, data: { passwordHash } });
+}
+
+export async function updateInvestorEmailNotifications(id: string, enabled: boolean) {
+  return prisma.investor.update({ where: { id }, data: { emailNotificationsEnabled: enabled } });
+}
+
 export async function getInvestorDetailRecord(id: string) {
   return prisma.investor.findUnique({
     where: { id },

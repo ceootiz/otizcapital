@@ -18,3 +18,5 @@ export * from "./withdrawals";
 export * from "./checkpoint-health";
 export * from "./deposit-addresses";
 export * from "./yield-settings";
+export * from "./investor-sessions";
+export * from "./investor-notifications";

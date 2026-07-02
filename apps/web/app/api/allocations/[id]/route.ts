@@ -4,6 +4,7 @@ import {
   ALLOCATION_REINVEST_DECISIONS,
   ALLOCATION_RISK_LEVELS,
   ALLOCATION_STATUSES,
+  createInvestorNotification,
   isPositiveAmount,
   markAllocationCompleted,
   markAllocationLoss,
@@ -124,6 +125,21 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   if (!result.ok) {
     return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+  }
+
+  // Notify the investor when the allocation's status/stage changes (best-effort).
+  const statusChanged = Boolean(status) || action === "update-stage" || action === "mark-completed" || action === "mark-loss";
+  if (statusChanged) {
+    const completed = result.allocation.status === "COMPLETED";
+    await createInvestorNotification({
+      investorId: result.allocation.investorId,
+      type: completed ? "ALLOCATION_COMPLETED" : "ALLOCATION_UPDATED",
+      title: completed ? "Allocation completed" : "Allocation updated",
+      body: completed
+        ? "One of your allocations has been marked completed."
+        : "The status of one of your allocations has changed.",
+      linkHref: `/investor/allocations/${result.allocation.id}`
+    });
   }
 
   return NextResponse.json({ ok: true, data: serializeAllocation(result.allocation) });

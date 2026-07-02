@@ -92,6 +92,8 @@ model Investor {
   sourceApplicationId String?
   totalCapital        String                @default("0")
   reinvestEnabled     Boolean               @default(false)
+  passwordHash        String?
+  emailNotificationsEnabled Boolean         @default(true)
   lastReportAt        DateTime?
   notes               String?
   createdAt           DateTime              @default(now())
@@ -102,10 +104,46 @@ model Investor {
   withdrawalRequests  WithdrawalRequest[]
   ledgerEntries       LedgerEntry[]
   operationalIncidents OperationalIncident[]
+  sessions            InvestorSession[]
+  notifications       InvestorNotification[]
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
+}
+
+// Per-login investor session records for session history + remote termination.
+// The auth cookie carries the matching sessionId; access is validated against
+// an active row so terminating a row logs that device out on its next request.
+model InvestorSession {
+  id         String   @id @default(cuid())
+  investorId String
+  ip         String
+  userAgent  String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  investor   Investor @relation(fields: [investorId], references: [id])
+
+  @@index([investorId])
+  @@index([isActive])
+}
+
+// Per-investor notification feed shown in the cabinet bell dropdown.
+model InvestorNotification {
+  id         String   @id @default(cuid())
+  investorId String
+  type       String
+  title      String
+  body       String
+  isRead     Boolean  @default(false)
+  linkHref   String?
+  createdAt  DateTime @default(now())
+  investor   Investor @relation(fields: [investorId], references: [id])
+
+  @@index([investorId])
+  @@index([isRead])
+  @@index([createdAt])
 }
 
 model WithdrawalRequest {

@@ -1,12 +1,13 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { findInvestorById } from "@otiz/database";
+import { findInvestorById, isInvestorSessionActive } from "@otiz/database";
 
 const INVESTOR_SESSION_COOKIE = "investor_session";
 const INVESTOR_ACTOR = "investor";
 // "Remember me": investor sessions persist for 30 days (admin sessions stay short).
-const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+export const INVESTOR_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+const SESSION_TTL_MS = INVESTOR_SESSION_TTL_MS;
 const DEV_SESSION_SECRET = "otiz-capital-dev-investor-session-secret";
 
 let warnedAboutDevSecret = false;
@@ -15,6 +16,7 @@ type InvestorSessionPayload = {
   actor: string;
   investorId: string;
   email: string;
+  sessionId: string;
   expiresAt: number;
   issuedAt: number;
 };
@@ -94,7 +96,7 @@ function verifyToken(token: string): InvestorSessionPayload | null {
   try {
     const payload = JSON.parse(base64UrlDecode(encodedPayload)) as InvestorSessionPayload;
 
-    if (payload.actor !== INVESTOR_ACTOR || !payload.investorId || !payload.email || payload.expiresAt < Date.now()) {
+    if (payload.actor !== INVESTOR_ACTOR || !payload.investorId || !payload.email || !payload.sessionId || payload.expiresAt < Date.now()) {
       return null;
     }
 
@@ -122,12 +124,13 @@ export function verifyInvestorAccessCode(accessCode: string) {
   return safeEqual(accessCode, configuredCode);
 }
 
-export function createInvestorSession(input: { investorId: string; email: string }) {
+export function createInvestorSession(input: { investorId: string; email: string; sessionId: string }) {
   const expiresAt = Date.now() + SESSION_TTL_MS;
   const token = createToken({
     actor: INVESTOR_ACTOR,
     investorId: input.investorId,
     email: input.email,
+    sessionId: input.sessionId,
     expiresAt,
     issuedAt: Date.now()
   });
@@ -167,6 +170,21 @@ export function getInvestorSession() {
   return verifyToken(token);
 }
 
+// Signature + DB-backed validation. Returns the payload only when the matching
+// InvestorSession row is still active (so terminated sessions fail here). Use in
+// investor API routes for gating.
+export async function getValidatedInvestorSession() {
+  const session = getInvestorSession();
+
+  if (!session) {
+    return null;
+  }
+
+  const active = await isInvestorSessionActive(session.sessionId, session.investorId);
+
+  return active ? session : null;
+}
+
 export async function requireInvestorSession(locale: string) {
   const session = getInvestorSession();
 
@@ -174,10 +192,15 @@ export async function requireInvestorSession(locale: string) {
     redirect(`/${locale}/investor/login`);
   }
 
-  const investor = await findInvestorById(session.investorId);
+  const [investor, sessionActive] = await Promise.all([
+    findInvestorById(session.investorId),
+    isInvestorSessionActive(session.sessionId, session.investorId)
+  ]);
 
-  if (!investor || investor.email !== session.email || investor.status !== "ACTIVE") {
-    clearInvestorSession();
+  // NOTE: cookies cannot be mutated during a page render, so we only redirect
+  // here. The stale cookie is cleared by the login page (a route boundary) via
+  // getValidatedInvestorSession, and by the logout/terminate route handlers.
+  if (!investor || investor.email !== session.email || investor.status !== "ACTIVE" || !sessionActive) {
     redirect(`/${locale}/investor/login`);
   }
 
