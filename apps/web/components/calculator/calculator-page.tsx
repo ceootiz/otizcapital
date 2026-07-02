@@ -9,8 +9,21 @@ import type { TooltipProps } from "recharts";
 import { createAdminFormatters, type Locale } from "@otiz/lib";
 import { ThemeToggle } from "@/components/home/theme-toggle";
 
-const GOLD = "#c8b97a";
-const MUTED = "#8a8a8f";
+// Theme-aware accent colors. Recharts sets SVG presentation attributes (which do
+// NOT resolve CSS var()), so we detect the active theme at runtime and use darker
+// shades in light mode for contrast. Defaults to dark to match SSR / app default.
+function useIsDark() {
+  const [isDark, setIsDark] = useState(true);
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => setIsDark(root.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
 
 const STRINGS = {
   en: {
@@ -93,6 +106,9 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
   const t = getStrings(locale);
   const reduceMotion = useReducedMotion() ?? false;
   const fmt = useMemo(() => createAdminFormatters(locale), [locale]);
+  const isDark = useIsDark();
+  const GOLD = isDark ? "#c8b97a" : "#92691a";
+  const MUTED = isDark ? "#8a8a8f" : "#52525b";
   const [amount, setAmount] = useState(10000);
   const [months, setMonths] = useState(12);
 
@@ -160,7 +176,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
           </Link>
           <div className="flex items-center gap-3">
             <Link href={`/${locale}`} className="flex items-center gap-2" aria-label="OTIZ CAPITAL home">
-              <span className="flex size-9 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-sm font-semibold text-gold-100 shadow-gold">O</span>
+              <span className="flex size-9 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-sm font-semibold text-amber-700 shadow-gold dark:bg-gold-200/10 dark:text-gold-100">O</span>
               <span className="hidden text-sm font-semibold tracking-[0.24em] text-foreground sm:inline">OTIZ CAPITAL</span>
             </Link>
             <ThemeToggle />
@@ -177,7 +193,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
           >
             {/* Heading + rate badge */}
             <div className="flex flex-col items-center text-center">
-              <span className="inline-flex rounded-full border border-gold-200/25 bg-gold-200/10 px-4 py-1.5 text-xs font-semibold tracking-[0.08em] text-gold-100">
+              <span className="inline-flex rounded-full border border-gold-200/25 bg-gold-300/20 px-4 py-1.5 text-xs font-semibold tracking-[0.08em] text-amber-700 dark:bg-gold-200/10 dark:text-gold-100">
                 {t.rateBadge.replace("{rate}", rateLabel)}
               </span>
               <h1 className="mt-6 font-display text-4xl font-medium tracking-[-0.05em] text-foreground sm:text-5xl">{t.heading}</h1>
@@ -189,7 +205,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
               {/* Amount — clean, minimal, underline only */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{t.amountLabel}</label>
-                <div className="mt-3 flex items-baseline gap-2 border-b border-white/15 pb-2 transition-colors focus-within:border-gold-200/60">
+                <div className="mt-3 flex items-baseline gap-2 border-b border-border pb-2 transition-colors focus-within:border-gold-200/60 dark:border-white/15">
                   <span className="font-display text-3xl text-muted-foreground sm:text-4xl">$</span>
                   <input
                     type="number"
@@ -207,7 +223,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
               <div>
                 <div className="flex items-end justify-between">
                   <label className="block text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{t.durationLabel}</label>
-                  <span className="font-display text-3xl font-medium tracking-[-0.03em] text-gold-100 sm:text-4xl">
+                  <span className="font-display text-3xl font-medium tracking-[-0.03em] sm:text-4xl" style={{ color: GOLD }}>
                     {months} <span className="text-lg text-muted-foreground sm:text-xl">{t.monthUnit}</span>
                   </span>
                 </div>
@@ -219,7 +235,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
                   value={months}
                   onChange={(event) => setMonths(Number(event.target.value))}
                   aria-label={t.durationLabel}
-                  className="mt-4 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-gold-200 [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-200 [&::-webkit-slider-thumb]:shadow-gold [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-gold-200"
+                  className="mt-4 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-foreground/15 accent-gold-200 dark:bg-white/10 [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-200 [&::-webkit-slider-thumb]:shadow-gold [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-gold-200"
                 />
                 <div className="mt-2 flex justify-between text-[0.7rem] text-muted-foreground">
                   <span>1 {t.monthUnit}</span>
@@ -307,7 +323,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
                   { Icon: Lock, title: t.secWithdrawTitle, desc: t.secWithdrawDesc }
                 ].map(({ Icon, title, desc }) => (
                   <div key={title} className="rounded-[1.35rem] border border-border bg-card p-6">
-                    <Icon className="size-6 text-[#c8b97a]" />
+                    <Icon className="size-6" style={{ color: GOLD }} />
                     <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{desc}</p>
                   </div>

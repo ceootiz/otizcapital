@@ -86,10 +86,10 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
           <ArrowLeft className="size-4" />
           {t.backToHomepage}
         </Link>
-        <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
+        <Card className="overflow-hidden rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
           <CardHeader>
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100">
+            <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
               <KeyRound className="size-5" />
             </div>
             <CardTitle className="text-2xl">{t.investorAccess}</CardTitle>
@@ -99,18 +99,18 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
             <form className="flex flex-col gap-5" onSubmit={onSubmit}>
               <label className="flex flex-col gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.fullName}</span>
-                <input value={fullName} onChange={(event) => setFullName(event.target.value)} className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
+                <input value={fullName} onChange={(event) => setFullName(event.target.value)} className="h-[3.25rem] rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
               </label>
               <label className="flex flex-col gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.email}</span>
-                <input aria-label={t.investorEmailAria} type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
+                <input aria-label={t.investorEmailAria} type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-[3.25rem] rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
               </label>
               <label className="flex flex-col gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.accessCode}</span>
-                <input aria-label={t.accessCode} type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} placeholder={t.accessCodePlaceholder} className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
+                <input aria-label={t.accessCode} type="password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} placeholder={t.accessCodePlaceholder} className="h-[3.25rem] rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
               </label>
-              <p className="text-xs leading-5 text-muted-foreground">{t.devHintPrefix} <span className="text-gold-100">otiz-demo</span>{t.devHintSuffix}</p>
-              {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-sm text-gold-100">{error}</p> : null}
+              <p className="text-xs leading-5 text-muted-foreground">{t.devHintPrefix} <span className="text-amber-700 dark:text-gold-100">otiz-demo</span>{t.devHintSuffix}</p>
+              {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{error}</p> : null}
               <Button type="submit" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? t.openingDashboard : t.openDashboard}
               </Button>

@@ -155,7 +155,7 @@ export function ApplicationPage({
               {dictionary.hero.back}
             </Link>
             <div className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-sm font-semibold text-gold-100 shadow-gold">O</span>
+              <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-sm font-semibold text-amber-700 dark:text-gold-100 shadow-gold">O</span>
               <span className="hidden text-sm font-semibold tracking-[0.24em] text-foreground sm:inline">OTIZ CAPITAL</span>
             </div>
           </div>
@@ -186,8 +186,8 @@ export function ApplicationPage({
               animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.95, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Card className="overflow-hidden rounded-[1.35rem] border-white/[0.12] bg-graphite-900/[0.78]">
-                <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
+              <Card className="overflow-hidden rounded-[1.35rem] border-border bg-card dark:border-white/[0.12] dark:bg-graphite-900/[0.78]">
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl">{dictionary.form.title}</CardTitle>
                   <CardDescription>{dictionary.form.subtitle}</CardDescription>
@@ -246,16 +246,16 @@ export function ApplicationPage({
                         <TextField label={dictionary.form.heardFrom} value={form.heardFrom} error={errors.heardFrom} onChange={(value) => updateField("heardFrom", value)} />
                       </div>
                       <TextAreaField label={dictionary.form.message} value={form.message} onChange={(value) => updateField("message", value)} />
-                      <label className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-muted-foreground">
+                      <label className="flex gap-3 rounded-2xl border border-border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground dark:border-white/10 dark:bg-white/[0.035]">
                         <input
                           type="checkbox"
                           checked={form.consent}
                           onChange={(event) => updateField("consent", event.target.checked)}
-                          className="mt-1 size-4 rounded border-white/20 bg-black accent-[#d4af5f]"
+                          className="mt-1 size-4 rounded border-border bg-background accent-[#d4af5f] dark:border-white/20 dark:bg-black"
                         />
                         <span>
                           {dictionary.form.consent}
-                          {errors.consent ? <span className="mt-2 block text-gold-100">{errors.consent}</span> : null}
+                          {errors.consent ? <span className="mt-2 block text-amber-700 dark:text-gold-100">{errors.consent}</span> : null}
                         </span>
                       </label>
                       <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto">
@@ -277,7 +277,7 @@ export function ApplicationPage({
 
 function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
   return (
-    <Card className="mt-8 bg-white/[0.04]">
+    <Card className="mt-8 bg-muted/30 dark:bg-white/[0.04]">
       <CardHeader>
         <CardTitle>{dictionary.sidebar.title}</CardTitle>
         <CardDescription>{dictionary.sidebar.subtitle}</CardDescription>
@@ -285,14 +285,14 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
       <CardContent className="flex flex-col gap-6">
         <div>
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <ShieldCheck className="size-4 text-gold-100" />
+            <ShieldCheck className="size-4 text-amber-700 dark:text-gold-100" />
             {dictionary.sidebar.trustTitle}
           </div>
           <div className="grid gap-3">
             {applyTrustSignals.map((signal) => (
-              <div key={signal} className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div key={signal} className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 p-4">
                 <span className="text-sm text-foreground">{signal}</span>
-                <CheckCircle2 className="size-4 text-gold-100" />
+                <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
               </div>
             ))}
           </div>
@@ -300,13 +300,13 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
         <Separator />
         <div>
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-            <FileCheck2 className="size-4 text-gold-100" />
+            <FileCheck2 className="size-4 text-amber-700 dark:text-gold-100" />
             {dictionary.sidebar.stepsTitle}
           </div>
           <div className="grid gap-2">
             {applicationFlowSteps.map((step, index) => (
               <div key={step} className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="flex size-7 items-center justify-center rounded-full bg-gold-200/10 text-[0.65rem] font-semibold text-gold-100">
+                <span className="flex size-7 items-center justify-center rounded-full bg-gold-300/20 dark:bg-gold-200/10 text-[0.65rem] font-semibold text-amber-700 dark:text-gold-100">
                   {index + 1}
                 </span>
                 {step}
@@ -321,7 +321,7 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
 
 function SuccessState({ dictionary, receivedId, onReset }: { dictionary: ApplyDictionary; receivedId: string; onReset: () => void }) {
   return (
-    <div className="rounded-[1.35rem] border border-gold-200/20 bg-gold-200/10 p-7 text-center">
+    <div className="rounded-[1.35rem] border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-7 text-center">
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-gold-200 text-graphite-950">
         <Mail className="size-6" />
       </div>
@@ -337,7 +337,7 @@ function SuccessState({ dictionary, receivedId, onReset }: { dictionary: ApplyDi
 
 function ApplyFAQ({ dictionary }: { dictionary: ApplyDictionary }) {
   return (
-    <Card className="mt-6 rounded-[1.35rem] bg-white/[0.035]">
+    <Card className="mt-6 rounded-[1.35rem] bg-muted/30 dark:bg-white/[0.035]">
       <CardHeader>
         <CardTitle>{dictionary.faq.title}</CardTitle>
       </CardHeader>
@@ -385,9 +385,9 @@ function TextField({
         placeholder={placeholder}
         autoComplete={autoComplete}
         inputMode={inputMode}
-        className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+        className="h-[3.25rem] rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
       />
-      {error ? <span className="text-xs text-gold-100">{error}</span> : null}
+      {error ? <span className="text-xs text-amber-700 dark:text-gold-100">{error}</span> : null}
     </label>
   );
 }
@@ -462,17 +462,17 @@ function CountrySelect({
             }
           }}
           autoComplete="off"
-          className="h-[3.25rem] w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+          className="h-[3.25rem] w-full rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
         />
         {open ? (
-          <div className="absolute z-20 mt-2 max-h-[15rem] w-full overflow-y-auto rounded-2xl border border-white/10 bg-graphite-900 shadow-premium">
+          <div className="absolute z-20 mt-2 max-h-[15rem] w-full overflow-y-auto rounded-2xl border border-border bg-popover shadow-premium dark:border-white/10 dark:bg-graphite-900">
             {filtered.length > 0 ? (
               filtered.map((option) => (
                 <button
                   key={option.code}
                   type="button"
                   onClick={() => handleSelect(option.name)}
-                  className="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-white/[0.06]"
+                  className="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted/50 dark:hover:bg-white/[0.06]"
                 >
                   {option.name}
                 </button>
@@ -483,7 +483,7 @@ function CountrySelect({
           </div>
         ) : null}
       </div>
-      {error ? <span className="text-xs text-gold-100">{error}</span> : null}
+      {error ? <span className="text-xs text-amber-700 dark:text-gold-100">{error}</span> : null}
     </label>
   );
 }
@@ -496,10 +496,10 @@ function SelectField({ label, value, options, onChange }: { label: string; value
         aria-label={label}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+        className="h-[3.25rem] rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
       >
         {Object.entries(options).map(([optionValue, optionLabel]) => (
-          <option key={optionValue} value={optionValue} className="bg-graphite-900 text-foreground">
+          <option key={optionValue} value={optionValue} className="bg-card text-foreground dark:bg-graphite-900">
             {optionLabel}
           </option>
         ))}
@@ -517,7 +517,7 @@ function TextAreaField({ label, value, onChange }: { label: string; value: strin
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={5}
-        className="resize-none rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+        className="resize-none rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
       />
     </label>
   );
@@ -525,7 +525,7 @@ function TextAreaField({ label, value, onChange }: { label: string; value: strin
 
 function FormNotice({ message }: { message: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-sm text-gold-100">
+    <div className="flex items-center gap-3 rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">
       <LockKeyhole className="size-4" />
       {message}
     </div>
