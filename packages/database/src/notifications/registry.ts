@@ -1,6 +1,6 @@
 import type { NotificationEvent } from "@prisma/client";
 import type { NotificationProvider, NotificationProviderResult } from "./providers";
-import { DisabledEmailProvider, DisabledTelegramProvider, InternalNotificationProvider } from "./providers";
+import { DisabledTelegramProvider, InternalNotificationProvider, ResendEmailProvider } from "./providers";
 
 export class NotificationProviderRegistry {
   constructor(private readonly providers: NotificationProvider[]) {}
@@ -34,7 +34,7 @@ export class NotificationProviderRegistry {
 export function createDefaultNotificationProviderRegistry() {
   return new NotificationProviderRegistry([
     new InternalNotificationProvider(),
-    new DisabledEmailProvider(),
+    new ResendEmailProvider(),
     new DisabledTelegramProvider()
   ]);
 }

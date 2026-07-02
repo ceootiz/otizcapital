@@ -79,3 +79,45 @@ export async function processPendingNotificationEvents(input: ProcessNotificatio
 
   return result;
 }
+
+// Inline processor for EMAIL-channel events only. Called right after an EMAIL
+// NotificationEvent is created so investors receive mail instantly, while the
+// manual admin trigger keeps handling INTERNAL events. Best-effort and quiet:
+// never throws into the caller's flow.
+export async function processPendingEmailNotificationEvents(input?: { limit?: number }): Promise<ProcessNotificationEventsResult> {
+  const limit = normalizeLimit(input?.limit);
+  const deliveryEnabled = isNotificationDeliveryEnabled();
+  const result: ProcessNotificationEventsResult = { processed: 0, skipped: 0, failed: 0, deliveryEnabled };
+
+  try {
+    const registry = createDefaultNotificationProviderRegistry();
+    const events = await prisma.notificationEvent.findMany({
+      where: { status: "PENDING", channel: "EMAIL" },
+      orderBy: { createdAt: "asc" },
+      take: limit
+    });
+
+    for (const event of events) {
+      try {
+        const outcome = await registry.process(event);
+        await updateNotificationEventStatus({ id: event.id, status: outcome.status, error: outcome.reason, processedAt: new Date() });
+        result.processed += 1;
+        if (outcome.status === "SKIPPED") result.skipped += 1;
+        if (outcome.status === "FAILED") result.failed += 1;
+      } catch (error) {
+        result.processed += 1;
+        result.failed += 1;
+        await updateNotificationEventStatus({
+          id: event.id,
+          status: "FAILED",
+          error: error instanceof Error ? error.message : "Email processor failed.",
+          processedAt: new Date()
+        }).catch(() => undefined);
+      }
+    }
+  } catch {
+    // Swallow: email delivery must never break the triggering action.
+  }
+
+  return result;
+}

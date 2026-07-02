@@ -1,5 +1,6 @@
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
+import { processPendingEmailNotificationEvents } from "./notification-processor";
 import { serializeAllocation } from "./allocations";
 import { serializeMonthlyReport } from "./monthly-reports";
 
@@ -180,7 +181,7 @@ export async function createInvestorFromApprovedApplication(input: {
   applicationId: string;
   actor: string;
 }) {
-  return prisma.$transaction(async (transaction) => {
+  const result = await prisma.$transaction(async (transaction) => {
     const application = await transaction.investorApplication.findUnique({
       where: { id: input.applicationId },
       include: { investor: true }
@@ -260,6 +261,22 @@ export async function createInvestorFromApprovedApplication(input: {
       transaction
     );
 
+    // Investor-facing approval email — only when a new investor account is created.
+    if (!existingInvestor) {
+      await createNotificationEventRecord(
+        {
+          type: "INVESTOR_CREATED",
+          channel: "EMAIL",
+          recipient: investor.email,
+          entityType: "InvestorApplication",
+          entityId: application.id,
+          payload: { investorId: investor.id, fullName: investor.fullName, email: investor.email },
+          status: "PENDING"
+        },
+        transaction
+      );
+    }
+
     return {
       ok: true as const,
       created: !existingInvestor,
@@ -267,4 +284,8 @@ export async function createInvestorFromApprovedApplication(input: {
       application: updatedApplication
     };
   });
+
+  await processPendingEmailNotificationEvents();
+
+  return result;
 }

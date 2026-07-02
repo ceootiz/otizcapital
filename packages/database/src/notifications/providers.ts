@@ -1,7 +1,9 @@
 import type { NotificationEvent } from "@prisma/client";
+import { Resend } from "resend";
 import type { NotificationStatus } from "../notification-events";
-import { getEmailProviderName, getTelegramProviderName, isNotificationDeliveryEnabled } from "./config";
+import { getTelegramProviderName, isNotificationDeliveryEnabled } from "./config";
 import { getNotificationTemplateMessage, type NotificationTemplateMessage } from "./templates";
+import { buildInvestorEmail } from "./email-content";
 
 export type NotificationMessage = {
   channel: string;
@@ -84,29 +86,64 @@ function buildTemplateMessage(event: NotificationEvent) {
   return template ? buildMessageFromTemplate(event, template) : null;
 }
 
-export class DisabledEmailProvider implements EmailProvider {
+export class ResendEmailProvider implements EmailProvider {
   readonly channel = "EMAIL";
 
   canHandle(event: NotificationEvent) {
     return event.channel === this.channel;
   }
 
-  buildMessage(event: NotificationEvent) {
-    return buildTemplateMessage(event) ?? missingTemplateResult(event).message;
+  buildMessage(event: NotificationEvent): NotificationMessage {
+    const content = buildInvestorEmail(event);
+    const payload = parsePayload(event.payloadJson);
+    if (content) {
+      return { channel: event.channel, recipient: event.recipient, subject: content.subject, text: content.text, html: content.html, payload };
+    }
+    return buildTemplateMessage(event) ?? { channel: event.channel, recipient: event.recipient, subject: "", text: "", payload };
   }
 
-  async send(event: NotificationEvent) {
-    const message = buildTemplateMessage(event);
+  async send(event: NotificationEvent): Promise<NotificationProviderResult> {
+    const content = buildInvestorEmail(event);
+    const message = this.buildMessage(event);
 
-    if (!message) {
-      return missingTemplateResult(event);
+    if (!content) {
+      return skippedResult(event, "No investor email for this event type", message);
     }
-
     if (!isNotificationDeliveryEnabled()) {
       return skippedResult(event, "Outbound delivery disabled", message);
     }
 
-    return skippedResult(event, `Email provider disabled: ${getEmailProviderName()}`, message);
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      // Graceful fallback: nothing sent, event left as skipped, warning logged.
+      console.warn("[otiz-email] RESEND_API_KEY is not set; skipping email delivery.");
+      return skippedResult(event, "RESEND_API_KEY not set", message);
+    }
+    if (!event.recipient || !/^\S+@\S+\.\S+$/.test(event.recipient)) {
+      return skippedResult(event, "No valid recipient email", message);
+    }
+
+    const rawFrom = process.env.EMAIL_FROM || "onboarding@resend.dev";
+    const from = rawFrom.includes("<") ? rawFrom : `OTIZ Capital <${rawFrom}>`;
+
+    try {
+      const resend = new Resend(apiKey);
+      const { data, error } = await resend.emails.send({
+        from,
+        to: event.recipient,
+        subject: content.subject,
+        html: content.html,
+        text: content.text
+      });
+
+      if (error) {
+        return { status: "FAILED", reason: error.message || "Resend error", message };
+      }
+
+      return { status: "SENT", reason: data?.id ? `Resend id ${data.id}` : "sent", message };
+    } catch (error) {
+      return { status: "FAILED", reason: error instanceof Error ? error.message : "Resend send failed", message };
+    }
   }
 }
 

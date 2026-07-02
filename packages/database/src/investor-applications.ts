@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { getApplicationPriorityScore, getCrmConfig, type CrmConfig } from "@otiz/lib";
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
+import { processPendingEmailNotificationEvents } from "./notification-processor";
 
 export const APPLICATION_STATUSES = ["NEW", "REVIEWED", "APPROVED", "REJECTED", "CONTACTED"] as const;
 export const APPLICATION_PRIORITIES = ["LOW", "NORMAL", "HIGH", "VIP"] as const;
@@ -59,7 +60,7 @@ export type UpdateInvestorApplicationInput = {
 };
 
 export async function createInvestorApplicationRecord(input: CreateInvestorApplicationInput) {
-  return prisma.$transaction(async (transaction) => {
+  const application = await prisma.$transaction(async (transaction) => {
     const application = await transaction.investorApplication.create({
       data: {
         fullName: input.fullName,
@@ -95,8 +96,28 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
       transaction
     );
 
+    // Investor-facing confirmation email (only when an email was provided).
+    if (application.email) {
+      await createNotificationEventRecord(
+        {
+          type: "INVESTOR_APPLICATION_CREATED",
+          channel: "EMAIL",
+          recipient: application.email,
+          entityType: "InvestorApplication",
+          entityId: application.id,
+          payload: { applicationId: application.id, fullName: application.fullName },
+          status: "PENDING"
+        },
+        transaction
+      );
+    }
+
     return application;
   });
+
+  await processPendingEmailNotificationEvents();
+
+  return application;
 }
 
 function endOfToday() {
@@ -367,7 +388,7 @@ export async function updateInvestorApplicationStatus(input: {
 export async function updateInvestorApplication(input: UpdateInvestorApplicationInput) {
   const action = input.action ?? "UPDATE_APPLICATION";
 
-  return prisma.$transaction(async (transaction) => {
+  const updated = await prisma.$transaction(async (transaction) => {
     const previous = await transaction.investorApplication.findUnique({ where: { id: input.id } });
 
     if (!previous) return null;
@@ -423,10 +444,30 @@ export async function updateInvestorApplication(input: UpdateInvestorApplication
         },
         transaction
       );
+
+      // Investor-facing rejection email (only on transition to REJECTED with an email on file).
+      if (nextStatus === "REJECTED" && previous.status !== "REJECTED" && updated.email) {
+        await createNotificationEventRecord(
+          {
+            type: "APPLICATION_STATUS_CHANGED",
+            channel: "EMAIL",
+            recipient: updated.email,
+            entityType: "InvestorApplication",
+            entityId: input.id,
+            payload: { applicationId: input.id, fullName: updated.fullName, status: "REJECTED" },
+            status: "PENDING"
+          },
+          transaction
+        );
+      }
     }
 
     return updated;
   });
+
+  await processPendingEmailNotificationEvents();
+
+  return updated;
 }
 
 function createAuditSnapshot(record: {

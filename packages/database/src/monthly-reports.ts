@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
+import { processPendingEmailNotificationEvents } from "./notification-processor";
 import { calculateAllocationProofCompletenessFromInput, type ProofCompletenessBreakdown } from "./proof-completeness";
 import { getActiveReadinessPolicy } from "./readiness-policies";
 import { buildReconciliationSnapshot, getInvestorSafeReconciliationSummary, parseReconciliationSnapshot, type InvestorSafeReconciliationSummary, type ReconciliationSnapshot } from "./reconciliation";
@@ -586,7 +587,7 @@ export async function createMonthlyReportRecord(input: CreateMonthlyReportInput)
 }
 
 export async function updateMonthlyReportRecord(input: UpdateMonthlyReportInput) {
-  return prisma.$transaction(async (transaction) => {
+  const result = await prisma.$transaction(async (transaction) => {
     const existing = await transaction.monthlyReport.findUnique({ where: { id: input.id }, include: { investor: true } });
     if (!existing) return { ok: false as const, status: 404 as const, error: "Monthly report not found." };
 
@@ -629,10 +630,18 @@ export async function updateMonthlyReportRecord(input: UpdateMonthlyReportInput)
 
     if (publishingNow) {
       await createNotificationEventRecord({ type: "MONTHLY_REPORT_PUBLISHED", channel: "INTERNAL", recipient: "admin", entityType: "MonthlyReport", entityId: report.id, payload: { investorId: existing.investor.id, investorEmail: existing.investor.email, month: report.month, title: report.title }, status: "PENDING" }, transaction);
+      // Investor-facing "new report available" email.
+      if (existing.investor.email) {
+        await createNotificationEventRecord({ type: "MONTHLY_REPORT_PUBLISHED", channel: "EMAIL", recipient: existing.investor.email, entityType: "MonthlyReport", entityId: report.id, payload: { reportId: report.id, month: report.month, title: report.title }, status: "PENDING" }, transaction);
+      }
     }
 
     return { ok: true as const, report };
   });
+
+  await processPendingEmailNotificationEvents();
+
+  return result;
 }
 
 export async function regenerateMonthlyReportProofSnapshotRecord(input: RegenerateMonthlyReportProofSnapshotInput) {
