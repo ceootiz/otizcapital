@@ -37,15 +37,21 @@ export const metadata: Metadata = {
   }
 };
 
-// Applies the persisted theme before paint so there is no light/dark flash.
-// Defaults to dark (the site's base) unless the visitor explicitly chose light.
-const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement; const stored = localStorage.getItem('otiz-theme'); if (stored === 'light') { root.classList.remove('dark'); root.style.colorScheme = 'light'; } else { root.classList.add('dark'); root.style.colorScheme = 'dark'; } } catch (e) {} })();`;
+// Applies the theme before paint so there is no light/dark flash. Priority:
+// (1) the visitor's explicit saved choice is never overridden; (2) otherwise the
+// OS `prefers-color-scheme`; (3) if matchMedia is unavailable, default to dark.
+const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement; const stored = localStorage.getItem('otiz-theme'); let dark; if (stored === 'light') { dark = false; } else if (stored === 'dark') { dark = true; } else if (window.matchMedia) { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } else { dark = true; } if (dark) { root.classList.add('dark'); root.style.colorScheme = 'dark'; } else { root.classList.remove('dark'); root.style.colorScheme = 'light'; } } catch (e) {} })();`;
+
+// On 2g / slow-2g connections, tag <html> so CSS can drop animations/transitions.
+// Degrades silently when the Network Information API is unavailable.
+const CONNECTION_INIT_SCRIPT = `(() => { try { const c = navigator.connection; if (c && (c.effectiveType === '2g' || c.effectiveType === 'slow-2g')) { document.documentElement.classList.add('reduce-motion'); } } catch (e) {} })();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: CONNECTION_INIT_SCRIPT }} />
       </head>
       <body className={`${sans.variable} ${display.variable} font-sans`}>{children}</body>
     </html>

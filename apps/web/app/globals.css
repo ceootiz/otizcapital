@@ -127,3 +127,23 @@
     text-wrap: balance;
   }
 }
+
+/* Respect the OS "reduce motion" setting: near-instant animations/transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Set on <html> for 2g / slow-2g connections (see CONNECTION_INIT_SCRIPT). */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}

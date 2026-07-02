@@ -34,6 +34,17 @@ function redirectToLogin(request: NextRequest, locale: string, area: "admin" | "
 // stays in the route handlers / server components — this is defense-in-depth so
 // an unauthenticated request never renders a protected page shell at all.
 export function middleware(request: NextRequest) {
+  // First-visit language detection: a bare "/" (no locale prefix) redirects to
+  // /ru for Russian-preferring browsers, otherwise /en. Locale-prefixed paths
+  // (/ru, /en, /es, /de, /zh, ...) are never touched, so an explicit choice is
+  // always respected. Runs before the auth gates below.
+  if (request.nextUrl.pathname === "/") {
+    const acceptsRussian = (request.headers.get("accept-language") || "").trim().toLowerCase().startsWith("ru");
+    const url = request.nextUrl.clone();
+    url.pathname = acceptsRussian ? "/ru" : "/en";
+    return NextResponse.redirect(url);
+  }
+
   const { locale, rest } = splitLocale(request.nextUrl.pathname);
 
   // Login pages must remain reachable without a session.

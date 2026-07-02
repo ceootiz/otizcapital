@@ -112,7 +112,7 @@ export function InvestorLocaleSwitcher({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1" aria-label={getStrings(locale).language}>
+    <div className="flex items-center gap-1 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] p-1" aria-label={getStrings(locale).language}>
       {locales.map((next) => (
         <Link
           key={next}
@@ -134,7 +134,7 @@ export function ReinvestPreferenceControl({ locale, initialEnabled }: { locale: 
   const [enabled, setEnabled] = React.useState(initialEnabled);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.currentPreference}</p>
       <p className="mt-2 text-2xl font-semibold text-foreground">{enabled ? t.reinvestEnabled : t.reinvestDisabled}</p>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.reinvestNote}</p>
@@ -176,9 +176,9 @@ export function InvestorWithdrawalForm({
 
   if (locked) {
     return (
-      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-5">
-        <p className="font-semibold text-gold-100">{t.lockTitle}</p>
-        <p className="mt-2 text-sm leading-6 text-gold-100/90">
+      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-5">
+        <p className="font-semibold text-amber-700 dark:text-gold-100">{t.lockTitle}</p>
+        <p className="mt-2 text-sm leading-6 text-amber-700 dark:text-gold-100/90">
           {unlockDate ? t.lockBodyWithDate.replace("{date}", fmt.date(unlockDate)) : t.lockBodyNoDate}
         </p>
       </div>
@@ -239,14 +239,14 @@ export function InvestorWithdrawalForm({
   }
 
   const inputClass =
-    "h-[3rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
+    "h-[3rem] rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
 
   return (
-    <form className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5" onSubmit={onSubmit} noValidate>
+    <form className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5" onSubmit={onSubmit} noValidate>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.requestTitle}</p>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.requestSubtitle}</p>
       <p className="mt-3 text-sm text-foreground">
-        {t.available}: <span className="font-semibold text-gold-100">{fmt.currency(availableAmount)}</span>
+        {t.available}: <span className="font-semibold text-amber-700 dark:text-gold-100">{fmt.currency(availableAmount)}</span>
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -258,7 +258,7 @@ export function InvestorWithdrawalForm({
           <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.networkLabel}</span>
           <select value={network} onChange={(event) => setNetwork(event.target.value)} className={inputClass}>
             {CRYPTO_NETWORKS.map((value) => (
-              <option key={value} value={value} className="bg-graphite-900 text-foreground">
+              <option key={value} value={value} className="bg-card dark:bg-graphite-900 text-foreground">
                 {value}
               </option>
             ))}
@@ -273,7 +273,7 @@ export function InvestorWithdrawalForm({
 
       <label className="mt-4 flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.noteLabel}</span>
-        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="resize-none rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
+        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="resize-none rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
       </label>
 
       {error ? <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p> : null}
@@ -328,10 +328,10 @@ export function InvestorDepositAddresses({ locale, addresses }: { locale: Locale
     <div className="grid gap-6">
       {groups.map(([currency, groupAddresses]) => (
         <div key={currency} className="grid gap-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{currency}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-gold-100">{currency}</p>
           <div className="grid gap-4">
             {groupAddresses.map((address) => (
-              <div key={address.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5">
+              <div key={address.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.network}</p>
@@ -347,7 +347,7 @@ export function InvestorDepositAddresses({ locale, addresses }: { locale: Locale
                       {copiedId === address.id ? t.copied : t.copy}
                     </Button>
                   </div>
-                  <div className="flex shrink-0 items-center justify-center rounded-[1rem] border border-white/10 bg-black/20 p-3">
+                  <div className="flex shrink-0 items-center justify-center rounded-[1rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
                     <QRCodeSVG value={address.address} size={140} bgColor="#00000000" fgColor="#f4e8cd" level="M" />
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
         onClick={() => void toggle()}
         aria-label={s.ariaOpen}
         aria-expanded={open}
-        className="relative flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-muted-foreground transition-colors hover:text-foreground [&_svg]:size-4"
+        className="relative flex size-9 items-center justify-center rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] text-muted-foreground transition-colors hover:text-foreground [&_svg]:size-4"
       >
         <Bell />
         {unread > 0 ? (
@@ -461,8 +461,8 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.98] shadow-premium backdrop-blur-2xl">
-          <div className="border-b border-white/10 px-4 py-3">
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.98] shadow-premium backdrop-blur-2xl">
+          <div className="border-b border-border dark:border-white/10 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{s.title}</p>
           </div>
           <div className="max-h-[24rem] overflow-y-auto">
@@ -472,7 +472,7 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
               items.map((item) => {
                 const title = titles[item.type] ?? item.title;
                 const inner = (
-                  <div className={`flex gap-3 px-4 py-3 transition-colors hover:bg-white/[0.04] ${item.isRead ? "" : "bg-white/[0.05]"}`}>
+                  <div className={`flex gap-3 px-4 py-3 transition-colors hover:bg-muted/30 dark:hover:bg-white/[0.04] ${item.isRead ? "" : "bg-muted/30 dark:bg-white/[0.05]"}`}>
                     <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${item.isRead ? "bg-transparent" : "bg-gold-200"}`} />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">{title}</p>
@@ -481,11 +481,11 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
                   </div>
                 );
                 return item.linkHref ? (
-                  <Link key={item.id} href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="block border-b border-white/[0.06] last:border-b-0">
+                  <Link key={item.id} href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="block border-b border-border dark:border-white/[0.06] last:border-b-0">
                     {inner}
                   </Link>
                 ) : (
-                  <div key={item.id} className="border-b border-white/[0.06] last:border-b-0">
+                  <div key={item.id} className="border-b border-border dark:border-white/[0.06] last:border-b-0">
                     {inner}
                   </div>
                 );

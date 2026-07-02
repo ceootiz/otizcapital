@@ -346,9 +346,9 @@ export function InvestorSettingsPage({
     [locale, pathname]
   );
 
-  const cardClass = "rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.72] p-6";
+  const cardClass = "rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.72] p-6";
   const inputClass =
-    "h-[3rem] rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
+    "h-[3rem] rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
   const labelClass = "text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground";
 
   const visibleSessions = sessions.slice(0, 10);
@@ -403,7 +403,7 @@ export function InvestorSettingsPage({
           </label>
 
           {passwordError ? <p className="text-sm text-red-400">{passwordError}</p> : null}
-          {passwordSuccess ? <p className="text-sm text-gold-100">{t.security.success}</p> : null}
+          {passwordSuccess ? <p className="text-sm text-amber-700 dark:text-gold-100">{t.security.success}</p> : null}
 
           <div>
             <button
@@ -429,7 +429,7 @@ export function InvestorSettingsPage({
             <p className="text-sm text-muted-foreground">
               {t.preferences.current}: <span className="font-semibold text-foreground">{localeNames[locale]}</span>
             </p>
-            <div className="flex flex-wrap gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1">
+            <div className="flex flex-wrap gap-1 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] p-1">
               {locales.map((code) => {
                 const isActive = code === locale;
                 return (
@@ -460,7 +460,7 @@ export function InvestorSettingsPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="text-sm text-foreground">{t.notifications.label}</span>
-            {notificationsSaved ? <span className="text-xs text-gold-100">{t.notifications.saved}</span> : null}
+            {notificationsSaved ? <span className="text-xs text-amber-700 dark:text-gold-100">{t.notifications.saved}</span> : null}
             {notificationsError ? <span className="text-xs text-red-400">{notificationsError}</span> : null}
           </div>
           <button
@@ -470,11 +470,11 @@ export function InvestorSettingsPage({
             aria-label={t.notifications.label}
             onClick={handleToggleNotifications}
             className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors ${
-              emailEnabled ? "border-gold-200/50 bg-gold-200" : "border-white/10 bg-white/[0.06]"
+              emailEnabled ? "border-gold-200/50 bg-gold-200" : "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.06]"
             }`}
           >
             <span
-              className={`inline-block size-5 rounded-full bg-graphite-950 transition-transform ${
+              className={`inline-block size-5 rounded-full bg-background dark:bg-graphite-950 transition-transform ${
                 emailEnabled ? "translate-x-6" : "translate-x-1"
               }`}
             />
@@ -504,7 +504,7 @@ export function InvestorSettingsPage({
               let badgeClass = "text-muted-foreground";
               if (session.isCurrent) {
                 badgeText = t.sessions.thisDevice;
-                badgeClass = "text-gold-100";
+                badgeClass = "text-amber-700 dark:text-gold-100";
               } else if (isLive) {
                 badgeText = t.sessions.active;
                 badgeClass = "text-foreground";
@@ -514,7 +514,7 @@ export function InvestorSettingsPage({
                 <li
                   key={session.id}
                   className={`flex flex-wrap items-center justify-between gap-3 py-3.5 ${
-                    index === 0 ? "" : "border-t border-white/[0.06]"
+                    index === 0 ? "" : "border-t border-border dark:border-white/[0.06]"
                   }`}
                 >
                   <div className="grid gap-1">
@@ -545,7 +545,7 @@ export function InvestorSettingsPage({
           type="button"
           onClick={handleTerminate}
           disabled={terminating}
-          className="inline-flex h-[3rem] items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-6 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/45 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-[3rem] items-center justify-center rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-6 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/45 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {terminating ? t.terminate.working : t.terminate.button}
         </button>
@@ -561,7 +561,7 @@ export function InvestorSettingsPage({
         <button
           type="button"
           onClick={handleExport}
-          className="inline-flex h-[3rem] items-center justify-center rounded-2xl border border-white/10 bg-black/20 px-6 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/45"
+          className="inline-flex h-[3rem] items-center justify-center rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-6 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/45"
         >
           {t.data.button}
         </button>
