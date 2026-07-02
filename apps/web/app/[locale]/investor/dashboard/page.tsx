@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
+import { listActiveDepositAddresses, serializeDepositAddress } from "@otiz/database";
 import { InvestorDashboardHome, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
@@ -22,9 +23,13 @@ export default async function InvestorDashboardRoute({ params }: { params: { loc
   const data = await getInvestorDashboardData(investor);
   const page = getInvestorStrings(params.locale).pages.dashboard;
 
+  // Deposit addresses power the zero-allocation welcome view.
+  const hasNoAllocations = data.summary.activeAllocationsCount === 0 && data.summary.completedAllocationsCount === 0;
+  const depositAddresses = hasNoAllocations ? (await listActiveDepositAddresses()).map(serializeDepositAddress) : [];
+
   return (
     <InvestorShell locale={params.locale} investor={investor} active="dashboard" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorDashboardHome locale={params.locale} data={data} />
+      <InvestorDashboardHome locale={params.locale} data={data} investorName={investor.fullName} depositAddresses={depositAddresses} />
     </InvestorShell>
   );
 }

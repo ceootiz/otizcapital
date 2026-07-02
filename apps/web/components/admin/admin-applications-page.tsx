@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, BellRing, CheckCircle2, Clock3, Download, FileText, LogOut, Save, Search, Sparkles, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, BellRing, CalendarClock, CheckCircle2, Clock3, Download, FileText, LogOut, Save, Search, Sparkles, UserPlus, Users } from "lucide-react";
 import {
   APPLICATION_SLA_FILTERS,
   DEFAULT_CRM_CONFIG,
@@ -21,7 +21,7 @@ import {
   type ApplicationSlaState,
   type Locale
 } from "@otiz/lib";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Separator } from "@otiz/ui";
 import { getCrmView, getCrmViewKey, type CrmViewKey } from "./crm-views";
 import { AdminNavigation } from "./admin-navigation";
 
@@ -358,6 +358,12 @@ const STRINGS = {
     markedContacted: "Marked as contacted.",
     applicationApproved: "Application approved.",
     applicationRejected: "Application rejected.",
+    confirmApproveTitle: "Approve application?",
+    confirmApproveDesc: "The application will be approved. You can then create the investor account.",
+    confirmRejectTitle: "Reject application?",
+    confirmRejectDesc: "The application will be rejected and the applicant may be notified. This cannot be undone.",
+    dialogBack: "Cancel",
+    pendingWithdrawalsWidget: "{n} request(s) awaiting payout for {amount}",
     prioritySetVip: "Priority set to VIP.",
     nextActionCleared: "Next action cleared.",
     priorityLabel: "Priority",
@@ -539,6 +545,12 @@ const STRINGS = {
     markedContacted: "Отмечено как «связались».",
     applicationApproved: "Заявка одобрена.",
     applicationRejected: "Заявка отклонена.",
+    confirmApproveTitle: "Одобрить заявку?",
+    confirmApproveDesc: "Заявка будет одобрена. После этого можно создать кабинет инвестора.",
+    confirmRejectTitle: "Отклонить заявку?",
+    confirmRejectDesc: "Заявка будет отклонена, заявитель может получить уведомление. Отменить нельзя.",
+    dialogBack: "Отмена",
+    pendingWithdrawalsWidget: "{n} запрос(ов) на вывод на сумму {amount}",
     prioritySetVip: "Приоритет установлен на VIP.",
     nextActionCleared: "Следующее действие очищено.",
     priorityLabel: "Приоритет",
@@ -1208,6 +1220,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             locale={locale}
           />
 
+          <PendingWithdrawalsWidget locale={locale} template={t.pendingWithdrawalsWidget} />
+
           <div className="mb-6 grid gap-4 md:grid-cols-3 xl:grid-cols-5">
             <SummaryCard label={t.summaryFirstContactOverdue} value={formatOptionalCount(queueCounts?.sla["first-contact-overdue"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
             <SummaryCard label={t.summaryDueSoon} value={formatOptionalCount(queueCounts?.sla["due-soon"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
@@ -1550,6 +1564,48 @@ function AdminNotice({ message, tone }: { message: string; tone: "success" | "er
   return <div className={`mb-5 flex items-center gap-3 rounded-2xl border p-4 text-sm ${toneClass}`}><CheckCircle2 className="size-4" />{message}</div>;
 }
 
+// D4: dashboard widget summarizing pending withdrawals. Fetches its own summary
+// and only renders when there is at least one pending request. Links to the
+// withdrawals queue.
+function PendingWithdrawalsWidget({ locale, template }: { locale: Locale; template: string }) {
+  const f = createAdminFormatters(locale);
+  const [summary, setSummary] = React.useState<{ count: number; total: number } | null>(null);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/admin/withdrawals/summary", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.json())
+      .then((payload: { ok: boolean; count?: number; total?: number }) => {
+        if (payload.ok) setSummary({ count: payload.count ?? 0, total: payload.total ?? 0 });
+      })
+      .catch(() => {
+        /* non-fatal */
+      });
+    return () => controller.abort();
+  }, []);
+
+  if (!summary || summary.count <= 0) {
+    return null;
+  }
+
+  const label = template
+    .replace("{n}", String(summary.count))
+    .replace("{amount}", f.currency(summary.total));
+
+  return (
+    <Link
+      href={`/${locale}/admin/withdrawals`}
+      className="mb-6 flex items-center justify-between gap-4 rounded-[1.35rem] border border-gold-200/30 bg-gold-200/10 p-5 transition-colors hover:bg-gold-200/15"
+    >
+      <span className="flex items-center gap-3 text-sm font-semibold text-gold-100">
+        <CalendarClock className="size-5" />
+        {label}
+      </span>
+      <ArrowRight className="size-4 text-gold-100" />
+    </Link>
+  );
+}
+
 function PriorityBadge({ priority, locale }: { priority: ApplicationPriority; locale: Locale }) {
   const isElevated = priority === "VIP" || priority === "HIGH";
   return <Badge variant={isElevated ? "default" : "secondary"}>{enumLabel("applicationPriority", priority, locale)}</Badge>;
@@ -1719,6 +1775,8 @@ function ApplicationDetail({
   const [detailNotice, setDetailNotice] = React.useState<string | null>(null);
   const [detailError, setDetailError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
+  // Approve/reject require confirmation before running (Block D1).
+  const [confirmAction, setConfirmAction] = React.useState<"APPROVED" | "REJECTED" | null>(null);
   const draftDefaults = React.useMemo<CrmDraft | null>(() => {
     if (!application) return null;
 
@@ -1781,6 +1839,7 @@ function ApplicationDetail({
     try {
       const updated = await onPatchApplication(application, payload, successMessage);
       setDetailNotice(successMessage);
+      setConfirmAction(null); // close the confirm dialog only on success
       setDraft({
         priority: updated.priority,
         sourceLabel: updated.sourceLabel || "",
@@ -1790,6 +1849,7 @@ function ApplicationDetail({
       });
     } catch (requestError) {
       setDetailError(requestError instanceof Error ? requestError.message : t.unableQuickAction);
+      // Leave the dialog open on error so the confirm button re-enables for retry.
     }
   }
 
@@ -1832,12 +1892,28 @@ function ApplicationDetail({
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "CONTACTED"} onClick={() => runQuickAction({ status: "CONTACTED" }, t.markedContacted)}>{t.markContacted}</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "APPROVED"} onClick={() => runQuickAction({ status: "APPROVED" }, t.applicationApproved)}>{t.approve}</Button>
-            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "REJECTED"} onClick={() => runQuickAction({ status: "REJECTED" }, t.applicationRejected)}>{t.reject}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "APPROVED"} onClick={() => setConfirmAction("APPROVED")}>{t.approve}</Button>
+            <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "REJECTED"} onClick={() => setConfirmAction("REJECTED")}>{t.reject}</Button>
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.priority === "VIP"} onClick={() => runQuickAction({ priority: "VIP" }, t.prioritySetVip)}>{t.setVip}</Button>
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || (!application.nextAction && !application.nextActionAt)} onClick={() => runQuickAction({ nextAction: null, nextActionAt: null }, t.nextActionCleared)}>{t.clearNextAction}</Button>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={confirmAction !== null}
+          title={confirmAction === "REJECTED" ? t.confirmRejectTitle : t.confirmApproveTitle}
+          description={confirmAction === "REJECTED" ? t.confirmRejectDesc : t.confirmApproveDesc}
+          confirmLabel={confirmAction === "REJECTED" ? t.reject : t.approve}
+          cancelLabel={t.dialogBack}
+          tone={confirmAction === "REJECTED" ? "destructive" : "positive"}
+          loading={isUpdating}
+          onConfirm={() =>
+            confirmAction === "REJECTED"
+              ? runQuickAction({ status: "REJECTED" }, t.applicationRejected)
+              : runQuickAction({ status: "APPROVED" }, t.applicationApproved)
+          }
+          onCancel={() => setConfirmAction(null)}
+        />
 
         <Separator />
 

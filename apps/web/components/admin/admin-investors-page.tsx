@@ -1,5 +1,8 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Users } from "lucide-react";
+import { ArrowLeft, FileText, Search, Users, X } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
 import { AdminNavigation } from "./admin-navigation";
@@ -36,7 +39,11 @@ const STRINGS = {
     EMPTY_DESCRIPTION: "Approved applications can be converted into investor profiles from the application detail card.",
     NO_TELEGRAM: "No Telegram",
     ENABLED: "Enabled",
-    DISABLED: "Disabled"
+    DISABLED: "Disabled",
+    SEARCH_PLACEHOLDER: "Search by name, email, or status...",
+    CLEAR_SEARCH: "Clear search",
+    NO_RESULTS_TITLE: "No matching investors",
+    NO_RESULTS_DESCRIPTION: "Try a different name, email, or status."
   },
   ru: {
     BACK_TO_HOMEPAGE: "На главную",
@@ -54,7 +61,11 @@ const STRINGS = {
     EMPTY_DESCRIPTION: "Одобренные заявки можно преобразовать в профили инвесторов из карточки заявки.",
     NO_TELEGRAM: "Нет Telegram",
     ENABLED: "Включён",
-    DISABLED: "Отключён"
+    DISABLED: "Отключён",
+    SEARCH_PLACEHOLDER: "Поиск по имени, email или статусу...",
+    CLEAR_SEARCH: "Очистить поиск",
+    NO_RESULTS_TITLE: "Совпадений не найдено",
+    NO_RESULTS_DESCRIPTION: "Попробуйте другое имя, email или статус."
   }
 } as const;
 
@@ -64,6 +75,24 @@ const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<st
 export function AdminInvestorsPage({ locale, investors }: { locale: Locale; investors: AdminInvestor[] }) {
   const t = getStrings(locale);
   const formatters = createAdminFormatters(locale);
+  const [query, setQuery] = React.useState("");
+  const [debouncedQuery, setDebouncedQuery] = React.useState("");
+
+  // Debounce the search input by 300ms so filtering stays smooth while typing.
+  React.useEffect(() => {
+    const handle = setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 300);
+    return () => clearTimeout(handle);
+  }, [query]);
+
+  const filteredInvestors = React.useMemo(() => {
+    if (!debouncedQuery) return investors;
+    return investors.filter((investor) => {
+      const statusLabel = enumLabel("investorStatus", investor.status, locale).toLowerCase();
+      return [investor.fullName, investor.email, investor.status, statusLabel]
+        .filter(Boolean)
+        .some((field) => field.toLowerCase().includes(debouncedQuery));
+    });
+  }, [investors, debouncedQuery, locale]);
 
   function formatMoney(value: string) {
     const amount = Number(value || 0);
@@ -95,10 +124,30 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                   <CardTitle className="text-2xl">{t.TITLE}</CardTitle>
                   <CardDescription>{t.DESCRIPTION}</CardDescription>
                 </div>
-                <Badge>{investors.length} {t.TOTAL}</Badge>
+                <Badge>{debouncedQuery ? `${filteredInvestors.length} / ${investors.length}` : `${investors.length} ${t.TOTAL}`}</Badge>
               </div>
             </CardHeader>
             <CardContent>
+              <div className="relative mb-4">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t.SEARCH_PLACEHOLDER}
+                  className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 pl-11 pr-11 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45"
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    aria-label={t.CLEAR_SEARCH}
+                    onClick={() => setQuery("")}
+                    className="absolute right-3 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
+                  >
+                    <X className="size-4" />
+                  </button>
+                ) : null}
+              </div>
               <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
                 <div className="hidden grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
                   <span>{t.COL_NAME}</span>
@@ -115,8 +164,14 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                     <p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p>
                     <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.EMPTY_DESCRIPTION}</p>
                   </div>
+                ) : filteredInvestors.length === 0 ? (
+                  <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
+                    <Search className="size-9 text-gold-100" />
+                    <p className="mt-4 font-semibold text-foreground">{t.NO_RESULTS_TITLE}</p>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.NO_RESULTS_DESCRIPTION}</p>
+                  </div>
                 ) : (
-                  investors.map((investor) => (
+                  filteredInvestors.map((investor) => (
                     <Link key={investor.id} href={`/${locale}/admin/investors/${investor.id}`} className="grid gap-3 border-b border-white/10 p-4 transition-colors last:border-b-0 hover:bg-white/[0.04] lg:grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] lg:items-center">
                       <span className="flex items-center gap-3">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">

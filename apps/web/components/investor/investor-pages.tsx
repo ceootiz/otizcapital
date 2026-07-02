@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, BarChart3, CalendarClock, CheckCircle2, FileText, PackageCheck, WalletCards } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Download, FileSpreadsheet, FileText, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress } from "@otiz/database";
@@ -8,7 +8,14 @@ import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdr
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 
-type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "withdrawals" | "reinvest" | "settings";
+type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "withdrawals" | "reinvest" | "settings";
+
+export type InvestorFileReportView = {
+  id: string;
+  fileName: string;
+  month: string;
+  uploadedAt: string;
+};
 
 type InvestorMonthlyReport = {
   id: string;
@@ -32,12 +39,13 @@ const INVESTOR_STRINGS = {
     backHome: "Back to homepage",
     brand: "OTIZ INVESTOR",
     investorLabel: "Investor",
-    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", withdrawals: "Withdrawals", reinvest: "Reinvest", settings: "Settings" },
+    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", withdrawals: "Withdrawals", reinvest: "Reinvest", settings: "Settings" },
     pages: {
       dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
       deposit: { eyebrow: "Account funding", title: "Deposit", description: "Send funds to the address below and notify your manager." },
       allocations: { eyebrow: "Supply cycle visibility", title: "Allocations", description: "Allocation cards show commerce supply IDs, product focus, cycle status, and latest operational update." },
       reports: { eyebrow: "Monthly reporting", title: "Reports", description: "Monthly summaries keep the focus on allocations, performance, payouts, and operational notes." },
+      documents: { eyebrow: "Agreements & signatures", title: "Documents", description: "Review and sign your onboarding agreement and other documents prepared by your manager." },
       withdrawals: { eyebrow: "Manager-reviewed requests", title: "Withdrawals", description: "Request review and cooldown visibility with manager-controlled payout scheduling." },
       reinvest: { eyebrow: "Instruction preference", title: "Reinvest", description: "A simple preference interface for reinvest instructions, intentionally separated from real money movement." },
       settings: { eyebrow: "Account settings", title: "Settings", description: "Manage your security, language, notification preferences, and account data." }
@@ -89,18 +97,35 @@ const INVESTOR_STRINGS = {
       emptyTitle: "No deposit addresses available yet.",
       emptyDesc: "Deposit addresses will appear here once a manager publishes them. Please contact your manager for funding instructions."
     },
+    files: {
+      title: "Report files", desc: "Downloadable report files published by your manager.",
+      emptyTitle: "Reports will appear here once published by your manager.", download: "Download", uploaded: "Uploaded"
+    },
+    welcome: {
+      title: "Welcome", subtitle: "Your account is active. As soon as a manager assigns an allocation, it will appear here.",
+      depositTitle: "Fund your account", depositDesc: "Send funds to a deposit address, then notify your manager.",
+      timelineTitle: "How it works",
+      steps: { deposit: "Deposit", allocation: "Allocation", reporting: "Reporting", payout: "Payout" }
+    },
+    timeline: {
+      title: "Request status",
+      hint: "Typical review time: 3–5 business days.",
+      steps: { received: "Request received", review: "Under review", approved: "Approved", scheduled: "Payout scheduled", paid: "Paid" }
+    },
+    moneyWork: { active: "Active", daysWorking: (days: number) => `${days} ${days === 1 ? "day" : "days"} at work` },
     common: { notScheduled: "Not scheduled", notAvailable: "Not available" }
   },
   ru: {
     backHome: "На главную",
     brand: "OTIZ INVESTOR",
     investorLabel: "Инвестор",
-    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", withdrawals: "Выводы", reinvest: "Реинвест", settings: "Настройки" },
+    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", withdrawals: "Выводы", reinvest: "Реинвест", settings: "Настройки" },
     pages: {
       dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
       deposit: { eyebrow: "Пополнение счёта", title: "Пополнение", description: "Отправьте средства на указанный адрес и уведомите менеджера." },
       allocations: { eyebrow: "Видимость циклов поставок", title: "Аллокации", description: "Карточки аллокаций показывают ID поставки, продукт, статус цикла и последнее операционное обновление." },
       reports: { eyebrow: "Ежемесячная отчётность", title: "Отчёты", description: "Ежемесячные сводки фокусируются на аллокациях, результатах, выплатах и операционных заметках." },
+      documents: { eyebrow: "Соглашения и подписи", title: "Документы", description: "Ознакомьтесь и подпишите инвестиционное соглашение и другие документы, подготовленные менеджером." },
       withdrawals: { eyebrow: "Запросы с проверкой менеджером", title: "Выводы", description: "Запрос проверки и видимость периода удержания с планированием выплат под контролем менеджера." },
       reinvest: { eyebrow: "Предпочтение по инструкциям", title: "Реинвест", description: "Простой интерфейс предпочтений по реинвестированию, намеренно отделённый от реального движения средств." },
       settings: { eyebrow: "Настройки аккаунта", title: "Настройки", description: "Управляйте безопасностью, языком, настройками уведомлений и данными аккаунта." }
@@ -152,9 +177,35 @@ const INVESTOR_STRINGS = {
       emptyTitle: "Пока нет доступных адресов для пополнения.",
       emptyDesc: "Адреса для пополнения появятся здесь после того, как менеджер их опубликует. Пожалуйста, свяжитесь с менеджером для получения инструкций."
     },
+    files: {
+      title: "Файлы отчётов", desc: "Файлы отчётов, опубликованные вашим менеджером, доступны для скачивания.",
+      emptyTitle: "Отчёты появятся здесь после их публикации менеджером.", download: "Скачать", uploaded: "Загружено"
+    },
+    welcome: {
+      title: "Добро пожаловать", subtitle: "Ваш аккаунт активен. Как только менеджер назначит аллокацию, она появится здесь.",
+      depositTitle: "Пополните аккаунт", depositDesc: "Отправьте средства на адрес для пополнения и уведомите менеджера.",
+      timelineTitle: "Как это работает",
+      steps: { deposit: "Пополнение", allocation: "Аллокация", reporting: "Отчётность", payout: "Выплата" }
+    },
+    timeline: {
+      title: "Статус запроса",
+      hint: "Обычный срок рассмотрения: 3–5 рабочих дней.",
+      steps: { received: "Запрос получен", review: "На рассмотрении", approved: "Одобрено", scheduled: "Выплата запланирована", paid: "Выплачено" }
+    },
+    moneyWork: { active: "Активна", daysWorking: (days: number) => `${days} ${pluralizeDaysRu(days)} в работе` },
     common: { notScheduled: "Не запланировано", notAvailable: "Недоступно" }
   }
 } as const;
+
+// Russian day pluralization for the "N дней в работе" money-is-working line.
+function pluralizeDaysRu(days: number) {
+  const mod100 = days % 100;
+  const mod10 = days % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "дней";
+  if (mod10 === 1) return "день";
+  if (mod10 >= 2 && mod10 <= 4) return "дня";
+  return "дней";
+}
 
 type InvestorStrings = typeof INVESTOR_STRINGS.en;
 
@@ -260,9 +311,24 @@ export function InvestorShell({
   );
 }
 
-export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: InvestorDashboardData }) {
+export function InvestorDashboardHome({
+  locale,
+  data,
+  investorName = "",
+  depositAddresses = []
+}: {
+  locale: Locale;
+  data: InvestorDashboardData;
+  investorName?: string;
+  depositAddresses?: SerializedDepositAddress[];
+}) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
+
+  // Zero-allocation onboarding view: no capital assigned yet.
+  if (data.summary.activeAllocationsCount === 0 && data.summary.completedAllocationsCount === 0) {
+    return <InvestorWelcome locale={locale} name={investorName} addresses={depositAddresses} />;
+  }
 
   return (
     <div className="grid gap-6">
@@ -318,6 +384,53 @@ export function InvestorDashboardHome({ locale, data }: { locale: Locale; data: 
   );
 }
 
+// E1: zero-allocation welcome. Greets the investor, surfaces deposit addresses
+// prominently, and shows the lifecycle timeline so the next step is obvious.
+function InvestorWelcome({ locale, name, addresses }: { locale: Locale; name: string; addresses: SerializedDepositAddress[] }) {
+  const t = getInvestorStrings(locale);
+  const steps = [t.welcome.steps.deposit, t.welcome.steps.allocation, t.welcome.steps.reporting, t.welcome.steps.payout];
+
+  return (
+    <div className="grid gap-6">
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+        <CardContent className="p-8">
+          <h2 className="font-display text-3xl tracking-[-0.03em] text-foreground">
+            {t.welcome.title}{name ? `, ${name}` : ""}
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">{t.welcome.subtitle}</p>
+
+          <div className="mt-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.welcome.timelineTitle}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {steps.map((step, index) => (
+                <div key={step} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 rounded-full border border-gold-200/30 bg-gold-300/15 dark:bg-gold-200/10 px-4 py-2">
+                    <span className="text-xs font-semibold text-amber-700 dark:text-gold-100">{index + 1}</span>
+                    <span className="text-sm font-medium text-foreground">{step}</span>
+                  </div>
+                  {index < steps.length - 1 ? <ArrowRight className="size-4 text-muted-foreground" /> : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+        <CardHeader>
+          <CardTitle>{t.welcome.depositTitle}</CardTitle>
+          <CardDescription>{t.welcome.depositDesc}</CardDescription>
+        </CardHeader>
+      </Card>
+      {addresses.length === 0 ? (
+        <InvestorEmptyState title={t.deposit.emptyTitle} description={t.deposit.emptyDesc} />
+      ) : (
+        <InvestorDepositAddresses locale={locale} addresses={addresses} />
+      )}
+    </div>
+  );
+}
+
 export function InvestorDepositPage({ locale, addresses }: { locale: Locale; addresses: SerializedDepositAddress[] }) {
   const t = getInvestorStrings(locale);
 
@@ -352,12 +465,53 @@ export function InvestorAllocationsPage({ locale, data }: { locale: Locale; data
   );
 }
 
-export function InvestorReportsPage({ locale, reports }: { locale: Locale; reports: InvestorMonthlyReport[] }) {
+export function InvestorReportsPage({
+  locale,
+  reports,
+  fileReports = []
+}: {
+  locale: Locale;
+  reports: InvestorMonthlyReport[];
+  fileReports?: InvestorFileReportView[];
+}) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-6">
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+        <CardHeader>
+          <CardTitle>{t.files.title}</CardTitle>
+          <CardDescription>{t.files.desc}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          {fileReports.length === 0 ? (
+            <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-6 text-center text-sm text-muted-foreground">
+              {t.files.emptyTitle}
+            </div>
+          ) : (
+            fileReports.map((file) => (
+              <div key={file.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 truncate font-semibold text-foreground">
+                    <FileSpreadsheet className="size-4 shrink-0 text-amber-700 dark:text-gold-100" />
+                    {file.fileName}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{file.month} · {t.files.uploaded} {f.date(file.uploadedAt)}</p>
+                </div>
+                <a
+                  href={`/api/investor/reports/files/${file.id}`}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-gold-200/40 bg-gold-300/20 dark:bg-gold-200/10 px-4 py-2 text-sm font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-gold-300/30"
+                >
+                  <Download className="size-4" />
+                  {t.files.download}
+                </a>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
       {reports.length === 0 ? (
         <InvestorEmptyState title={t.reportsList.noReportsTitle} description={t.reportsList.noReportsDesc} />
       ) : reports.map((report) => (
@@ -523,9 +677,29 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
           {!compact ? <ProofLine label={t.alloc.latestReport} value={allocation.latestReportReference ? allocation.latestReportReference.title : t.alloc.noReportYet} /> : null}
           {!compact ? <ProofLine label={t.alloc.riskNote} value={allocation.riskHealth?.summary || (allocation.riskLevel === "elevated" ? t.alloc.managerReviewRequired : t.alloc.normalMonitoring)} /> : null}
         </div>
+        {allocation.startedAt ? <MoneyWorkingLine locale={locale} startedAt={allocation.startedAt} /> : null}
       </CardContent>
     </Card>
     </Link>
+  );
+}
+
+// "● Active — N days at work" — a subtle one-line vitality signal under active
+// allocations. Days counted from startedAt.
+function MoneyWorkingLine({ locale, startedAt }: { locale: Locale; startedAt: string }) {
+  const t = getInvestorStrings(locale);
+  const started = new Date(startedAt).getTime();
+  if (!Number.isFinite(started)) return null;
+  const days = Math.max(0, Math.floor((Date.now() - started) / (24 * 60 * 60 * 1000)));
+
+  return (
+    <div className="mt-4 flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-gold-100">
+      <span className="relative flex size-2">
+        <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold-300/70 opacity-75" />
+        <span className="relative inline-flex size-2 rounded-full bg-gold-300 dark:bg-gold-200" />
+      </span>
+      {t.moneyWork.active} — {t.moneyWork.daysWorking(days)}
+    </div>
   );
 }
 
@@ -556,6 +730,7 @@ function WithdrawalGroup({ locale, title, withdrawals, emptyText }: { locale: Lo
             <p className="text-lg font-semibold text-foreground">{withdrawal.currency} {f.number(Number(withdrawal.amount || 0))}</p>
             <Badge variant="secondary">{enumLabel("withdrawalStatus", withdrawal.status, locale)}</Badge>
           </div>
+          <WithdrawalTimeline locale={locale} status={withdrawal.status} />
           <Separator className="my-4" />
           <div className="grid gap-3 sm:grid-cols-2">
             <ProofLine label={t.withdraw.requested} value={f.date(withdrawal.requestedAt)} />
@@ -567,6 +742,58 @@ function WithdrawalGroup({ locale, title, withdrawals, emptyText }: { locale: Lo
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Which of the 5 progress steps a withdrawal has reached. REJECTED/CANCELLED
+// stall at "under review" (step 2) and are visually marked terminal.
+function withdrawalStepIndex(status: string): number {
+  switch (status) {
+    case "PAID": return 5;
+    case "SCHEDULED": return 4;
+    case "APPROVED": return 3;
+    case "REQUESTED": return 2;
+    default: return 2;
+  }
+}
+
+function WithdrawalTimeline({ locale, status }: { locale: Locale; status: string }) {
+  const t = getInvestorStrings(locale);
+  const steps = [t.timeline.steps.received, t.timeline.steps.review, t.timeline.steps.approved, t.timeline.steps.scheduled, t.timeline.steps.paid];
+  const active = withdrawalStepIndex(status);
+  const terminal = status === "REJECTED" || status === "CANCELLED";
+  const showHint = status === "REQUESTED" || status === "APPROVED";
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center">
+        {steps.map((label, index) => {
+          const stepNumber = index + 1;
+          const reached = stepNumber <= active;
+          const dotClass = terminal
+            ? "bg-muted-foreground/40"
+            : reached
+              ? "bg-gold-300 dark:bg-gold-200"
+              : "bg-muted/60 dark:bg-white/10";
+          return (
+            <div key={label} className="flex flex-1 items-center last:flex-none">
+              <div className="flex flex-col items-center">
+                <span className={`size-2.5 rounded-full ${dotClass}`} />
+              </div>
+              {index < steps.length - 1 ? (
+                <div className={`h-px flex-1 ${!terminal && stepNumber < active ? "bg-gold-300/60 dark:bg-gold-200/50" : "bg-border dark:bg-white/10"}`} />
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-xs font-medium text-amber-700 dark:text-gold-100">
+          {steps[Math.max(0, active - 1)]}
+        </p>
+        {showHint ? <p className="text-[0.68rem] text-muted-foreground">{t.timeline.hint}</p> : null}
+      </div>
     </div>
   );
 }

@@ -106,10 +106,48 @@ model Investor {
   operationalIncidents OperationalIncident[]
   sessions            InvestorSession[]
   notifications       InvestorNotification[]
+  fileReports         InvestorFileReport[]
+  documents           InvestorDocument[]
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
+}
+
+// Admin-uploaded XLSX report files (distinct from the text-based MonthlyReport).
+// The workbook is stored inline as base64 so no external object storage is
+// required. Downloaded by the investor from the cabinet "Files" section.
+model InvestorFileReport {
+  id         String   @id @default(cuid())
+  investorId String
+  fileName   String
+  fileData   String   // base64-encoded .xlsx workbook
+  month      String
+  uploadedBy String
+  uploadedAt DateTime @default(now())
+  investor   Investor @relation(fields: [investorId], references: [id])
+
+  @@index([investorId])
+  @@index([uploadedAt])
+}
+
+// Onboarding / agreement documents generated on investor approval. The PDF is
+// stored inline as base64. `status` is PENDING_SIGNATURE until the investor
+// e-signs (checkbox acknowledgement), then SIGNED with `signedAt` set.
+model InvestorDocument {
+  id         String    @id @default(cuid())
+  investorId String
+  type       String    // "AGREEMENT"
+  fileName   String
+  fileData   String    // base64-encoded PDF
+  status     String    @default("PENDING_SIGNATURE") // PENDING_SIGNATURE | SIGNED
+  signedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  investor   Investor  @relation(fields: [investorId], references: [id])
+
+  @@index([investorId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // Per-login investor session records for session history + remote termination.

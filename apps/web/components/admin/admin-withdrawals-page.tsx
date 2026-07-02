@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarClock, Save } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Separator } from "@otiz/ui";
 import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
@@ -29,7 +29,14 @@ const STRINGS = {
     emptyTitle: "No withdrawal requests",
     emptyDesc: "Requests will appear here after investor or manager creation.",
     noticeUpdated: "Withdrawal request updated.",
-    noticeError: "Unable to update withdrawal request."
+    noticeError: "Unable to update withdrawal request.",
+    dialogBack: "Cancel",
+    confirm: {
+      approve: { title: "Approve withdrawal?", desc: "The request will be approved. This action is logged." },
+      "mark-paid": { title: "Mark as paid?", desc: "This records the payout as completed and cannot be undone." },
+      reject: { title: "Reject withdrawal?", desc: "The request will be rejected. This cannot be undone." },
+      cancel: { title: "Cancel withdrawal?", desc: "The request will be cancelled. This cannot be undone." }
+    }
   },
   ru: {
     eyebrow: "График выплат администратора",
@@ -52,9 +59,25 @@ const STRINGS = {
     emptyTitle: "Нет запросов на вывод средств",
     emptyDesc: "Запросы появятся здесь после создания инвестором или менеджером.",
     noticeUpdated: "Запрос на вывод средств обновлён.",
-    noticeError: "Не удалось обновить запрос на вывод средств."
+    noticeError: "Не удалось обновить запрос на вывод средств.",
+    dialogBack: "Отмена",
+    confirm: {
+      approve: { title: "Одобрить вывод?", desc: "Запрос будет одобрен. Действие фиксируется в аудите." },
+      "mark-paid": { title: "Отметить выплаченным?", desc: "Выплата будет отмечена как завершённая. Отменить нельзя." },
+      reject: { title: "Отклонить вывод?", desc: "Запрос будет отклонён. Отменить нельзя." },
+      cancel: { title: "Отменить вывод?", desc: "Запрос будет отменён. Отменить нельзя." }
+    }
   }
 } as const;
+
+// Actions that require an explicit confirmation before running, with the button
+// tone for the confirm button (rejections/cancels are destructive).
+const CONFIRM_ACTIONS: Record<string, "positive" | "destructive"> = {
+  approve: "positive",
+  "mark-paid": "positive",
+  reject: "destructive",
+  cancel: "destructive"
+};
 
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
@@ -106,11 +129,22 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
   const [withdrawals, setWithdrawals] = React.useState(initialWithdrawals);
   const [filter, setFilter] = React.useState(initialStatus || "ALL");
   const [pendingId, setPendingId] = React.useState<string | null>(null);
+  const [confirm, setConfirm] = React.useState<{ withdrawal: Withdrawal; action: string } | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [scheduledFor, setScheduledFor] = React.useState<Record<string, string>>(() => Object.fromEntries(initialWithdrawals.map((withdrawal) => [withdrawal.id, toDateInputValue(withdrawal.scheduledFor)])));
   const [adminNotes, setAdminNotes] = React.useState<Record<string, string>>(() => Object.fromEntries(initialWithdrawals.map((withdrawal) => [withdrawal.id, withdrawal.adminNote || ""])));
   const visibleWithdrawals = filter === "ALL" ? withdrawals : withdrawals.filter((withdrawal) => withdrawal.status === filter);
+
+  // Actions in CONFIRM_ACTIONS open a confirmation dialog first; others run
+  // immediately. Either path funnels into runAction.
+  function triggerAction(withdrawal: Withdrawal, action: string) {
+    if (CONFIRM_ACTIONS[action]) {
+      setConfirm({ withdrawal, action });
+      return;
+    }
+    void runAction(withdrawal, action);
+  }
 
   async function runAction(withdrawal: Withdrawal, action: string) {
     setPendingId(withdrawal.id);
@@ -131,12 +165,16 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
       if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.noticeError);
       setWithdrawals((current) => current.map((item) => (item.id === withdrawal.id ? { ...item, ...payload.data } : item)));
       setNotice(t.noticeUpdated);
+      setConfirm(null); // close the dialog only on success (never re-enable on success)
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t.noticeError);
+      // Leave the dialog open on error so the confirm button re-enables for retry.
     } finally {
       setPendingId(null);
     }
   }
+
+  const confirmConfig = confirm ? t.confirm[confirm.action as keyof typeof t.confirm] : null;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
@@ -201,11 +239,11 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
                       <input value={adminNotes[withdrawal.id] || ""} onChange={(event) => setAdminNotes((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" />
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || withdrawal.status !== "REQUESTED"} onClick={() => runAction(withdrawal, "approve")}>{t.approve}</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "schedule")}>{t.schedule}</Button>
-                      <Button type="button" size="sm" disabled={pendingId === withdrawal.id || !["APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "mark-paid")}><Save data-icon="inline-start" />{t.markPaid}</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "reject")}>{t.reject}</Button>
-                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => runAction(withdrawal, "cancel")}>{t.cancel}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || withdrawal.status !== "REQUESTED"} onClick={() => triggerAction(withdrawal, "approve")}>{t.approve}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => triggerAction(withdrawal, "schedule")}>{t.schedule}</Button>
+                      <Button type="button" size="sm" disabled={pendingId === withdrawal.id || !["APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => triggerAction(withdrawal, "mark-paid")}><Save data-icon="inline-start" />{t.markPaid}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => triggerAction(withdrawal, "reject")}>{t.reject}</Button>
+                      <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || !["REQUESTED", "APPROVED", "SCHEDULED"].includes(withdrawal.status)} onClick={() => triggerAction(withdrawal, "cancel")}>{t.cancel}</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -214,6 +252,22 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
           </div>
         </div>
       </section>
+
+      {confirm && confirmConfig ? (
+        <ConfirmDialog
+          open
+          title={confirmConfig.title}
+          description={confirmConfig.desc}
+          confirmLabel={
+            confirm.action === "approve" ? t.approve : confirm.action === "reject" ? t.reject : confirm.action === "mark-paid" ? t.markPaid : t.cancel
+          }
+          cancelLabel={t.dialogBack}
+          tone={CONFIRM_ACTIONS[confirm.action] ?? "positive"}
+          loading={pendingId === confirm.withdrawal.id}
+          onConfirm={() => runAction(confirm.withdrawal, confirm.action)}
+          onCancel={() => setConfirm(null)}
+        />
+      ) : null}
     </main>
   );
 }

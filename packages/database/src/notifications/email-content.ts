@@ -124,6 +124,22 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
       return { subject: "О вашей заявке в OTIZ Capital", html: shell(heading, paragraphs(lines)), text: toText(heading, lines) };
     }
 
+    case "INVESTOR_DOCUMENT_READY": {
+      const heading = "Документы готовы к подписанию";
+      const documentsUrl = `${base}/ru/investor/documents`;
+      const lines = [
+        `${greeting} Для вас подготовлено инвестиционное соглашение OTIZ Capital.`,
+        "Пожалуйста, ознакомьтесь с документом и подпишите его в личном кабинете — это займёт меньше минуты.",
+        "Подписание подтверждает, что вы приняли условия сотрудничества."
+      ];
+      const html = shell(heading, paragraphs(lines) + button(documentsUrl, "Открыть документы"));
+      return {
+        subject: "Документы готовы к подписанию — OTIZ Capital",
+        html,
+        text: toText(heading, [...lines, `Документы: ${documentsUrl}`])
+      };
+    }
+
     case "MONTHLY_REPORT_PUBLISHED": {
       const heading = "Новый отчёт";
       const reportsUrl = `${base}/ru/investor/reports`;

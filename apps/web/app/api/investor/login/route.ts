@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { createInvestorSessionRecord, findInvestorByEmail, serializeInvestor } from "@otiz/database";
 import { createInvestorSession, INVESTOR_SESSION_TTL_MS, verifyInvestorAccessCode } from "@/lib/investor-session";
 import { checkInvestorLoginRateLimit, recordInvestorLoginFailure, resetInvestorLoginRateLimit } from "@/lib/investor-rate-limit";
@@ -38,12 +39,20 @@ export async function POST(request: Request) {
   const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   const email = sanitizeString(payload?.email, 180).toLowerCase();
   const accessCode = sanitizeString(payload?.accessCode, 120);
+  // Password is intentionally NOT run through sanitizeString: it must be compared
+  // byte-for-byte against the stored bcrypt hash (collapsing whitespace would
+  // corrupt legitimate passwords). We only bound its length.
+  const password = typeof payload?.password === "string" ? payload.password.slice(0, 200) : "";
+  const usePassword = password.length > 0;
 
   if (!isEmail(email)) {
     return NextResponse.json({ ok: false, error: "A valid investor email is required." }, { status: 422 });
   }
 
-  if (!verifyInvestorAccessCode(accessCode)) {
+  // Access-code mode is verified before any DB lookup (constant-time, no email
+  // enumeration). Password mode must look the investor up first to read the hash,
+  // so verification happens after the lookup below.
+  if (!usePassword && !verifyInvestorAccessCode(accessCode)) {
     recordInvestorLoginFailure(request);
     return NextResponse.json({ ok: false, error: "Invalid investor access code." }, { status: 401 });
   }
@@ -53,6 +62,14 @@ export async function POST(request: Request) {
   if (!investor) {
     recordInvestorLoginFailure(request);
     return NextResponse.json({ ok: false, error: "Investor account not found. Ask a manager to activate access from an approved application." }, { status: 404 });
+  }
+
+  if (usePassword) {
+    const matches = investor.passwordHash ? await bcrypt.compare(password, investor.passwordHash) : false;
+    if (!matches) {
+      recordInvestorLoginFailure(request);
+      return NextResponse.json({ ok: false, error: "Invalid email or password." }, { status: 401 });
+    }
   }
 
   if (investor.status !== "ACTIVE") {

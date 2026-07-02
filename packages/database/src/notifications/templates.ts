@@ -192,6 +192,17 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
       html: paragraph(text),
       telegramText: text
     };
+  },
+  INVESTOR_DOCUMENT_READY: ({ payload }) => {
+    const name = getString(payload, "fullName", "Investor");
+    const text = `An onboarding agreement was generated for ${name} and is awaiting signature in the investor cabinet.`;
+
+    return {
+      subject: "Investor document ready for signature",
+      text,
+      html: paragraph(text),
+      telegramText: text
+    };
   }
 };
 

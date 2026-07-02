@@ -20,3 +20,5 @@ export * from "./deposit-addresses";
 export * from "./yield-settings";
 export * from "./investor-sessions";
 export * from "./investor-notifications";
+export * from "./investor-file-reports";
+export * from "./investor-documents";

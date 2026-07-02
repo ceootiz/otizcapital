@@ -714,6 +714,10 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
               </Card>
             </div>
           </div>
+
+          <div className="mt-6">
+            <AdminInvestorReportsSection locale={locale} investorId={investor.id} />
+          </div>
         </div>
       </section>
     </main>
@@ -754,5 +758,201 @@ function AdminNotice({ tone, message }: { tone: "success" | "error"; message: st
     <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>
       {message}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// XLSX report files + agreement status (Blocks B & C)
+// ---------------------------------------------------------------------------
+
+type FileReport = { id: string; fileName: string; month: string; uploadedAt: string };
+type AgreementDoc = { id: string; status: string; signedAt: string | null; createdAt: string } | null;
+
+const REPORTS_STRINGS = {
+  en: {
+    title: "Report files (XLSX)",
+    desc: "Download the pre-filled template, then upload the completed report. The investor is notified automatically.",
+    downloadTemplate: "Download report template",
+    uploadTitle: "Upload report",
+    monthLabel: "Report month",
+    monthPlaceholder: "May 2026",
+    chooseFile: "Choose .xlsx file",
+    upload: "Upload report",
+    uploading: "Uploading...",
+    noReports: "No report files uploaded yet.",
+    colFile: "File",
+    colMonth: "Month",
+    colDate: "Uploaded",
+    download: "Download",
+    agreementTitle: "Agreement",
+    agreementPending: "Awaiting signature",
+    agreementSigned: "Signed",
+    agreementNone: "No agreement generated yet.",
+    errFile: "Select an .xlsx file and a month.",
+    errUpload: "Upload failed. Please try again."
+  },
+  ru: {
+    title: "Файлы отчётов (XLSX)",
+    desc: "Скачайте предзаполненный шаблон, затем загрузите готовый отчёт. Инвестор будет уведомлён автоматически.",
+    downloadTemplate: "Скачать шаблон отчёта",
+    uploadTitle: "Загрузить отчёт",
+    monthLabel: "Месяц отчёта",
+    monthPlaceholder: "Май 2026",
+    chooseFile: "Выберите файл .xlsx",
+    upload: "Загрузить отчёт",
+    uploading: "Загрузка...",
+    noReports: "Файлы отчётов ещё не загружены.",
+    colFile: "Файл",
+    colMonth: "Месяц",
+    colDate: "Загружено",
+    download: "Скачать",
+    agreementTitle: "Соглашение",
+    agreementPending: "ожидает подписания",
+    agreementSigned: "подписано",
+    agreementNone: "Соглашение ещё не сформировано.",
+    errFile: "Выберите файл .xlsx и укажите месяц.",
+    errUpload: "Не удалось загрузить. Попробуйте ещё раз."
+  }
+} as const;
+
+function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; investorId: string }) {
+  const t = (REPORTS_STRINGS as unknown as Record<string, typeof REPORTS_STRINGS.en>)[locale] ?? REPORTS_STRINGS.en;
+  const fmt = createAdminFormatters(locale);
+  const [reports, setReports] = React.useState<FileReport[]>([]);
+  const [agreement, setAgreement] = React.useState<AgreementDoc>(null);
+  const [month, setMonth] = React.useState("");
+  const [file, setFile] = React.useState<File | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/admin/investors/${investorId}/reports`, { cache: "no-store" });
+      const payload = (await response.json()) as { ok: boolean; data?: FileReport[]; agreement?: AgreementDoc };
+      if (payload.ok) {
+        setReports(payload.data ?? []);
+        setAgreement(payload.agreement ?? null);
+      }
+    } catch {
+      /* non-fatal: section simply shows empty */
+    }
+  }, [investorId]);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function upload() {
+    if (!file || !month.trim()) {
+      setError(t.errFile);
+      return;
+    }
+    setIsUploading(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("month", month.trim());
+      const csrf = document.cookie.split("; ").find((c) => c.startsWith(`${ADMIN_CSRF_COOKIE}=`))?.split("=").slice(1).join("=") || "";
+      const response = await fetch(`/api/admin/investors/${investorId}/reports/upload`, {
+        method: "POST",
+        headers: { [ADMIN_CSRF_HEADER]: csrf },
+        body: form
+      });
+      const payload = (await response.json()) as { ok: boolean; error?: string };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || t.errUpload);
+      }
+      setMonth("");
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      await load();
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : t.errUpload);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  return (
+    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+      <CardHeader>
+        <CardTitle>{t.title}</CardTitle>
+        <CardDescription>{t.desc}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-6">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.agreementTitle}</p>
+          <p className="mt-2 text-sm text-foreground">
+            {agreement === null
+              ? t.agreementNone
+              : agreement.status === "SIGNED"
+                ? `${t.agreementSigned}${agreement.signedAt ? ` · ${fmt.date(new Date(agreement.signedAt))}` : ""}`
+                : t.agreementPending}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={`/api/admin/investors/${investorId}/report-template`}
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 text-sm font-semibold text-gold-100 transition-colors hover:bg-white/[0.08]"
+          >
+            {t.downloadTemplate}
+          </a>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <p className="text-sm font-semibold text-foreground">{t.uploadTitle}</p>
+          <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.monthLabel}</span>
+              <input value={month} onChange={(event) => setMonth(event.target.value)} placeholder={t.monthPlaceholder} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60" />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.chooseFile}</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                className="h-12 rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none file:mr-3 file:rounded-full file:border-0 file:bg-gold-200/15 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-gold-100"
+              />
+            </label>
+            <Button type="button" disabled={isUploading} onClick={upload}>{isUploading ? t.uploading : t.upload}</Button>
+          </div>
+          {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
+        </div>
+
+        {reports.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t.noReports}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <th className="pb-3 pr-4">{t.colFile}</th>
+                  <th className="pb-3 pr-4">{t.colMonth}</th>
+                  <th className="pb-3 pr-4">{t.colDate}</th>
+                  <th className="pb-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {reports.map((report) => (
+                  <tr key={report.id} className="border-t border-white/10">
+                    <td className="py-3 pr-4 text-foreground">{report.fileName}</td>
+                    <td className="py-3 pr-4 text-muted-foreground">{report.month}</td>
+                    <td className="py-3 pr-4 text-muted-foreground">{fmt.date(new Date(report.uploadedAt))}</td>
+                    <td className="py-3 text-right">
+                      <a href={`/api/admin/investors/${investorId}/reports/${report.id}/download`} className="font-semibold text-gold-100 hover:underline">{t.download}</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
