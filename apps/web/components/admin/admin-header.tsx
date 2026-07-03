@@ -4,16 +4,17 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, LogOut } from "lucide-react";
-import type { Locale } from "@otiz/lib";
+import { localeNames, localeShortNames, locales, type Locale } from "@otiz/lib";
 import { Button } from "@otiz/ui";
+import { ThemeToggle } from "@/components/home/theme-toggle";
 import { AdminNavigation, type AdminNavigationSection } from "./admin-navigation";
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
 
 const STRINGS = {
-  en: { backHome: "Home", brand: "OTIZ ADMIN", logout: "Log out", loggingOut: "Logging out..." },
-  ru: { backHome: "На главную", brand: "OTIZ ADMIN", logout: "Выйти", loggingOut: "Выходим..." }
+  en: { backHome: "Home", brand: "OTIZ ADMIN", logout: "Log out", loggingOut: "Logging out...", language: "Language" },
+  ru: { backHome: "На главную", brand: "OTIZ ADMIN", logout: "Выйти", loggingOut: "Выходим...", language: "Язык" }
 } as const;
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
@@ -37,6 +38,39 @@ const SECTION_PREFIXES: Array<[string, AdminNavigationSection]> = [
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
   return document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
+}
+
+// Locale switcher preserving the current admin path (/ru/admin/dashboard →
+// /en/admin/dashboard). Same pattern and styling as the investor cabinet's
+// switcher, kept local so admin pages don't pull the investor bundle.
+function AdminLocaleSwitcher({ locale, label }: { locale: Locale; label: string }) {
+  const pathname = usePathname() || `/${locale}`;
+
+  function localeHref(next: Locale) {
+    const segments = pathname.split("/");
+    if (segments.length > 1 && segments[1]) {
+      segments[1] = next;
+      return segments.join("/") || `/${next}`;
+    }
+    return `/${next}`;
+  }
+
+  return (
+    <div className="flex items-center gap-1 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] p-1" aria-label={label}>
+      {locales.map((next) => (
+        <Link
+          key={next}
+          href={localeHref(next)}
+          title={localeNames[next]}
+          className={`rounded-full px-3 py-1.5 text-[0.68rem] font-semibold transition-colors ${
+            locale === next ? "bg-gold-200 text-graphite-950" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {localeShortNames[next]}
+        </Link>
+      ))}
+    </div>
+  );
 }
 
 // Shared sticky admin header, mounted once via app/[locale]/admin/layout.tsx.
@@ -81,11 +115,17 @@ export function AdminHeader({ locale }: { locale: Locale }) {
             <ArrowLeft className="size-4" />
             <span className="hidden sm:inline">{t.backHome}</span>
           </Link>
-          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-700 dark:text-gold-100">{t.brand}</span>
-          <Button type="button" variant="outline" size="sm" disabled={isLoggingOut} onClick={logout}>
-            <LogOut data-icon="inline-start" />
-            <span className="hidden sm:inline">{isLoggingOut ? t.loggingOut : t.logout}</span>
-          </Button>
+          <span className="hidden text-xs font-semibold uppercase tracking-[0.3em] text-amber-700 dark:text-gold-100 md:inline">{t.brand}</span>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:block">
+              <AdminLocaleSwitcher locale={locale} label={t.language} />
+            </div>
+            <ThemeToggle />
+            <Button type="button" variant="outline" size="sm" disabled={isLoggingOut} onClick={logout}>
+              <LogOut data-icon="inline-start" />
+              <span className="hidden sm:inline">{isLoggingOut ? t.loggingOut : t.logout}</span>
+            </Button>
+          </div>
         </div>
         <div className="scrollbar-none -mx-1 overflow-x-auto px-1 pb-3">
           <AdminNavigation locale={locale} activeSection={activeSection} className="flex w-max items-center gap-2" />
