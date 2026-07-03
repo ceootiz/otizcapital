@@ -917,12 +917,12 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
           <Link href={`/${locale}/admin/investors/${allocation.investorId}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.BACK_TO_INVESTOR}</Link>
           <div className="flex gap-2"><Badge>{enumLabel("allocationStatus", allocation.status, locale)}</Badge><Badge variant="secondary">{enumLabel("payoutStatus", allocation.payoutStatus, locale)}</Badge><Badge variant="secondary">{enumLabel("reinvestDecision", allocation.reinvestDecision, locale)}</Badge></div>
         </div>
-        <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]"><CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p><h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{allocation.supplyCode}</h1><p className="mt-3 text-sm leading-7 text-muted-foreground">{allocation.productName} · {allocation.investor.fullName}</p></div><div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{t.AMOUNT}</p><p className="mt-2 text-2xl font-semibold text-foreground">{formatMoney(allocation.allocationAmount)}</p></div></CardContent></Card>
+        <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]"><CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.EYEBROW}</p><h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{allocation.supplyCode}</h1><p className="mt-3 text-sm leading-7 text-muted-foreground">{allocation.productName} · {allocation.investor.fullName}</p></div><div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{t.AMOUNT}</p><p className="mt-2 text-2xl font-semibold text-foreground">{formatMoney(allocation.allocationAmount)}</p></div></CardContent></Card>
         {notice ? <AdminNotice tone="success" message={notice} /> : null}{error ? <AdminNotice tone="error" message={error} /> : null}
         <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
           <div className="grid gap-6">
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.OVERVIEW_TITLE}</CardTitle><CardDescription>{t.OVERVIEW_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4"><Metric label={t.INVESTOR} value={`${allocation.investor.fullName} · ${allocation.investor.email}`} /><Metric label={t.MARKETPLACE} value={allocation.marketplace || t.NOT_SET} /><Metric label={t.EXPECTED_CYCLE} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.DAYS}` : t.NOT_SET} /><Metric label={t.EXPECTED_PAYOUT} value={formatDate(allocation.expectedPayoutAt)} /><Metric label={t.RISK_LEVEL} value={enumLabel("riskLevel", allocation.riskLevel, locale)} /><Metric label={t.ESTIMATED_RESULT} value={allocation.estimatedResult || t.NOT_SET} /><Metric label={t.ACTUAL_PROFIT} value={allocation.actualProfit ? formatMoney(allocation.actualProfit) : t.NOT_BOOKED} /><Metric label={t.STARTED_COMPLETED} value={`${formatDate(allocation.startedAt)} / ${formatDate(allocation.completedAt)}`} /></CardContent></Card>
-            <Card id="proofs" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.OVERVIEW_TITLE}</CardTitle><CardDescription>{t.OVERVIEW_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4"><Metric label={t.INVESTOR} value={`${allocation.investor.fullName} · ${allocation.investor.email}`} /><Metric label={t.MARKETPLACE} value={allocation.marketplace || t.NOT_SET} /><Metric label={t.EXPECTED_CYCLE} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.DAYS}` : t.NOT_SET} /><Metric label={t.EXPECTED_PAYOUT} value={formatDate(allocation.expectedPayoutAt)} /><Metric label={t.RISK_LEVEL} value={enumLabel("riskLevel", allocation.riskLevel, locale)} /><Metric label={t.ESTIMATED_RESULT} value={allocation.estimatedResult || t.NOT_SET} /><Metric label={t.ACTUAL_PROFIT} value={allocation.actualProfit ? formatMoney(allocation.actualProfit) : t.NOT_BOOKED} /><Metric label={t.STARTED_COMPLETED} value={`${formatDate(allocation.startedAt)} / ${formatDate(allocation.completedAt)}`} /></CardContent></Card>
+            <Card id="proofs" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader><CardTitle>{t.PROOF_COMPLETENESS_TITLE}</CardTitle><CardDescription>{t.PROOF_COMPLETENESS_DESC}</CardDescription></CardHeader>
               <CardContent className="grid gap-4">
                 {allocation.proofCompleteness ? <>
@@ -932,33 +932,33 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                   <Metric label={t.MISSING_REQUIRED} value={allocation.proofCompleteness.missingRequiredCategories.join(", ") || t.NONE} />
                   <Metric label={t.MISSING_RECOMMENDED} value={allocation.proofCompleteness.missingRecommendedCategories.slice(0, 6).join(", ") || t.NONE} />
                   <Metric label={t.HIDDEN_REJECTED_UNREVIEWED} value={`${allocation.proofCompleteness.hiddenProofCount} / ${allocation.proofCompleteness.rejectedProofCount} / ${allocation.proofCompleteness.unreviewedProofCount}`} />
-                  {missingRequirementGuideItems.length ? <div className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{t.HOW_TO_SATISFY}</p>
+                  {missingRequirementGuideItems.length ? <div className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-gold-100">{t.HOW_TO_SATISFY}</p>
                     <div className="mt-3 grid gap-3">
-                      {missingRequirementGuideItems.slice(0, 3).map((item) => <div key={item.componentKey} className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                      {missingRequirementGuideItems.slice(0, 3).map((item) => <div key={item.componentKey} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
                         <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold text-foreground">{item.displayName}</p><Badge variant="secondary">{policyLabel(item.policyStatus)}</Badge></div>
                         <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.ACCEPTED_PROOF_TYPES} {formatAcceptedProofTypes(item.acceptedProofTypes, t.NO_PROOF_PLACEHOLDER)}</p>
                         <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.EXPECTED_METADATA} {item.acceptableMetadataExamples.slice(0, 4).join(", ")}</p>
-                        <p className="mt-2 text-xs leading-5 text-gold-100">{t.INVESTOR_VISIBILITY} {item.investorVisibleExplanation}</p>
+                        <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.INVESTOR_VISIBILITY} {item.investorVisibleExplanation}</p>
                       </div>)}
                     </div>
                   </div> : null}
-                  {allocation.proofCompleteness.adminWarnings.length ? <div className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-xs leading-5 text-gold-100">{allocation.proofCompleteness.adminWarnings.slice(0, 4).join(" ")}</div> : null}
+                  {allocation.proofCompleteness.adminWarnings.length ? <div className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-xs leading-5 text-amber-700 dark:text-gold-100">{allocation.proofCompleteness.adminWarnings.slice(0, 4).join(" ")}</div> : null}
                 </> : <Metric label={t.STATE} value={t.NOT_EVALUATED} />}
               </CardContent>
             </Card>
-            <Card id="risk" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card id="risk" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader><CardTitle>{t.PROOF_GUIDE_TITLE}</CardTitle><CardDescription>{t.PROOF_GUIDE_DESC}</CardDescription></CardHeader>
               <CardContent className="grid gap-3">
                 {sortedProofRequirementsGuide.map((item) => {
                   const isMissing = isGuideItemMissing(item, missingEvidence);
-                  return <div key={item.componentKey} className={`rounded-[1.35rem] border p-4 ${isMissing ? "border-gold-200/30 bg-gold-200/10" : "border-white/10 bg-black/20"}`}>
+                  return <div key={item.componentKey} className={`rounded-[1.35rem] border p-4 ${isMissing ? "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/20"}`}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div><p className="text-sm font-semibold text-foreground">{item.displayName}</p><p className="mt-2 text-xs leading-5 text-muted-foreground">{t.ACCEPTED_PROOF_TYPES} {formatAcceptedProofTypes(item.acceptedProofTypes, t.NO_PROOF_PLACEHOLDER)}</p></div>
                       <div className="flex flex-wrap gap-2"><Badge variant={item.policyStatus === "Optional" ? "secondary" : undefined}>{policyLabel(item.policyStatus)}</Badge>{isMissing ? <Badge variant="secondary">{t.MISSING}</Badge> : null}</div>
                     </div>
                     <p className="mt-3 text-xs leading-5 text-muted-foreground">{item.adminInstruction}</p>
-                    <div className="mt-3 grid gap-2 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-muted-foreground">
+                    <div className="mt-3 grid gap-2 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-xs leading-5 text-muted-foreground">
                       <p><span className="text-foreground">{t.METADATA_LABEL}</span> {item.acceptableMetadataExamples.slice(0, 4).join(", ")}</p>
                       <p><span className="text-foreground">{t.COMMON_MISTAKES}</span> {item.commonMistakes.slice(0, 3).join(", ")}</p>
                     </div>
@@ -966,14 +966,14 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                 })}
               </CardContent>
             </Card>
-            <Card id="reconciliation" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card id="reconciliation" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader><CardTitle>{t.RISK_ENGINE_TITLE}</CardTitle><CardDescription>{t.RISK_ENGINE_DESC}</CardDescription></CardHeader>
               <CardContent className="grid gap-4">
                 {allocation.risk ? <>
                   <div className="flex flex-wrap items-center gap-2"><Badge>{allocation.risk.level}</Badge><Badge variant="secondary">{allocation.risk.score}/100 {t.RISK_SCORE}</Badge><Badge variant="secondary">{allocation.risk.riskFactors.length} {t.FACTORS}</Badge></div>
                   <Metric label={t.ADMIN_SUMMARY} value={allocation.risk.adminSummary} />
                   <Metric label={t.INVESTOR_SAFE_SUMMARY} value={allocation.risk.investorSafeSummary.summary} />
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-xs leading-5 text-muted-foreground">{t.EVALUATE_RISK_HELP}</p>
                       <Button type="button" size="sm" onClick={evaluateRiskNow} disabled={isEvaluatingRisk}>{isEvaluatingRisk ? t.EVALUATING : t.EVALUATE_RISK}</Button>
@@ -981,15 +981,15 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                   </div>
                   <RiskFactorList title={t.BLOCKING_RISK_ISSUES} items={allocation.risk.blockingIssues} emptyText={t.NO_BLOCKING_RISK} />
                   <RiskFactorList title={t.RISK_WARNINGS} items={allocation.risk.warnings} emptyText={t.NO_RISK_WARNINGS} />
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.RECOMMENDED_ACTIONS}</p>
-                    <div className="mt-3 grid gap-2">{allocation.risk.recommendedActions.slice(0, 5).map((action) => <p key={action} className="rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-muted-foreground">{action}</p>)}</div>
+                    <div className="mt-3 grid gap-2">{allocation.risk.recommendedActions.slice(0, 5).map((action) => <p key={action} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-xs leading-5 text-muted-foreground">{action}</p>)}</div>
                   </div>
                 </> : <Metric label={t.STATE} value={t.RISK_ENGINE_UNAVAILABLE} />}
               </CardContent>
             </Card>
             <RiskTimelineCard locale={locale} title={t.RISK_TIMELINE_TITLE} description={t.RISK_TIMELINE_DESC} events={currentRiskTimeline} endpoint={`/api/allocations/${allocation.id}/risk/timeline`} emptyText={t.RISK_TIMELINE_EMPTY} />
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader><CardTitle>{t.RECONCILIATION_TITLE}</CardTitle><CardDescription>{t.RECONCILIATION_DESC}</CardDescription></CardHeader>
               <CardContent className="grid gap-4">
                 {allocation.reconciliation ? <>
@@ -1002,7 +1002,7 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                   </div>
                   <ReconciliationIssueList title={t.BLOCKING_ISSUES} items={allocation.reconciliation.blockingIssues} emptyText={t.NO_BLOCKING_RECON} />
                   <ReconciliationIssueList title={t.WARNINGS} items={allocation.reconciliation.warnings} emptyText={t.NO_RECON_WARNINGS} />
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LEDGER_FILTERS}</p>
@@ -1028,15 +1028,15 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Button type="button" size="sm" onClick={applyLedgerFilters} disabled={isFilteringLedgerEntries}>{isFilteringLedgerEntries ? t.FILTERING : t.APPLY_FILTERS}</Button>
                       <Button type="button" size="sm" variant="outline" onClick={clearLedgerFilters} disabled={isFilteringLedgerEntries}>{t.CLEAR_FILTERS}</Button>
-                      <a href={ledgerExportHref} className="inline-flex h-9 items-center justify-center rounded-full border border-white/10 bg-black/20 px-4 text-sm font-medium text-foreground transition-colors hover:bg-white/10">{t.EXPORT_CSV}</a>
+                      <a href={ledgerExportHref} className="inline-flex h-9 items-center justify-center rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted/50 dark:hover:bg-white/10">{t.EXPORT_CSV}</a>
                     </div>
                   </div>
                   <div className="grid gap-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{ledgerFilterView ? t.FILTERED_LEDGER_ENTRIES : t.LATEST_LEDGER_ENTRIES}</p>
-                    {visibleLedgerEntries.length === 0 ? <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{ledgerFilterView ? t.NO_ENTRIES_MATCH : t.NO_ENTRIES_YET}</p> : visibleLedgerEntries.slice(0, 50).map((entry) => {
+                    {visibleLedgerEntries.length === 0 ? <p className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-muted-foreground">{ledgerFilterView ? t.NO_ENTRIES_MATCH : t.NO_ENTRIES_YET}</p> : visibleLedgerEntries.slice(0, 50).map((entry) => {
                       const isSelectedForReversal = reversalDraft?.entryId === entry.id;
                       const canReverse = !entry.isReversal && !entry.voidedAt;
-                      return <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      return <div key={entry.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <div className="flex flex-wrap items-center gap-2">
@@ -1046,9 +1046,9 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                               {entry.correctedByLedgerEntryId ? <Badge variant="secondary">{t.CORRECTED}</Badge> : null}
                             </div>
                             <p className="mt-2 text-xs leading-5 text-muted-foreground">{enumLabel("ledgerType", entry.ledgerType, locale)} · {entry.description}</p>
-                            {entry.isReversal && entry.reversesLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-gold-100">{t.REVERSES_ENTRY} {entry.reversesLedgerEntryId}</p> : null}
-                            {entry.voidedAt && !entry.isReversal ? <p className="mt-2 text-xs leading-5 text-gold-100">{t.VOIDED} {formatDate(entry.voidedAt)} {t.BY} {entry.voidedBy || t.ADMIN}.</p> : null}
-                            {entry.correctedByLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-gold-100">{t.CORRECTED_BY_ENTRY} {entry.correctedByLedgerEntryId}</p> : null}
+                            {entry.isReversal && entry.reversesLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.REVERSES_ENTRY} {entry.reversesLedgerEntryId}</p> : null}
+                            {entry.voidedAt && !entry.isReversal ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.VOIDED} {formatDate(entry.voidedAt)} {t.BY} {entry.voidedBy || t.ADMIN}.</p> : null}
+                            {entry.correctedByLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.CORRECTED_BY_ENTRY} {entry.correctedByLedgerEntryId}</p> : null}
                           </div>
                           <div className="text-right text-xs text-muted-foreground"><p>{formatMoney(entry.amount)}</p><p>{entry.quantity ?? "-"} {t.UNITS}</p></div>
                         </div>
@@ -1057,9 +1057,9 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                             {canReverse && !isSelectedForReversal ? <Button type="button" size="sm" variant="outline" onClick={() => setReversalDraft({ entryId: entry.id, reason: "" })}>{t.REVERSE_ENTRY}</Button> : null}
                           </div>
                           {auditTrailState?.entryId === entry.id ? <LedgerAuditTrailPanel locale={locale} state={auditTrailState} /> : null}
-                          {canReverse && isSelectedForReversal ? <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+                          {canReverse && isSelectedForReversal ? <div className="mt-4 grid gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
                             <p className="text-xs leading-5 text-muted-foreground">{t.REVERSAL_HELP}</p>
-                            <textarea value={reversalDraft.reason} onChange={(event) => setReversalDraft({ entryId: entry.id, reason: event.target.value })} className="min-h-20 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" placeholder={t.REVERSAL_REASON_PLACEHOLDER} />
+                            <textarea value={reversalDraft.reason} onChange={(event) => setReversalDraft({ entryId: entry.id, reason: event.target.value })} className="min-h-20 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" placeholder={t.REVERSAL_REASON_PLACEHOLDER} />
                             <div className="flex flex-wrap gap-2">
                               <Button type="button" size="sm" onClick={() => reverseLedgerEntry(entry.id)} disabled={isReversingLedgerEntry}>{isReversingLedgerEntry ? t.REVERSING : t.CONFIRM_REVERSAL}</Button>
                               <Button type="button" size="sm" variant="outline" onClick={() => setReversalDraft(null)} disabled={isReversingLedgerEntry}>{t.CANCEL}</Button>
@@ -1071,13 +1071,13 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                 </> : <Metric label={t.STATE} value={t.RECON_NOT_EVALUATED} />}
               </CardContent>
             </Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.STATUS_TIMELINE_TITLE}</CardTitle><CardDescription>{t.STATUS_TIMELINE_DESC}</CardDescription></CardHeader><CardContent><div className="grid gap-3">{["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED"].map((step) => <div key={step} className={`rounded-2xl border p-3 text-sm ${step === allocation.status ? "border-gold-200/35 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/20 text-muted-foreground"}`}>{enumLabel("allocationStatus", step, locale)}</div>)}</div></CardContent></Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.AUDIT_TITLE}</CardTitle><CardDescription>{t.AUDIT_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3"><Metric label={t.AUDIT_EVENTS} value={String(auditLogs.length)} /><Metric label={t.NOTIFICATION_EVENTS} value={String(notificationEvents.length)} />{auditLogs.slice(0, 4).map((log) => <Metric key={log.id} label={log.action} value={`${formatDate(log.createdAt)} · ${log.actor}`} />)}</CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.STATUS_TIMELINE_TITLE}</CardTitle><CardDescription>{t.STATUS_TIMELINE_DESC}</CardDescription></CardHeader><CardContent><div className="grid gap-3">{["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED"].map((step) => <div key={step} className={`rounded-2xl border p-3 text-sm ${step === allocation.status ? "border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 text-muted-foreground"}`}>{enumLabel("allocationStatus", step, locale)}</div>)}</div></CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.AUDIT_TITLE}</CardTitle><CardDescription>{t.AUDIT_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3"><Metric label={t.AUDIT_EVENTS} value={String(auditLogs.length)} /><Metric label={t.NOTIFICATION_EVENTS} value={String(notificationEvents.length)} />{auditLogs.slice(0, 4).map((log) => <Metric key={log.id} label={log.action} value={`${formatDate(log.createdAt)} · ${log.actor}`} />)}</CardContent></Card>
           </div>
           <div className="grid gap-6">
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.EDIT_TITLE}</CardTitle><CardDescription>{t.EDIT_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2"><SelectField label={t.STATUS} value={draft.status} options={ALLOCATION_STATUSES} formatOption={(value) => enumLabel("allocationStatus", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, status: value }))} /><SelectField label={t.RISK_LEVEL} value={draft.riskLevel} options={RISK_LEVELS} formatOption={(value) => enumLabel("riskLevel", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, riskLevel: value }))} /><SelectField label={t.PAYOUT_STATUS} value={draft.payoutStatus} options={PAYOUT_STATUSES} formatOption={(value) => enumLabel("payoutStatus", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, payoutStatus: value }))} /><SelectField label={t.REINVEST_DECISION} value={draft.reinvestDecision} options={REINVEST_DECISIONS} formatOption={(value) => enumLabel("reinvestDecision", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, reinvestDecision: value }))} /><TextField label={t.MARKETPLACE} value={draft.marketplace} onChange={(value) => setDraft((current) => ({ ...current, marketplace: value }))} /><TextField label={t.AMOUNT} value={draft.allocationAmount} onChange={(value) => setDraft((current) => ({ ...current, allocationAmount: value }))} /><TextField label={t.EXPECTED_DAYS} value={draft.expectedCycleDays} onChange={(value) => setDraft((current) => ({ ...current, expectedCycleDays: value }))} /><TextField label={t.EXPECTED_PAYOUT} type="date" value={draft.expectedPayoutAt} onChange={(value) => setDraft((current) => ({ ...current, expectedPayoutAt: value }))} /><TextField label={t.ESTIMATED_RESULT} value={draft.estimatedResult} onChange={(value) => setDraft((current) => ({ ...current, estimatedResult: value }))} /><TextField label={t.ACTUAL_PROFIT} value={draft.actualProfit} onChange={(value) => setDraft((current) => ({ ...current, actualProfit: value }))} /><label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.NOTES}</span><textarea value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" /></label><div className="flex flex-wrap gap-2 md:col-span-2"><Button type="button" onClick={saveAllocation} disabled={isSaving}><Save data-icon="inline-start" />{isSaving ? t.SAVING : t.SAVE_ALLOCATION}</Button><Button type="button" variant="outline" disabled={isSaving} onClick={() => runAllocationAction({ action: "mark-completed", actualProfit: draft.actualProfit || null }, t.ALLOCATION_MARKED_COMPLETED)}>{t.MARK_COMPLETED}</Button><Button type="button" variant="outline" disabled={isSaving} onClick={() => runAllocationAction({ action: "mark-loss", notes: draft.notes || "Marked as loss by admin." }, t.ALLOCATION_MARKED_LOSS)}>{t.MARK_LOSS}</Button></div></CardContent></Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.PREVIEW_TITLE}</CardTitle><CardDescription>{t.PREVIEW_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3 md:grid-cols-2"><Metric label={t.PRODUCT} value={allocation.productName} /><Metric label={t.STAGE} value={enumLabel("allocationStatus", allocation.status, locale)} /><Metric label={t.RISK} value={allocation.risk?.investorSafeSummary.level || enumLabel("riskLevel", allocation.riskLevel, locale)} /><Metric label={t.EXPECTED_PAYOUT} value={formatDate(allocation.expectedPayoutAt)} /><Metric label={t.PROOF_HEALTH} value={allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : t.UNDER_MANAGER_REVIEW} /><Metric label={t.INVESTOR_SUMMARY} value={allocation.proofCompleteness?.investorSafeSummary || t.EVIDENCE_UNDER_REVIEW} /><Metric label={t.RISK_SUMMARY} value={allocation.risk?.investorSafeSummary.summary || t.RISK_UNDER_REVIEW} /></CardContent></Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.EDIT_TITLE}</CardTitle><CardDescription>{t.EDIT_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2"><SelectField label={t.STATUS} value={draft.status} options={ALLOCATION_STATUSES} formatOption={(value) => enumLabel("allocationStatus", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, status: value }))} /><SelectField label={t.RISK_LEVEL} value={draft.riskLevel} options={RISK_LEVELS} formatOption={(value) => enumLabel("riskLevel", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, riskLevel: value }))} /><SelectField label={t.PAYOUT_STATUS} value={draft.payoutStatus} options={PAYOUT_STATUSES} formatOption={(value) => enumLabel("payoutStatus", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, payoutStatus: value }))} /><SelectField label={t.REINVEST_DECISION} value={draft.reinvestDecision} options={REINVEST_DECISIONS} formatOption={(value) => enumLabel("reinvestDecision", value, locale)} onChange={(value) => setDraft((current) => ({ ...current, reinvestDecision: value }))} /><TextField label={t.MARKETPLACE} value={draft.marketplace} onChange={(value) => setDraft((current) => ({ ...current, marketplace: value }))} /><TextField label={t.AMOUNT} value={draft.allocationAmount} onChange={(value) => setDraft((current) => ({ ...current, allocationAmount: value }))} /><TextField label={t.EXPECTED_DAYS} value={draft.expectedCycleDays} onChange={(value) => setDraft((current) => ({ ...current, expectedCycleDays: value }))} /><TextField label={t.EXPECTED_PAYOUT} type="date" value={draft.expectedPayoutAt} onChange={(value) => setDraft((current) => ({ ...current, expectedPayoutAt: value }))} /><TextField label={t.ESTIMATED_RESULT} value={draft.estimatedResult} onChange={(value) => setDraft((current) => ({ ...current, estimatedResult: value }))} /><TextField label={t.ACTUAL_PROFIT} value={draft.actualProfit} onChange={(value) => setDraft((current) => ({ ...current, actualProfit: value }))} /><label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.NOTES}</span><textarea value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-24 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" /></label><div className="flex flex-wrap gap-2 md:col-span-2"><Button type="button" onClick={saveAllocation} disabled={isSaving}><Save data-icon="inline-start" />{isSaving ? t.SAVING : t.SAVE_ALLOCATION}</Button><Button type="button" variant="outline" disabled={isSaving} onClick={() => runAllocationAction({ action: "mark-completed", actualProfit: draft.actualProfit || null }, t.ALLOCATION_MARKED_COMPLETED)}>{t.MARK_COMPLETED}</Button><Button type="button" variant="outline" disabled={isSaving} onClick={() => runAllocationAction({ action: "mark-loss", notes: draft.notes || "Marked as loss by admin." }, t.ALLOCATION_MARKED_LOSS)}>{t.MARK_LOSS}</Button></div></CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.PREVIEW_TITLE}</CardTitle><CardDescription>{t.PREVIEW_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3 md:grid-cols-2"><Metric label={t.PRODUCT} value={allocation.productName} /><Metric label={t.STAGE} value={enumLabel("allocationStatus", allocation.status, locale)} /><Metric label={t.RISK} value={allocation.risk?.investorSafeSummary.level || enumLabel("riskLevel", allocation.riskLevel, locale)} /><Metric label={t.EXPECTED_PAYOUT} value={formatDate(allocation.expectedPayoutAt)} /><Metric label={t.PROOF_HEALTH} value={allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : t.UNDER_MANAGER_REVIEW} /><Metric label={t.INVESTOR_SUMMARY} value={allocation.proofCompleteness?.investorSafeSummary || t.EVIDENCE_UNDER_REVIEW} /><Metric label={t.RISK_SUMMARY} value={allocation.risk?.investorSafeSummary.summary || t.RISK_UNDER_REVIEW} /></CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader><CardTitle>{t.ADD_LEDGER_TITLE}</CardTitle><CardDescription>{t.ADD_LEDGER_DESC}</CardDescription></CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
                 <SelectField label={t.LEDGER_TYPE} value={ledgerDraft.ledgerType} options={LEDGER_TYPES} formatOption={(value) => enumLabel("ledgerType", value, locale)} onChange={(value) => setLedgerDraft((current) => { const ledgerType = value as LedgerType; return { ...current, ledgerType, entryType: getLedgerEntryOptions(ledgerType)[0] ?? "" }; })} />
@@ -1089,13 +1089,13 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
                 <TextField label={t.OCCURRED_AT} type="datetime-local" value={ledgerDraft.occurredAt} onChange={(value) => setLedgerDraft((current) => ({ ...current, occurredAt: value }))} />
                 <SelectField label={t.SOURCE_TYPE} value={ledgerDraft.sourceType} options={LEDGER_SOURCE_TYPES} formatOption={(value) => enumLabel("ledgerSourceType", value, locale)} onChange={(value) => setLedgerDraft((current) => ({ ...current, sourceType: value }))} />
                 <TextField label={t.SOURCE_ID} value={ledgerDraft.sourceId} onChange={(value) => setLedgerDraft((current) => ({ ...current, sourceId: value }))} />
-                <label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.DESCRIPTION}</span><textarea value={ledgerDraft.description} onChange={(event) => setLedgerDraft((current) => ({ ...current, description: event.target.value }))} className="min-h-20 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" placeholder={t.LEDGER_DESC_PLACEHOLDER} /></label>
-                <label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.METADATA_JSON}</span><textarea value={ledgerDraft.metadataJson} onChange={(event) => setLedgerDraft((current) => ({ ...current, metadataJson: event.target.value }))} className="min-h-20 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 font-mono text-xs leading-6 text-foreground outline-none" placeholder='{\"reference\":\"masked-source-id\"}' /></label>
+                <label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.DESCRIPTION}</span><textarea value={ledgerDraft.description} onChange={(event) => setLedgerDraft((current) => ({ ...current, description: event.target.value }))} className="min-h-20 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" placeholder={t.LEDGER_DESC_PLACEHOLDER} /></label>
+                <label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.METADATA_JSON}</span><textarea value={ledgerDraft.metadataJson} onChange={(event) => setLedgerDraft((current) => ({ ...current, metadataJson: event.target.value }))} className="min-h-20 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 font-mono text-xs leading-6 text-foreground outline-none" placeholder='{\"reference\":\"masked-source-id\"}' /></label>
                 <div className="md:col-span-2"><Button type="button" onClick={createLedgerEntry} disabled={isCreatingLedgerEntry}>{isCreatingLedgerEntry ? t.CREATING : t.CREATE_LEDGER_ENTRY}</Button></div>
               </CardContent>
             </Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.CREATE_PROOF_TITLE}</CardTitle><CardDescription>{t.CREATE_PROOF_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2"><SelectField label={t.TYPE} value={proofDraft.type} options={PROOF_TYPES} formatOption={(value) => enumLabel("proofType", value, locale)} onChange={(value) => setProofDraft((current) => ({ ...current, type: value }))} /><SelectField label={t.STATUS} value={proofDraft.status} options={PROOF_STATUSES} formatOption={(value) => enumLabel("proofStatus", value, locale)} onChange={(value) => setProofDraft((current) => ({ ...current, status: value }))} /><TextField label={t.TITLE} value={proofDraft.title} onChange={(value) => setProofDraft((current) => ({ ...current, title: value }))} /><TextField label={t.PROOF_URL} value={proofDraft.proofUrl} onChange={(value) => setProofDraft((current) => ({ ...current, proofUrl: value }))} /><label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.DESCRIPTION}</span><textarea value={proofDraft.description} onChange={(event) => setProofDraft((current) => ({ ...current, description: event.target.value }))} className="min-h-20 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" /></label><div className="md:col-span-2"><Button type="button" onClick={createProof} disabled={isCreatingProof}><FileText data-icon="inline-start" />{isCreatingProof ? t.CREATING : t.CREATE_PROOF}</Button></div></CardContent></Card>
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.PROOF_LIST_TITLE}</CardTitle><CardDescription>{t.PROOF_LIST_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3">{allocation.proofs.length === 0 ? <EmptyState t={t} /> : allocation.proofs.map((proof) => <div key={proof.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{enumLabel("proofType", proof.type, locale)}</p><p className="mt-2 font-semibold text-foreground">{proof.title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{proof.description || t.NO_DESCRIPTION}</p>{proof.proofUrl ? <p className="mt-2 break-words text-xs text-gold-100">{proof.proofUrl}</p> : null}</div><Badge>{enumLabel("proofStatus", proof.status, locale)}</Badge></div><Separator className="my-4" /><div className="flex flex-wrap gap-2">{PROOF_STATUSES.map((status) => <Button key={status} type="button" variant="outline" size="sm" disabled={updatingProofId === proof.id || proof.status === status} onClick={() => updateProof(proof, { status })}>{enumLabel("proofStatus", status, locale)}</Button>)}</div></div>)}</CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.CREATE_PROOF_TITLE}</CardTitle><CardDescription>{t.CREATE_PROOF_DESC}</CardDescription></CardHeader><CardContent className="grid gap-4 md:grid-cols-2"><SelectField label={t.TYPE} value={proofDraft.type} options={PROOF_TYPES} formatOption={(value) => enumLabel("proofType", value, locale)} onChange={(value) => setProofDraft((current) => ({ ...current, type: value }))} /><SelectField label={t.STATUS} value={proofDraft.status} options={PROOF_STATUSES} formatOption={(value) => enumLabel("proofStatus", value, locale)} onChange={(value) => setProofDraft((current) => ({ ...current, status: value }))} /><TextField label={t.TITLE} value={proofDraft.title} onChange={(value) => setProofDraft((current) => ({ ...current, title: value }))} /><TextField label={t.PROOF_URL} value={proofDraft.proofUrl} onChange={(value) => setProofDraft((current) => ({ ...current, proofUrl: value }))} /><label className="grid gap-2 md:col-span-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.DESCRIPTION}</span><textarea value={proofDraft.description} onChange={(event) => setProofDraft((current) => ({ ...current, description: event.target.value }))} className="min-h-20 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" /></label><div className="md:col-span-2"><Button type="button" onClick={createProof} disabled={isCreatingProof}><FileText data-icon="inline-start" />{isCreatingProof ? t.CREATING : t.CREATE_PROOF}</Button></div></CardContent></Card>
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardHeader><CardTitle>{t.PROOF_LIST_TITLE}</CardTitle><CardDescription>{t.PROOF_LIST_DESC}</CardDescription></CardHeader><CardContent className="grid gap-3">{allocation.proofs.length === 0 ? <EmptyState t={t} /> : allocation.proofs.map((proof) => <div key={proof.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{enumLabel("proofType", proof.type, locale)}</p><p className="mt-2 font-semibold text-foreground">{proof.title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{proof.description || t.NO_DESCRIPTION}</p>{proof.proofUrl ? <p className="mt-2 break-words text-xs text-amber-700 dark:text-gold-100">{proof.proofUrl}</p> : null}</div><Badge>{enumLabel("proofStatus", proof.status, locale)}</Badge></div><Separator className="my-4" /><div className="flex flex-wrap gap-2">{PROOF_STATUSES.map((status) => <Button key={status} type="button" variant="outline" size="sm" disabled={updatingProofId === proof.id || proof.status === status} onClick={() => updateProof(proof, { status })}>{enumLabel("proofStatus", status, locale)}</Button>)}</div></div>)}</CardContent></Card>
           </div>
         </div>
       </div></section>
@@ -1103,20 +1103,20 @@ export function AdminAllocationDetailPage({ locale, allocation: initialAllocatio
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>; }
-function TextField({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) { return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" /></label>; }
-function SelectField({ label, value, options, onChange, formatOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; formatOption?: (value: string) => string }) { return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">{options.map((option) => <option key={option} value={option} className="bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}</select></label>; }
-function EmptyState({ t }: { t: Strings }) { return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center"><PackageCheck className="mx-auto size-8 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{t.EMPTY_DESC}</p></div>; }
-function AdminNotice({ tone, message }: { tone: "success" | "error"; message: string }) { return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>; }
-function ReconciliationIssueList({ title, items, emptyText }: { title: string; items: ReconciliationException[]; emptyText: string }) { return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>{items.length === 0 ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p> : <div className="mt-3 grid gap-2">{items.map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-3 text-xs leading-5 text-gold-100">{item.message}</div>)}</div>}</div>; }
-function RiskFactorList({ title, items, emptyText }: { title: string; items: RiskFactor[]; emptyText: string }) { return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>{items.length === 0 ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p> : <div className="mt-3 grid gap-2">{items.slice(0, 6).map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-3 text-xs leading-5 text-gold-100"><span className="font-semibold text-foreground">{item.severity} · {item.category}</span><br />{item.label}: {item.description}</div>)}</div>}</div>; }
+function Metric({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>; }
+function TextField({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) { return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none" /></label>; }
+function SelectField({ label, value, options, onChange, formatOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; formatOption?: (value: string) => string }) { return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">{options.map((option) => <option key={option} value={option} className="bg-card dark:bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}</select></label>; }
+function EmptyState({ t }: { t: Strings }) { return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-6 text-center"><PackageCheck className="mx-auto size-8 text-amber-700 dark:text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{t.EMPTY_DESC}</p></div>; }
+function AdminNotice({ tone, message }: { tone: "success" | "error"; message: string }) { return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>{message}</div>; }
+function ReconciliationIssueList({ title, items, emptyText }: { title: string; items: ReconciliationException[]; emptyText: string }) { return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>{items.length === 0 ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p> : <div className="mt-3 grid gap-2">{items.map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-3 text-xs leading-5 text-amber-700 dark:text-gold-100">{item.message}</div>)}</div>}</div>; }
+function RiskFactorList({ title, items, emptyText }: { title: string; items: RiskFactor[]; emptyText: string }) { return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>{items.length === 0 ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p> : <div className="mt-3 grid gap-2">{items.slice(0, 6).map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-3 text-xs leading-5 text-amber-700 dark:text-gold-100"><span className="font-semibold text-foreground">{item.severity} · {item.category}</span><br />{item.label}: {item.description}</div>)}</div>}</div>; }
 
 function RiskTimelineSelectField({ label, value, options, onChange, formatOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; formatOption?: (value: string) => string }) {
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-        {options.map((option) => <option key={option} value={option} className="bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+        {options.map((option) => <option key={option} value={option} className="bg-card dark:bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}
       </select>
     </label>
   );
@@ -1155,18 +1155,18 @@ function RiskTimelineCard({ locale, title, description, events: initialEvents, e
     }
   }
 
-  return <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+  return <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
     <CardHeader><CardTitle>{title}</CardTitle><CardDescription>{description}</CardDescription></CardHeader>
     <CardContent className="grid gap-3">
-      <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+      <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
           <RiskTimelineSelectField label={t.SOURCE} value={filters.source} options={RISK_TIMELINE_SOURCE_FILTERS} formatOption={(value) => enumLabel("riskSource", value, locale)} onChange={(value) => void reloadTimeline({ ...filters, source: value as RiskTimelineSourceFilter })} />
           <RiskTimelineSelectField label={t.LIMIT} value={filters.limit} options={RISK_TIMELINE_LIMIT_OPTIONS} onChange={(value) => void reloadTimeline({ ...filters, limit: value })} />
           <Badge variant="secondary">{isLoading ? t.LOADING : `${events.length} ${t.EVENTS}`}</Badge>
         </div>
-        {filterError ? <p className="mt-3 text-xs leading-5 text-gold-100">{filterError}</p> : null}
+        {filterError ? <p className="mt-3 text-xs leading-5 text-amber-700 dark:text-gold-100">{filterError}</p> : null}
       </div>
-      {events.length === 0 ? <p className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{emptyText}</p> : events.map((event) => <div key={event.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+      {events.length === 0 ? <p className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-muted-foreground">{emptyText}</p> : events.map((event) => <div key={event.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -1193,11 +1193,11 @@ function RiskTimelineEventDetailsPanel({ locale, event }: { locale: Locale; even
   const hasDiff = Boolean(details.currentLevel || details.currentScore !== null || details.previousLevel || details.previousScore !== null || details.newFactors.length || details.resolvedFactors.length || details.newBlockingIssues.length || details.resolvedBlockingIssues.length);
 
   if (!hasDiff) {
-    return <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.NO_DIFF}</div>;
+    return <div className="mt-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.NO_DIFF}</div>;
   }
 
   return (
-    <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="mt-3 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <div className="grid gap-3 md:grid-cols-4">
         <RiskTimelineDetail label={t.LEVEL} value={`${formatRiskDetailValue(details.previousLevel)} -> ${formatRiskDetailValue(details.currentLevel)}`} />
         <RiskTimelineDetail label={t.SCORE} value={`${formatRiskDetailValue(details.previousScore)} -> ${formatRiskDetailValue(details.currentScore)}`} />
@@ -1216,7 +1216,7 @@ function RiskTimelineEventDetailsPanel({ locale, event }: { locale: Locale; even
 }
 
 function RiskTimelineDetail({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-xs leading-5 text-foreground">{value}</p></div>;
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-xs leading-5 text-foreground">{value}</p></div>;
 }
 
 function formatRiskDetailValue(value: string | number | null) {
@@ -1224,7 +1224,7 @@ function formatRiskDetailValue(value: string | number | null) {
 }
 
 function RiskTimelineFactors({ t, title, items }: { t: Strings; title: string; items: RiskTimelineFactor[] }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
     {items.length === 0 ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.NONE}</p> : <div className="mt-2 flex flex-wrap gap-2">{items.slice(0, 4).map((item) => <Badge key={`${item.id}-${item.label}`} variant="secondary">{item.severity} · {item.label}</Badge>)}</div>}
   </div>;
@@ -1234,18 +1234,18 @@ function LedgerAuditTrailPanel({ locale, state }: { locale: Locale; state: { isL
   const formatters = createAdminFormatters(locale);
   const formatMoney = (value: string | number | null | undefined) => { const amount = Number(value || 0); return formatters.currency(Number.isFinite(amount) ? amount : 0); };
   const formatDate = (value: string | null) => formatters.dateTime(value);
-  if (state.isLoading) return <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{t.LOADING_AUDIT_TRAIL}</div>;
-  if (state.error) return <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-foreground">{state.error}</div>;
+  if (state.isLoading) return <div className="mt-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-muted-foreground">{t.LOADING_AUDIT_TRAIL}</div>;
+  if (state.error) return <div className="mt-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-foreground">{state.error}</div>;
   if (!state.data) return null;
 
   const chain = [state.data.originalEntry, ...state.data.reversalEntries, ...(state.data.correctionEntry ? [state.data.correctionEntry] : [])];
-  return <div className="mt-4 grid gap-4 rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+  return <div className="mt-4 grid gap-4 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LEDGER_AUDIT_TRAIL}</p>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.IMMUTABLE_CHAIN}</p>
     </div>
     <div className="grid gap-3">
-      {chain.map((entry) => <div key={entry.id} className="rounded-2xl border border-white/10 bg-black/20 p-3">
+      {chain.map((entry) => <div key={entry.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -1256,10 +1256,10 @@ function LedgerAuditTrailPanel({ locale, state }: { locale: Locale; state: { isL
               {entry.statusFlags.isCorrected ? <Badge variant="secondary">{t.CORRECTED}</Badge> : null}
             </div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{enumLabel("ledgerType", entry.ledgerType, locale)} · {formatDate(entry.occurredAt)} · {t.CREATED_BY} {entry.createdBy}</p>
-            {entry.reversalReason ? <p className="mt-2 text-xs leading-5 text-gold-100">{t.REASON} {entry.reversalReason}</p> : null}
+            {entry.reversalReason ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.REASON} {entry.reversalReason}</p> : null}
             {entry.reversesLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.REVERSES} {entry.reversesLedgerEntryId}</p> : null}
             {entry.correctedByLedgerEntryId ? <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.CORRECTED_BY} {entry.correctedByLedgerEntryId}</p> : null}
-            {entry.metadataPreview ? <p className="mt-2 break-words rounded-xl border border-white/10 bg-black/20 p-2 font-mono text-[0.68rem] leading-5 text-muted-foreground">{t.METADATA_PREVIEW} {entry.metadataPreview}</p> : null}
+            {entry.metadataPreview ? <p className="mt-2 break-words rounded-xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-2 font-mono text-[0.68rem] leading-5 text-muted-foreground">{t.METADATA_PREVIEW} {entry.metadataPreview}</p> : null}
           </div>
           <div className="text-right text-xs text-muted-foreground"><p>{formatMoney(entry.amount)}</p><p>{entry.quantity ?? "-"} {t.UNITS}</p></div>
         </div>
@@ -1267,7 +1267,7 @@ function LedgerAuditTrailPanel({ locale, state }: { locale: Locale; state: { isL
     </div>
     <div className="grid gap-2">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.AUDIT_EVENTS}</p>
-      {state.data.auditEvents.length === 0 ? <p className="rounded-2xl border border-white/10 bg-black/20 p-3 text-xs text-muted-foreground">{t.NO_AUDIT_EVENTS}</p> : state.data.auditEvents.map((event) => <div key={event.id} className="rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-muted-foreground">
+      {state.data.auditEvents.length === 0 ? <p className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-xs text-muted-foreground">{t.NO_AUDIT_EVENTS}</p> : state.data.auditEvents.map((event) => <div key={event.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-xs leading-5 text-muted-foreground">
         <p className="font-semibold text-foreground">{event.action}</p>
         <p>{formatDate(event.createdAt)} · {event.actor}</p>
         {event.afterPreview ? <p className="mt-2 break-words font-mono text-[0.68rem]">{event.afterPreview}</p> : null}

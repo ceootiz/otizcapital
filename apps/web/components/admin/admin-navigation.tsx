@@ -59,8 +59,8 @@ const NAV_ARIA_LABEL: Record<string, string> = {
 };
 
 const baseLinkClass = "rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition-colors";
-const inactiveLinkClass = "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground";
-const activeLinkClass = "border-gold-200/35 bg-gold-200/10 text-gold-100";
+const inactiveLinkClass = "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] text-muted-foreground hover:text-foreground";
+const activeLinkClass = "border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100";
 
 export function AdminNavigation({
   locale,

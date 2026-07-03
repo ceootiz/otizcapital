@@ -193,7 +193,7 @@ function YieldSettingsCard({ t }: { t: ReturnType<typeof getUi> }) {
   }, [rate, t.yieldSaved, t.yieldError]);
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-gold-200/25 bg-gold-200/[0.06] p-4 sm:flex-row sm:items-end sm:justify-between">
+    <section className="flex flex-col gap-4 rounded-2xl border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/[0.06] p-4 sm:flex-row sm:items-end sm:justify-between">
       <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {t.yieldTitle}
         <span className="mt-1 flex items-center gap-2">
@@ -206,7 +206,7 @@ function YieldSettingsCard({ t }: { t: ReturnType<typeof getUi> }) {
             disabled={loading}
             onChange={(event) => setRate(event.target.value)}
             aria-label={t.yieldLabel}
-            className="w-32 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground disabled:opacity-40"
+            className="w-32 rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground disabled:opacity-40"
           />
           <span className="text-[0.7rem] normal-case text-muted-foreground">{t.yieldLabel}</span>
         </span>
@@ -220,7 +220,7 @@ function YieldSettingsCard({ t }: { t: ReturnType<typeof getUi> }) {
           type="button"
           onClick={() => void save()}
           disabled={saving || loading}
-          className="rounded-full border border-gold-200/35 bg-gold-200/10 px-5 py-2 text-xs font-semibold text-gold-100 transition-colors hover:bg-gold-200/20 disabled:opacity-40"
+          className="rounded-full border border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 px-5 py-2 text-xs font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-gold-300/30 dark:hover:bg-gold-200/20 disabled:opacity-40"
         >
           {saving ? t.saving : t.save}
         </button>
@@ -317,7 +317,7 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
         <AdminNavigation locale={locale} className="flex flex-wrap items-center gap-2" />
 
         <header className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-200/70">{t.eyebrow}</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-gold-200/70">{t.eyebrow}</span>
           <h1 className="text-2xl font-semibold text-foreground">{t.title}</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">{t.description}</p>
         </header>
@@ -325,14 +325,14 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
         <YieldSettingsCard t={t} />
 
         {/* Controls */}
-        <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <label className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {t.scope}
               <select
                 value={scope}
                 onChange={(event) => setScope(event.target.value as ContentScope)}
-                className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+                className="rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground"
               >
                 {CONTENT_SCOPES.map((value) => (
                   <option key={value} value={value}>
@@ -347,7 +347,7 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
               <select
                 value={contentLocale}
                 onChange={(event) => setContentLocale(event.target.value as Locale)}
-                className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+                className="rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground"
               >
                 {locales.map((value) => (
                   <option key={value} value={value}>
@@ -367,7 +367,7 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => void reset()}
               disabled={resetting || loading || !hasOverride}
-              className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+              className="rounded-full border border-border dark:border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
             >
               {resetting ? t.resetting : t.reset}
             </button>
@@ -375,7 +375,7 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
               type="button"
               onClick={() => void save()}
               disabled={saving || loading || data === null}
-              className="rounded-full border border-gold-200/35 bg-gold-200/10 px-5 py-2 text-xs font-semibold text-gold-100 transition-colors hover:bg-gold-200/20 disabled:opacity-40"
+              className="rounded-full border border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 px-5 py-2 text-xs font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-gold-300/30 dark:hover:bg-gold-200/20 disabled:opacity-40"
             >
               {saving ? t.saving : t.save}
             </button>
@@ -424,14 +424,14 @@ function ContentNode({ label, value, path, onChange, t, depth }: NodeProps) {
             value={value}
             rows={Math.min(6, Math.max(2, Math.ceil(value.length / 60)))}
             onChange={(event) => onChange(path, event.target.value)}
-            className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+            className="rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground"
           />
         ) : (
           <input
             type="text"
             value={value}
             onChange={(event) => onChange(path, event.target.value)}
-            className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+            className="rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground"
           />
         )}
       </label>
@@ -446,7 +446,7 @@ function ContentNode({ label, value, path, onChange, t, depth }: NodeProps) {
           type="number"
           value={value}
           onChange={(event) => onChange(path, event.target.value === "" ? 0 : Number(event.target.value))}
-          className="w-40 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground"
+          className="w-40 rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground"
         />
       </label>
     );
@@ -463,12 +463,12 @@ function ContentNode({ label, value, path, onChange, t, depth }: NodeProps) {
 
   if (Array.isArray(value)) {
     return (
-      <fieldset className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <fieldset className="flex flex-col gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.02] p-4">
         <legend className="px-1 text-sm font-semibold text-foreground">{label}</legend>
         {value.map((item, index) => (
-          <div key={index} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-black/10 p-3">
+          <div key={index} className="flex flex-col gap-3 rounded-xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/10 p-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-gold-200/60">
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700 dark:text-gold-200/60">
                 {t.item} {index + 1}
               </span>
               <button
@@ -485,7 +485,7 @@ function ContentNode({ label, value, path, onChange, t, depth }: NodeProps) {
         <button
           type="button"
           onClick={() => onChange(path, [...value, blankLike(value[0] ?? "")])}
-          className="self-start rounded-full border border-white/10 px-4 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          className="self-start rounded-full border border-border dark:border-white/10 px-4 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
           + {t.addItem}
         </button>
@@ -496,7 +496,7 @@ function ContentNode({ label, value, path, onChange, t, depth }: NodeProps) {
   if (value && typeof value === "object") {
     const Wrapper = depth === 0 ? "section" : "div";
     return (
-      <Wrapper className={depth === 0 ? "flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5" : "flex flex-col gap-4 border-l border-white/10 pl-4"}>
+      <Wrapper className={depth === 0 ? "flex flex-col gap-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-5" : "flex flex-col gap-4 border-l border-border dark:border-white/10 pl-4"}>
         {depth === 0 ? (
           <h2 className="text-lg font-semibold text-foreground">{label}</h2>
         ) : (

@@ -99,7 +99,7 @@ function getCookieValue(name: string) {
   return document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`))?.split("=").slice(1).join("=") || "";
 }
 
-const inputClass = "rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-foreground";
+const inputClass = "rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-sm text-foreground";
 const labelClass = "flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground";
 
 export function AdminDepositAddressesPage({
@@ -266,7 +266,7 @@ export function AdminDepositAddressesPage({
         <AdminNavigation locale={locale} activeSection="deposit-addresses" className="flex flex-wrap items-center gap-2" />
 
         <header className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-200/70">{t.eyebrow}</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-gold-200/70">{t.eyebrow}</span>
           <h1 className="text-2xl font-semibold text-foreground">{t.title}</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">{t.description}</p>
         </header>
@@ -284,7 +284,7 @@ export function AdminDepositAddressesPage({
         )}
 
         {/* Create form */}
-        <section className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <section className="flex flex-col gap-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-5">
           <h2 className="text-lg font-semibold text-foreground">{t.createTitle}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className={labelClass}>
@@ -341,14 +341,14 @@ export function AdminDepositAddressesPage({
 
         {/* Existing addresses */}
         {sorted.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-sm text-muted-foreground">{t.empty}</p>
+          <p className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.02] p-6 text-sm text-muted-foreground">{t.empty}</p>
         ) : (
           <div className="flex flex-col gap-4">
             {sorted.map((item) => {
               const draft = editing[item.id];
               const busy = busyId === item.id;
               return (
-                <article key={item.id} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <article key={item.id} className="flex flex-col gap-4 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-5">
                   {draft ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <label className={labelClass}>
@@ -400,14 +400,14 @@ export function AdminDepositAddressesPage({
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="text-base font-semibold text-foreground">{item.currency}</span>
-                        <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        <span className="rounded-full border border-border dark:border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                           {item.network}
                         </span>
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${
                             item.isActive
                               ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-                              : "border border-white/10 text-muted-foreground"
+                              : "border border-border dark:border-white/10 text-muted-foreground"
                           }`}
                         >
                           {item.isActive ? t.statusActive : t.statusInactive}
@@ -416,7 +416,7 @@ export function AdminDepositAddressesPage({
                           {t.order}: {item.sortOrder}
                         </span>
                       </div>
-                      <code className="break-all rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-foreground">
+                      <code className="break-all rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2 text-xs text-foreground">
                         {item.address}
                       </code>
                     </div>
@@ -432,7 +432,7 @@ export function AdminDepositAddressesPage({
                           type="button"
                           onClick={() => cancelEdit(item.id)}
                           disabled={busy}
-                          className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+                          className="rounded-full border border-border dark:border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
                         >
                           {t.cancel}
                         </button>
@@ -442,7 +442,7 @@ export function AdminDepositAddressesPage({
                         type="button"
                         onClick={() => startEdit(item)}
                         disabled={busy}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+                        className="rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
                       >
                         {t.edit}
                       </button>
@@ -451,7 +451,7 @@ export function AdminDepositAddressesPage({
                       type="button"
                       onClick={() => void patch(item.id, { isActive: !item.isActive })}
                       disabled={busy}
-                      className="rounded-full border border-gold-200/35 bg-gold-200/10 px-4 py-2 text-xs font-semibold text-gold-100 transition-colors hover:bg-gold-200/20 disabled:opacity-40"
+                      className="rounded-full border border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 px-4 py-2 text-xs font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-gold-300/30 dark:hover:bg-gold-200/20 disabled:opacity-40"
                     >
                       {busy ? t.updating : item.isActive ? t.deactivate : t.activate}
                     </button>

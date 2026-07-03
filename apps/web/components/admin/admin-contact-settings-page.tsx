@@ -92,16 +92,16 @@ export function AdminContactSettingsPage({ locale, initialTelegram }: { locale: 
             <AdminNavigation locale={locale} activeSection="contact-settings" className="flex flex-wrap items-center gap-2" />
           </div>
 
-          <Card className="max-w-2xl rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="max-w-2xl rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardHeader>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
               <CardTitle className="mt-2 text-2xl">{t.title}</CardTitle>
               <CardDescription>{t.description}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-5">
               <label className="grid gap-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.label}</span>
-                <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4">
+                <div className="flex items-center gap-2 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4">
                   <span className="text-sm text-muted-foreground">@</span>
                   <input
                     value={telegram}
@@ -114,11 +114,11 @@ export function AdminContactSettingsPage({ locale, initialTelegram }: { locale: 
               </label>
 
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Send className="size-4 text-gold-100" />
+                <Send className="size-4 text-amber-700 dark:text-gold-100" />
                 {t.preview} <span className="font-mono text-foreground">https://t.me/{cleaned || "otizceo"}</span>
               </p>
 
-              {notice ? <p className="rounded-2xl border border-gold-200/25 bg-gold-200/10 p-4 text-sm text-gold-100">{notice}</p> : null}
+              {notice ? <p className="rounded-2xl border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{notice}</p> : null}
               {error ? <p className="rounded-2xl border border-red-300/20 bg-red-500/10 p-4 text-sm text-red-100">{error}</p> : null}
 
               <div>

@@ -215,14 +215,14 @@ function getAdminMutationHeaders() {
 
 function severityTone(severity: string) {
   if (severity === "CRITICAL") return "border-red-300/25 bg-red-300/10 text-red-100";
-  if (severity === "HIGH") return "border-gold-200/30 bg-gold-200/10 text-gold-100";
-  if (severity === "MEDIUM") return "border-white/15 bg-white/[0.06] text-foreground";
-  return "border-white/10 bg-white/[0.04] text-muted-foreground";
+  if (severity === "HIGH") return "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100";
+  if (severity === "MEDIUM") return "border-border dark:border-white/15 bg-muted/30 dark:bg-white/[0.06] text-foreground";
+  return "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] text-muted-foreground";
 }
 
 function statusTone(status: string) {
   if (status === "OPEN") return "border-red-300/25 bg-red-300/10 text-red-100";
-  if (status === "ACKNOWLEDGED") return "border-gold-200/30 bg-gold-200/10 text-gold-100";
+  if (status === "ACKNOWLEDGED") return "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100";
   return "border-emerald-300/25 bg-emerald-300/10 text-emerald-100";
 }
 
@@ -330,10 +330,10 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
             <AdminNavigation locale={locale} activeSection="incidents" />
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.EYEBROW}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.TITLE}</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{t.DESCRIPTION}</p>
               </div>
@@ -348,7 +348,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
             <CardContent className="grid gap-3 p-4 md:grid-cols-3">
               <Filter label={t.SEVERITY} value={severity} onChange={setSeverity} options={SEVERITIES} group="incidentSeverity" locale={locale} />
               <Filter label={t.STATUS} value={status} onChange={setStatus} options={STATUSES} group="incidentStatus" locale={locale} />
@@ -358,7 +358,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
 
           <div className="grid gap-4">
             {visibleIncidents.length === 0 ? (
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CheckCircle2 className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm text-muted-foreground">{t.EMPTY_BODY}</p></CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CheckCircle2 className="mx-auto size-9 text-amber-700 dark:text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p><p className="mt-2 text-sm text-muted-foreground">{t.EMPTY_BODY}</p></CardContent></Card>
             ) : visibleIncidents.map((incident) => {
               const metadata = parseIncidentMetadata(incident.metadataJson);
               const autoCreated = metadata.autoCreated === true ? t.AUTO_CREATED : t.MANUAL;
@@ -367,7 +367,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
               const detail = detailsById[incident.id];
               const detailsOpen = selectedDetailId === incident.id;
               return (
-              <Card key={incident.id} className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card key={incident.id} className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -376,7 +376,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
                         <Badge className={`border ${statusTone(incident.status)}`}>{enumLabel("incidentStatus", incident.status, locale)}</Badge>
                         <Badge variant="secondary">{enumLabel("riskSource", incident.source, locale)}</Badge>
                       </div>
-                      <CardTitle className="mt-4 flex items-center gap-2"><ShieldAlert className="size-5 text-gold-100" />{incident.title}</CardTitle>
+                      <CardTitle className="mt-4 flex items-center gap-2"><ShieldAlert className="size-5 text-amber-700 dark:text-gold-100" />{incident.title}</CardTitle>
                       <CardDescription>{incident.summary}</CardDescription>
                     </div>
                     <div className="text-right text-xs text-muted-foreground">
@@ -397,7 +397,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
                   <LinkedEntities locale={locale} incident={incident} t={t} />
                   <Separator />
                   <div className="flex flex-wrap justify-between gap-3">
-                    <p className="max-w-2xl text-sm leading-6 text-muted-foreground"><AlertTriangle className="mr-2 inline size-4 text-gold-100" />{t.SANITIZED_NOTICE}</p>
+                    <p className="max-w-2xl text-sm leading-6 text-muted-foreground"><AlertTriangle className="mr-2 inline size-4 text-amber-700 dark:text-gold-100" />{t.SANITIZED_NOTICE}</p>
                     <div className="flex flex-wrap gap-2">
                       <Button type="button" variant="outline" size="sm" disabled={pendingDetailId === incident.id} onClick={() => toggleDetails(incident)}>{detailsOpen ? t.HIDE_DETAILS : pendingDetailId === incident.id ? t.LOADING : t.DETAILS}</Button>
                       <Button type="button" variant="outline" size="sm" disabled={pendingId === incident.id || incident.status !== "OPEN"} onClick={() => runAction(incident, "acknowledge")}>{t.ACKNOWLEDGE}</Button>
@@ -419,7 +419,7 @@ function Filter({ label, value, onChange, options, group, locale }: { label: str
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
         {options.map((option) => <option key={option} value={option}>{enumLabel(group, option, locale)}</option>)}
       </select>
     </label>
@@ -427,7 +427,7 @@ function Filter({ label, value, onChange, options, group, locale }: { label: str
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 break-words text-sm leading-6 text-foreground">{value}</p></div>;
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 break-words text-sm leading-6 text-foreground">{value}</p></div>;
 }
 
 function LinkedEntities({ locale, incident, t }: { locale: Locale; incident: Incident; t: Strings }) {
@@ -441,26 +441,26 @@ function LinkedEntities({ locale, incident, t }: { locale: Locale; incident: Inc
 }
 
 function EntityLink({ label, href, value }: { label: string; href: string | null; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>{href ? <Link href={href} className="mt-2 block break-words text-sm font-semibold leading-6 text-gold-100 hover:text-gold-50">{value}</Link> : <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>}</div>;
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>{href ? <Link href={href} className="mt-2 block break-words text-sm font-semibold leading-6 text-amber-700 dark:text-gold-100 hover:text-gold-50">{value}</Link> : <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>}</div>;
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>{message}</div>;
 }
 
 function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { locale: Locale; detail?: IncidentDetail; loading: boolean; t: Strings; formatters: ReturnType<typeof createAdminFormatters> }) {
   if (loading) {
-    return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.LOADING_DETAIL}</div>;
+    return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5 text-sm text-muted-foreground">{t.LOADING_DETAIL}</div>;
   }
   if (!detail) {
-    return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm text-muted-foreground">{t.NO_CONTEXT_LOADED}</div>;
+    return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5 text-sm text-muted-foreground">{t.NO_CONTEXT_LOADED}</div>;
   }
 
   return (
-    <div className="grid gap-4 rounded-[1.35rem] border border-gold-200/15 bg-black/25 p-5">
+    <div className="grid gap-4 rounded-[1.35rem] border border-gold-200/15 bg-muted/30 dark:bg-black/25 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{t.INCIDENT_DETAIL}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-gold-100">{t.INCIDENT_DETAIL}</p>
           <h3 className="mt-2 text-lg font-semibold text-foreground">{detail.incident.title}</h3>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.incident.summary}</p>
         </div>
@@ -486,14 +486,14 @@ function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { loca
         investor: detail.linkedEntities.investor ?? null
       }} />
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.TRIAGE_ACTIONS}</p>
         {detail.triageActions.length === 0 ? (
           <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.TRIAGE_EMPTY}</p>
         ) : (
           <div className="mt-3 grid gap-3">
             {detail.triageActions.map((action) => (
-              <Link key={`${action.href}-${action.label}`} href={action.href} className={`rounded-2xl border p-4 transition-colors ${action.kind === "primary" ? "border-gold-200/30 bg-gold-200/10 hover:bg-gold-200/15" : "border-white/10 bg-black/20 hover:bg-white/[0.06]"}`}>
+              <Link key={`${action.href}-${action.label}`} href={action.href} className={`rounded-2xl border p-4 transition-colors ${action.kind === "primary" ? "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 hover:bg-gold-300/30 dark:hover:bg-gold-200/15" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 hover:bg-muted/50 dark:hover:bg-white/[0.06]"}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-foreground">{action.label}</span>
                   <Badge variant={action.kind === "primary" ? "default" : "secondary"}>{action.kind}</Badge>
@@ -505,7 +505,7 @@ function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { loca
         )}
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.SANITIZED_METADATA_PREVIEW}</p>
         <p className="mt-2 break-words font-mono text-xs leading-6 text-foreground">{detail.metadataPreview || compactJson(detail.metadataSummary, t.NO_METADATA_STORED)}</p>
       </div>
@@ -523,7 +523,7 @@ function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { loca
         </DetailSection>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.RECOMMENDED_NEXT_ACTION}</p>
         <p className="mt-2 text-sm leading-6 text-foreground">{detail.recommendedNextAction}</p>
       </div>
@@ -534,7 +534,7 @@ function IncidentDetailDrawer({ locale, detail, loading, t, formatters }: { loca
 function DetailSection({ title, empty, children }: { title: string; empty: string; children: React.ReactNode }) {
   const hasChildren = React.Children.count(children) > 0;
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
       <div className="mt-3 grid gap-3">
         {hasChildren ? children : <p className="text-sm leading-6 text-muted-foreground">{empty}</p>}
@@ -545,7 +545,7 @@ function DetailSection({ title, empty, children }: { title: string; empty: strin
 
 function TimelineRow({ title, meta, body }: { title: string; meta: string; body: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground">{meta}</p>

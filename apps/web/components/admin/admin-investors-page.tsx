@@ -117,7 +117,7 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
             <AdminNavigation locale={locale} activeSection="investors" className="flex flex-wrap items-center gap-2" />
           </div>
 
-          <Card className="rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardHeader className="pb-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -135,21 +135,21 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={t.SEARCH_PLACEHOLDER}
-                  className="h-12 w-full rounded-2xl border border-white/10 bg-black/20 pl-11 pr-11 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45"
+                  className="h-12 w-full rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 pl-11 pr-11 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45"
                 />
                 {query ? (
                   <button
                     type="button"
                     aria-label={t.CLEAR_SEARCH}
                     onClick={() => setQuery("")}
-                    className="absolute right-3 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
+                    className="absolute right-3 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/50 dark:hover:bg-white/[0.08] hover:text-foreground"
                   >
                     <X className="size-4" />
                   </button>
                 ) : null}
               </div>
-              <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
-                <div className="hidden grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
+              <div className="overflow-hidden rounded-[1.35rem] border border-border dark:border-white/10">
+                <div className="hidden grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] gap-3 border-b border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
                   <span>{t.COL_NAME}</span>
                   <span>{t.COL_CONTACT}</span>
                   <span>{t.COL_STATUS}</span>
@@ -160,21 +160,21 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                 </div>
                 {investors.length === 0 ? (
                   <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
-                    <FileText className="size-9 text-gold-100" />
+                    <FileText className="size-9 text-amber-700 dark:text-gold-100" />
                     <p className="mt-4 font-semibold text-foreground">{t.EMPTY_TITLE}</p>
                     <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.EMPTY_DESCRIPTION}</p>
                   </div>
                 ) : filteredInvestors.length === 0 ? (
                   <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
-                    <Search className="size-9 text-gold-100" />
+                    <Search className="size-9 text-amber-700 dark:text-gold-100" />
                     <p className="mt-4 font-semibold text-foreground">{t.NO_RESULTS_TITLE}</p>
                     <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t.NO_RESULTS_DESCRIPTION}</p>
                   </div>
                 ) : (
                   filteredInvestors.map((investor) => (
-                    <Link key={investor.id} href={`/${locale}/admin/investors/${investor.id}`} className="grid gap-3 border-b border-white/10 p-4 transition-colors last:border-b-0 hover:bg-white/[0.04] lg:grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] lg:items-center">
+                    <Link key={investor.id} href={`/${locale}/admin/investors/${investor.id}`} className="grid gap-3 border-b border-border dark:border-white/10 p-4 transition-colors last:border-b-0 hover:bg-muted/50 dark:hover:bg-white/[0.04] lg:grid-cols-[1.1fr_1.25fr_0.8fr_0.8fr_0.75fr_1fr_0.82fr] lg:items-center">
                       <span className="flex items-center gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
                           <Users className="size-4" />
                         </span>
                         <span>

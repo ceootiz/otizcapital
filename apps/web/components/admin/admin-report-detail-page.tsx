@@ -890,10 +890,10 @@ export function AdminReportDetailPage({
             <AdminNavigation locale={locale} activeSection="investors" />
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{currentReport.title}</h1>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{currentReport.month} · {currentReport.investor.fullName} · {currentReport.investor.email}</p>
               </div>
@@ -909,7 +909,7 @@ export function AdminReportDetailPage({
 
           <div className="grid gap-6 xl:grid-cols-[0.84fr_1.16fr]">
             <div className="grid gap-6">
-              <Card id="readiness" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card id="readiness" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.reportStatusTitle}</CardTitle>
                   <CardDescription>{t.reportStatusDesc}</CardDescription>
@@ -922,7 +922,7 @@ export function AdminReportDetailPage({
                   <Metric label={t.labelPublished} value={fmt.dateTime(currentReport.publishedAt)} />
                   <PublishGateNotice readiness={currentReadiness} t={t} />
                   {currentReadiness?.requiresAcknowledgment && canEditDraft ? (
-                    <label className="flex items-start gap-3 rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm leading-6 text-muted-foreground">
+                    <label className="flex items-start gap-3 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm leading-6 text-muted-foreground">
                       <input type="checkbox" className="mt-1" checked={acknowledgeWarnings} onChange={(event) => setAcknowledgeWarnings(event.target.checked)} />
                       {t.acknowledgeWarnings}
                     </label>
@@ -939,7 +939,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card id="reconciliation" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card id="reconciliation" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.readinessTitle}</CardTitle>
                   <CardDescription>{t.readinessDesc}</CardDescription>
@@ -947,7 +947,7 @@ export function AdminReportDetailPage({
                 <CardContent className="grid gap-4">
                   {currentReadiness ? (
                     <>
-                      <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.readinessStateLabel}</p>
@@ -955,8 +955,8 @@ export function AdminReportDetailPage({
                           </div>
                           <Badge>{currentReadiness.readinessPercentage}%</Badge>
                         </div>
-                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-                          <div className="h-full rounded-full bg-gold-200/70" style={{ width: `${currentReadiness.readinessPercentage}%` }} />
+                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted/30 dark:bg-white/10">
+                          <div className="h-full rounded-full bg-gold-300/70 dark:bg-gold-200/70" style={{ width: `${currentReadiness.readinessPercentage}%` }} />
                         </div>
                       </div>
                       <div className="grid gap-3 md:grid-cols-2">
@@ -969,7 +969,7 @@ export function AdminReportDetailPage({
                         <Metric label={t.labelPolicy} value={currentReadiness.policySnapshot?.name || t.readinessPolicyFallback} />
                         <Metric label={t.labelPolicyThreshold} value={`${currentReadiness.policySnapshot?.minimumProofCompletenessScore ?? 50}%`} />
                       </div>
-                      <Link href={`/${locale}/admin/settings/readiness-policy`} className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-100 hover:text-gold-50">
+                      <Link href={`/${locale}/admin/settings/readiness-policy`} className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 dark:text-gold-100 hover:text-gold-50">
                         {t.manageReadinessPolicy}
                       </Link>
                       <ReadinessGroup title={t.blockingIssues} items={currentReadiness.blockingIssues} emptyText={t.noBlockingIssues} t={t} />
@@ -985,7 +985,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card id="risk" className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card id="risk" className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.reconciliationTitle}</CardTitle>
                   <CardDescription>{t.reconciliationDesc}</CardDescription>
@@ -1008,7 +1008,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.riskOverviewTitle}</CardTitle>
                   <CardDescription>{t.riskOverviewDesc}</CardDescription>
@@ -1020,9 +1020,9 @@ export function AdminReportDetailPage({
                       <Metric label={t.labelAdminSummary} value={risk.portfolioRisk.adminSummary} />
                       <Metric label={t.labelHighRiskAllocations} value={risk.allocations.filter((allocation) => ["HIGH", "CRITICAL"].includes(allocation.investorSafeSummary.level)).map((allocation) => `${allocation.supplyCode}: ${enumLabel("riskLevel", allocation.investorSafeSummary.level, locale)}`).join(" · ") || t.noHighRiskAllocations} />
                       <IssueSummary title={t.materialRiskEvents} items={risk.materialRiskEvents.map((event) => ({ id: `${event.allocationId}-${event.label}`, severity: event.severity === "CRITICAL" ? "BLOCKING" : "WARNING", message: `${event.category} · ${event.label}` }))} emptyText={t.noMaterialRiskEvents} />
-                      <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.recommendedActions}</p>
-                        <div className="mt-3 grid gap-2">{risk.portfolioRisk.recommendedActions.slice(0, 5).map((action) => <p key={action} className="rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-muted-foreground">{action}</p>)}</div>
+                        <div className="mt-3 grid gap-2">{risk.portfolioRisk.recommendedActions.slice(0, 5).map((action) => <p key={action} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-xs leading-5 text-muted-foreground">{action}</p>)}</div>
                       </div>
                     </>
                   ) : (
@@ -1033,7 +1033,7 @@ export function AdminReportDetailPage({
 
               <RiskTimelineCard title={t.riskTimelineTitle} description={t.riskTimelineDesc} events={riskTimeline} endpoint={`/api/monthly-reports/${currentReport.id}/risk/timeline`} emptyText={t.riskTimelineEmpty} t={t} fmt={fmt} locale={locale} />
 
-              <Card id="snapshots" className="rounded-[1.35rem] border-white/10 bg-graphite-900/[0.72]">
+              <Card id="snapshots" className="rounded-[1.35rem] border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.snapshotControlsTitle}</CardTitle>
                   <CardDescription>{t.snapshotControlsDesc}</CardDescription>
@@ -1047,7 +1047,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.investorTitle}</CardTitle>
                   <CardDescription>{t.investorDesc}</CardDescription>
@@ -1062,7 +1062,7 @@ export function AdminReportDetailPage({
             </div>
 
             <div className="grid gap-6">
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.editDraftTitle}</CardTitle>
                   <CardDescription>{t.editDraftDesc}</CardDescription>
@@ -1080,14 +1080,14 @@ export function AdminReportDetailPage({
                     </Button>
                     {!canEditDraft ? <span className="text-xs text-muted-foreground">{t.returnToDraftHint}</span> : null}
                   </div>
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.internalAdminNote}</p>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.internalAdminNoteBody}</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.linkedAllocationsTitle}</CardTitle>
                   <CardDescription>{t.linkedAllocationsDesc}</CardDescription>
@@ -1096,11 +1096,11 @@ export function AdminReportDetailPage({
                   {currentLinkedAllocations.length === 0 ? (
                     <EmptyState text={t.noAllocationsLinked} />
                   ) : currentLinkedAllocations.map((link) => (
-                    <div key={link.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                    <div key={link.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{link.allocation.supplyCode}</p>
-                          <Link href={`/${locale}/admin/allocations/${link.allocationId}`} className="mt-2 block text-lg font-semibold text-foreground transition-colors hover:text-gold-100">{link.allocation.productName}</Link>
+                          <Link href={`/${locale}/admin/allocations/${link.allocationId}`} className="mt-2 block text-lg font-semibold text-foreground transition-colors hover:text-amber-700 dark:hover:text-gold-100">{link.allocation.productName}</Link>
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.includedBy} {link.includedBy} {t.includedOn} {fmt.dateTime(link.includedAt)}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -1129,7 +1129,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.eligibleAllocationsTitle}</CardTitle>
                   <CardDescription>{t.eligibleAllocationsDesc}</CardDescription>
@@ -1138,7 +1138,7 @@ export function AdminReportDetailPage({
                   {currentEligibleAllocations.length === 0 ? (
                     <EmptyState text={t.noEligibleAllocations} />
                   ) : currentEligibleAllocations.map((allocation) => (
-                    <div key={allocation.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                    <div key={allocation.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
@@ -1167,7 +1167,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.proofSnapshotTitle}</CardTitle>
                   <CardDescription>{t.proofSnapshotDesc}</CardDescription>
@@ -1179,7 +1179,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.frozenSnapshotTitle}</CardTitle>
                   <CardDescription>{t.frozenSnapshotDesc}</CardDescription>
@@ -1188,7 +1188,7 @@ export function AdminReportDetailPage({
                   {currentReport.allocationSnapshot.length === 0 ? (
                     <EmptyState text={t.noAllocationSummary} />
                   ) : currentReport.allocationSnapshot.map((allocation) => (
-                    <div key={allocation.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                    <div key={allocation.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
@@ -1211,7 +1211,7 @@ export function AdminReportDetailPage({
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.lifecycleTitle}</CardTitle>
                   <CardDescription>{t.lifecycleDesc}</CardDescription>
@@ -1220,7 +1220,7 @@ export function AdminReportDetailPage({
                   {lifecycle.length === 0 ? (
                     <EmptyState text={t.noLifecycleEvents} />
                   ) : lifecycle.map((item) => (
-                    <div key={item.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                    <div key={item.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold text-foreground">{item.label}</p>
@@ -1244,7 +1244,7 @@ function TextField({ label, value, disabled, onChange }: { label: string; value:
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <input value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60" />
+      <input value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60" />
     </label>
   );
 }
@@ -1253,14 +1253,14 @@ function TextArea({ label, value, disabled, onChange }: { label: string; value: 
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <textarea value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60" />
+      <textarea value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="min-h-24 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60" />
     </label>
   );
 }
 
 function AdminNotice({ tone, message }: { tone: "success" | "error"; message: string }) {
   return (
-    <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>
+    <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>
       {message}
     </div>
   );
@@ -1268,7 +1268,7 @@ function AdminNotice({ tone, message }: { tone: "success" | "error"; message: st
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
       <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>
     </div>
@@ -1279,9 +1279,9 @@ function ProofBreakdown({ title, summary, emptyText, locale }: { title: string; 
   const entries = proofEntries(summary);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <div className="mb-4 flex items-center gap-2">
-        <FileText className="size-4 text-gold-100" />
+        <FileText className="size-4 text-amber-700 dark:text-gold-100" />
         <p className="text-sm font-semibold text-foreground">{title}</p>
       </div>
       {entries.length === 0 ? (
@@ -1305,7 +1305,7 @@ function ProofBreakdown({ title, summary, emptyText, locale }: { title: string; 
 
 function PublishGateNotice({ readiness, t }: { readiness: ReadinessEvaluation | null; t: Strings }) {
   if (!readiness) {
-    return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.publishGateEvaluate}</div>;
+    return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.publishGateEvaluate}</div>;
   }
 
   const message =
@@ -1318,7 +1318,7 @@ function PublishGateNotice({ readiness, t }: { readiness: ReadinessEvaluation | 
           : t.publishGateBlocked;
 
   return (
-    <div className="rounded-[1.35rem] border border-gold-200/20 bg-gold-200/10 p-4 text-sm leading-6 text-gold-100">
+    <div className="rounded-[1.35rem] border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm leading-6 text-amber-700 dark:text-gold-100">
       {message}
     </div>
   );
@@ -1328,14 +1328,14 @@ function ReadinessGroup({ title, items, emptyText, t, showPassed = false }: { ti
   const visibleItems = showPassed ? items : items.filter((item) => !item.passed);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-sm font-semibold text-foreground">{title}</p>
       {visibleItems.length === 0 ? (
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p>
       ) : (
         <div className="mt-3 grid gap-2">
           {visibleItems.map((item) => (
-            <div key={item.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <div key={item.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 <Badge variant={item.passed ? "secondary" : "default"}>{item.passed ? t.passed : item.severity}</Badge>
@@ -1350,15 +1350,15 @@ function ReadinessGroup({ title, items, emptyText, t, showPassed = false }: { ti
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center text-sm text-muted-foreground">{text}</div>;
+  return <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-6 text-center text-sm text-muted-foreground">{text}</div>;
 }
 
 function RiskTimelineSelectField({ label, value, options, onChange, formatOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; formatOption?: (value: string) => string }) {
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-        {options.map((option) => <option key={option} value={option} className="bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+        {options.map((option) => <option key={option} value={option} className="bg-card dark:bg-graphite-900">{formatOption ? formatOption(option) : option}</option>)}
       </select>
     </label>
   );
@@ -1398,13 +1398,13 @@ function RiskTimelineCard({ title, description, events: initialEvents, endpoint,
   }
 
   return (
-    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+        <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_160px_120px]">
             <RiskTimelineSelectField label={t.timelineSource} value={filters.source} options={RISK_TIMELINE_SOURCE_FILTERS} onChange={(value) => void reloadTimeline({ ...filters, source: value as RiskTimelineSourceFilter })} formatOption={(option) => enumLabel("riskSource", option, locale)} />
             <RiskTimelineSelectField label={t.timelineLimit} value={filters.limit} options={RISK_TIMELINE_LIMIT_OPTIONS} onChange={(value) => void reloadTimeline({ ...filters, limit: value })} />
@@ -1412,12 +1412,12 @@ function RiskTimelineCard({ title, description, events: initialEvents, endpoint,
               <Badge variant="secondary" className="h-12 rounded-2xl px-4">{isLoading ? t.loading : `${events.length} ${t.shown}`}</Badge>
             </div>
           </div>
-          {filterError ? <p className="mt-3 text-sm leading-6 text-gold-100">{filterError}</p> : null}
+          {filterError ? <p className="mt-3 text-sm leading-6 text-amber-700 dark:text-gold-100">{filterError}</p> : null}
         </div>
         {events.length === 0 ? (
           <EmptyState text={emptyText} />
         ) : events.map((event) => (
-          <div key={event.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+          <div key={event.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -1445,11 +1445,11 @@ function RiskTimelineEventDetailsPanel({ event, t, locale }: { event: RiskTimeli
   const hasDiff = Boolean(details.currentLevel || details.currentScore !== null || details.previousLevel || details.previousScore !== null || details.newFactors.length || details.resolvedFactors.length || details.newBlockingIssues.length || details.resolvedBlockingIssues.length);
 
   if (!hasDiff) {
-    return <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.noDiffStored}</div>;
+    return <div className="mt-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm leading-6 text-muted-foreground">{t.noDiffStored}</div>;
   }
 
   return (
-    <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="mt-3 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <div className="grid gap-3 md:grid-cols-4">
         <RiskTimelineDetail label={t.detailLevel} value={`${formatRiskDetailValue(details.previousLevel)} -> ${formatRiskDetailValue(details.currentLevel)}`} />
         <RiskTimelineDetail label={t.detailScore} value={`${formatRiskDetailValue(details.previousScore)} -> ${formatRiskDetailValue(details.currentScore)}`} />
@@ -1469,7 +1469,7 @@ function RiskTimelineEventDetailsPanel({ event, t, locale }: { event: RiskTimeli
 
 function RiskTimelineDetail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
       <p className="mt-2 text-xs leading-5 text-foreground">{value}</p>
     </div>
@@ -1482,7 +1482,7 @@ function formatRiskDetailValue(value: string | number | null) {
 
 function RiskTimelineFactors({ title, items, t }: { title: string; items: RiskTimelineFactor[]; t: Strings }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
       {items.length === 0 ? (
         <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.none}</p>
@@ -1497,13 +1497,13 @@ function RiskTimelineFactors({ title, items, t }: { title: string; items: RiskTi
 
 function IssueSummary({ title, items, emptyText }: { title: string; items: Array<{ id: string; message: string }>; emptyText: string }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</p>
       {items.length === 0 ? (
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{emptyText}</p>
       ) : (
         <div className="mt-3 grid gap-2">
-          {items.map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-3 text-xs leading-5 text-gold-100">{item.message}</div>)}
+          {items.map((item) => <div key={item.id} className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-3 text-xs leading-5 text-amber-700 dark:text-gold-100">{item.message}</div>)}
         </div>
       )}
     </div>

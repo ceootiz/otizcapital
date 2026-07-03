@@ -187,10 +187,10 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
             <AdminNavigation locale={locale} activeSection="withdrawals" />
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.h1}</h1>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{t.desc}</p>
               </div>
@@ -201,17 +201,17 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-white/10 bg-black/20 p-2">
+          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-2">
             {STATUS_FILTERS.map((status) => (
-              <button key={status} type="button" onClick={() => setFilter(status)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${filter === status ? "bg-gold-200/15 text-gold-100" : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"}`}>{enumLabel("withdrawalStatus", status, locale)}</button>
+              <button key={status} type="button" onClick={() => setFilter(status)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${filter === status ? "bg-gold-300/25 dark:bg-gold-200/15 text-amber-700 dark:text-gold-100" : "text-muted-foreground hover:bg-muted/50 dark:hover:bg-white/[0.06] hover:text-foreground"}`}>{enumLabel("withdrawalStatus", status, locale)}</button>
             ))}
           </div>
 
           <div className="grid gap-4">
             {visibleWithdrawals.length === 0 ? (
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.emptyTitle}</p><p className="mt-2 text-sm text-muted-foreground">{t.emptyDesc}</p></CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardContent className="p-8 text-center"><CalendarClock className="mx-auto size-9 text-amber-700 dark:text-gold-100" /><p className="mt-4 font-semibold text-foreground">{t.emptyTitle}</p><p className="mt-2 text-sm text-muted-foreground">{t.emptyDesc}</p></CardContent></Card>
             ) : visibleWithdrawals.map((withdrawal) => (
-              <Card key={withdrawal.id} className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card key={withdrawal.id} className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -232,11 +232,11 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
                   <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                     <label className="grid gap-2">
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.scheduleDate}</span>
-                      <input type="date" value={scheduledFor[withdrawal.id] || ""} onChange={(event) => setScheduledFor((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" />
+                      <input type="date" value={scheduledFor[withdrawal.id] || ""} onChange={(event) => setScheduledFor((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none" />
                     </label>
                     <label className="grid gap-2">
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.adminNote}</span>
-                      <input value={adminNotes[withdrawal.id] || ""} onChange={(event) => setAdminNotes((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" />
+                      <input value={adminNotes[withdrawal.id] || ""} onChange={(event) => setAdminNotes((current) => ({ ...current, [withdrawal.id]: event.target.value }))} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none" />
                     </label>
                     <div className="flex flex-wrap gap-2">
                       <Button type="button" size="sm" variant="outline" disabled={pendingId === withdrawal.id || withdrawal.status !== "REQUESTED"} onClick={() => triggerAction(withdrawal, "approve")}>{t.approve}</Button>
@@ -273,9 +273,9 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>;
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>;
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>{message}</div>;
 }

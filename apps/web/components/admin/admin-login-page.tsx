@@ -87,10 +87,10 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
           <ArrowLeft className="size-4" />
           {t.backToHomepage}
         </Link>
-        <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
+        <Card className="overflow-hidden rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-200/70 to-transparent" />
           <CardHeader>
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-200/10 text-gold-100">
+            <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
               <LockKeyhole className="size-5" />
             </div>
             <CardTitle className="text-2xl">{t.heading}</CardTitle>
@@ -105,7 +105,7 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+                  className="h-[3.25rem] rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
                 />
               </label>
               {totpRequired ? (
@@ -120,12 +120,12 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
                     value={totpCode}
                     onChange={(event) => setTotpCode(event.target.value.replace(/[^0-9]/g, ""))}
                     autoFocus
-                    className="h-[3.25rem] rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center text-lg tracking-[0.5em] text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
+                    className="h-[3.25rem] rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-center text-lg tracking-[0.5em] text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15"
                   />
                   <span className="text-xs text-muted-foreground">{t.twoFactorHint}</span>
                 </label>
               ) : null}
-              {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-200/10 p-4 text-sm text-gold-100">{error}</p> : null}
+              {error ? <p className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{error}</p> : null}
               <Button type="submit" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? t.signingIn : t.signIn}
               </Button>

@@ -64,7 +64,7 @@ export function AdminSetup2faPage({
       </Link>
 
       <header className="mt-6 flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-200/70">{t.eyebrow}</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-gold-200/70">{t.eyebrow}</span>
         <h1 className="text-2xl font-semibold text-foreground">{t.title}</h1>
       </header>
 
@@ -78,7 +78,7 @@ export function AdminSetup2faPage({
         </div>
       ) : (
         <div className="mt-8 flex flex-col gap-6">
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <section className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-5">
             <p className="text-sm font-semibold text-foreground">{t.scanTitle}</p>
             <p className="mt-1 text-sm text-muted-foreground">{t.scanBody}</p>
             {otpauthUrl ? (
@@ -88,10 +88,10 @@ export function AdminSetup2faPage({
             ) : null}
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <section className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-5">
             <p className="text-sm font-semibold text-foreground">{t.secretTitle}</p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <code className="break-all rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-sm text-gold-100">{secret}</code>
+              <code className="break-all rounded-lg border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-3 py-2 font-mono text-sm text-amber-700 dark:text-gold-100">{secret}</code>
               <button
                 type="button"
                 onClick={() => {
@@ -101,16 +101,16 @@ export function AdminSetup2faPage({
                     window.setTimeout(() => setCopied(false), 2000);
                   }
                 }}
-                className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-full border border-border dark:border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
               >
                 {copied ? t.copied : t.copy}
               </button>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-gold-200/25 bg-gold-200/10 p-5">
-            <p className="text-sm font-semibold text-gold-100">{t.activateTitle}</p>
-            <p className="mt-1 text-sm leading-6 text-gold-100/90">{t.activateBody}</p>
+          <section className="rounded-2xl border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-5">
+            <p className="text-sm font-semibold text-amber-700 dark:text-gold-100">{t.activateTitle}</p>
+            <p className="mt-1 text-sm leading-6 text-amber-700 dark:text-gold-100/90">{t.activateBody}</p>
           </section>
 
           <p className="text-xs leading-5 text-muted-foreground">{t.warning}</p>

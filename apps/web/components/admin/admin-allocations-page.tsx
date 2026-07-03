@@ -233,7 +233,7 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
               <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.h1}</h1>
             </div>
             <AdminNavigation locale={locale} activeSection="allocations" />
@@ -242,7 +242,7 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
           {notice ? <Notice tone="success" message={notice} /> : null}
           {error ? <Notice tone="error" message={error} /> : null}
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.72]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
             <CardHeader><CardTitle>{t.createTitle}</CardTitle><CardDescription>{t.createDesc}</CardDescription></CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <SelectField label={t.fieldInvestor} value={draft.investorId} options={investors.map((investor) => ({ label: `${investor.fullName} · ${investor.email}`, value: investor.id }))} onChange={(value) => setDraft((current) => ({ ...current, investorId: value }))} />
@@ -267,19 +267,19 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
 
           <div className="grid gap-4">
             {visibleAllocations.length === 0 ? (
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t.emptyState}</CardContent></Card>
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t.emptyState}</CardContent></Card>
             ) : visibleAllocations.map((allocation) => {
               const stage = stageFromStatus(allocation.status, allocation.payoutStatus);
               const progress = progressFromStage(stage);
               return (
                 <Link key={allocation.id} href={`/${locale}/admin/allocations/${allocation.id}`} className="block">
-                  <Card className="rounded-[1.35rem] bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
+                  <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72] transition-colors hover:border-gold-200/30">
                     <CardContent className="p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode} · {allocation.investor.fullName}</p><h2 className="mt-2 text-xl font-semibold text-foreground">{allocation.productName}</h2></div>
                         <div className="flex flex-wrap gap-2"><Badge>{stage}</Badge><Badge variant="secondary">{enumLabel("riskLevel", allocation.riskLevel, locale)}</Badge><Badge variant="secondary">{allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : t.proofPending}</Badge></div>
                       </div>
-                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gold-200/70" style={{ width: `${progress}%` }} /></div>
+                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted/30 dark:bg-white/10"><div className="h-full rounded-full bg-gold-300/70 dark:bg-gold-200/70" style={{ width: `${progress}%` }} /></div>
                       <div className="mt-4 grid gap-3 md:grid-cols-5">
                         <Metric label={t.metricInvested} value={formatters.currency(Number(allocation.allocationAmount || 0))} />
                         <Metric label={t.metricExpectedReturn} value={allocation.estimatedResult || t.notEstimated} />
@@ -288,7 +288,7 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
                         <Metric label={t.metricProofScore} value={allocation.proofCompleteness ? `${allocation.proofCompleteness.score}% / ${allocation.proofCompleteness.policyThreshold}%` : t.notEvaluated} />
                         <Metric label={t.metricMissingEvidence} value={allocation.proofCompleteness ? [...allocation.proofCompleteness.missingRequiredCategories, ...allocation.proofCompleteness.missingRecommendedCategories].slice(0, 3).join(", ") || t.none : t.notEvaluated} />
                       </div>
-                      {allocation.proofCompleteness && allocation.proofCompleteness.score < allocation.proofCompleteness.policyThreshold ? <p className="mt-3 text-xs leading-5 text-gold-100">{t.belowThreshold}</p> : null}
+                      {allocation.proofCompleteness && allocation.proofCompleteness.score < allocation.proofCompleteness.policyThreshold ? <p className="mt-3 text-xs leading-5 text-amber-700 dark:text-gold-100">{t.belowThreshold}</p> : null}
                     </CardContent>
                   </Card>
                 </Link>
@@ -302,17 +302,17 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
 }
 
 function TextField({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) {
-  return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none" /></label>;
+  return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none" /></label>;
 }
 
 function SelectField({ label, value, options, onChange }: { label: string; value: string; options: Array<{ label: string; value: string }>; onChange: (value: string) => void }) {
-  return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">{options.map((option) => <option key={option.value} value={option.value} className="bg-graphite-900">{option.label}</option>)}</select></label>;
+  return <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">{options.map((option) => <option key={option.value} value={option.value} className="bg-card dark:bg-graphite-900">{option.label}</option>)}</select></label>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>;
+  return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>;
 }
 
 function Notice({ tone, message }: { tone: "success" | "error"; message: string }) {
-  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>{message}</div>;
+  return <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>{message}</div>;
 }

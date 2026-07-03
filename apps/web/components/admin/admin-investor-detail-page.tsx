@@ -499,10 +499,10 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
             <AdminNavigation locale={locale} activeSection="investors" />
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.EYEBROW}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.EYEBROW}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{investor.fullName}</h1>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">{investor.email} {investor.telegram ? `· ${investor.telegram}` : ""}</p>
               </div>
@@ -525,7 +525,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
           <div className="grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
             <div className="grid gap-6">
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.EDIT_INVESTOR_TITLE}</CardTitle>
                   <CardDescription>{t.EDIT_INVESTOR_DESC}</CardDescription>
@@ -533,19 +533,19 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 <CardContent className="grid gap-4">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
-                    <select value={investorDraft.status} onChange={(event) => setInvestorDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                      {INVESTOR_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("investorStatus", status, locale)}</option>)}
+                    <select value={investorDraft.status} onChange={(event) => setInvestorDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+                      {INVESTOR_STATUSES.map((status) => <option key={status} value={status} className="bg-card dark:bg-graphite-900">{enumLabel("investorStatus", status, locale)}</option>)}
                     </select>
                   </label>
                   <CrmInput label={t.LABEL_TOTAL_CAPITAL} value={investorDraft.totalCapital} onChange={(value) => setInvestorDraft((current) => ({ ...current, totalCapital: value }))} placeholder={t.PH_TOTAL_CAPITAL} />
-                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-muted-foreground">
+                  <label className="flex items-center gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm text-muted-foreground">
                     <input type="checkbox" checked={investorDraft.reinvestEnabled} onChange={(event) => setInvestorDraft((current) => ({ ...current, reinvestEnabled: event.target.checked }))} />
                     {t.LABEL_REINVEST_ENABLED}
                   </label>
                   <CrmInput label={t.LABEL_LAST_REPORT_DATE} type="date" value={investorDraft.lastReportAt} onChange={(value) => setInvestorDraft((current) => ({ ...current, lastReportAt: value }))} placeholder="" />
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_NOTES}</span>
-                    <textarea value={investorDraft.notes} onChange={(event) => setInvestorDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-28 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
+                    <textarea value={investorDraft.notes} onChange={(event) => setInvestorDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-28 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                   </label>
                   <Button type="button" disabled={isSavingInvestor} onClick={saveInvestor}>
                     <Save data-icon="inline-start" />
@@ -554,28 +554,28 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.SOURCE_APPLICATION_TITLE}</CardTitle>
                   <CardDescription>{t.SOURCE_APPLICATION_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {investor.sourceApplication ? (
-                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <p className="font-semibold text-foreground">{investor.sourceApplication.fullName}</p>
                       <p className="mt-2 text-sm text-muted-foreground">{investor.sourceApplication.email || t.NO_EMAIL} · {enumLabel("applicationStatus", investor.sourceApplication.status, locale)}</p>
                       <p className="mt-2 text-sm text-muted-foreground">{t.PLANNED_ALLOCATION} {formatMoney(investor.sourceApplication.plannedAllocationAmount)}</p>
-                      <Link href={`/${locale}/admin/applications?search=${investor.sourceApplication.id}`} className="mt-3 inline-flex text-sm font-semibold text-gold-100">{t.OPEN_SOURCE_APPLICATION}</Link>
+                      <Link href={`/${locale}/admin/applications?search=${investor.sourceApplication.id}`} className="mt-3 inline-flex text-sm font-semibold text-amber-700 dark:text-gold-100">{t.OPEN_SOURCE_APPLICATION}</Link>
                     </div>
                   ) : (
-                    <p className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground">{t.NO_SOURCE_APPLICATION}</p>
+                    <p className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-muted-foreground">{t.NO_SOURCE_APPLICATION}</p>
                   )}
                 </CardContent>
               </Card>
             </div>
 
             <div className="grid gap-6">
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.CREATE_ALLOCATION_TITLE}</CardTitle>
                   <CardDescription>{t.CREATE_ALLOCATION_DESC}</CardDescription>
@@ -588,15 +588,15 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                   <CrmInput label={t.LABEL_CURRENCY} value={allocationDraft.currency} onChange={(value) => setAllocationDraft((current) => ({ ...current, currency: value }))} placeholder={t.PH_CURRENCY} />
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
-                    <select value={allocationDraft.status} onChange={(event) => setAllocationDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                      {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
+                    <select value={allocationDraft.status} onChange={(event) => setAllocationDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+                      {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-card dark:bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
                     </select>
                   </label>
                   <CrmInput label={t.LABEL_EXPECTED_CYCLE_DAYS} value={allocationDraft.expectedCycleDays} onChange={(value) => setAllocationDraft((current) => ({ ...current, expectedCycleDays: value }))} placeholder={t.PH_EXPECTED_CYCLE_DAYS} />
                   <CrmInput label={t.LABEL_ESTIMATED_RESULT} value={allocationDraft.estimatedResult} onChange={(value) => setAllocationDraft((current) => ({ ...current, estimatedResult: value }))} placeholder={t.PH_ESTIMATED_RESULT} />
                   <label className="grid gap-2 md:col-span-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_NOTES}</span>
-                    <textarea value={allocationDraft.notes} onChange={(event) => setAllocationDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
+                    <textarea value={allocationDraft.notes} onChange={(event) => setAllocationDraft((current) => ({ ...current, notes: event.target.value }))} className="min-h-24 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                   </label>
                   <div className="md:col-span-2">
                     <Button type="button" disabled={isCreatingAllocation} onClick={createAllocation}>
@@ -607,21 +607,21 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.ALLOCATIONS_TITLE}</CardTitle>
                   <CardDescription>{t.ALLOCATIONS_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   {investor.allocations.length === 0 ? (
-                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center">
-                      <ShieldCheck className="mx-auto size-8 text-gold-100" />
+                    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-6 text-center">
+                      <ShieldCheck className="mx-auto size-8 text-amber-700 dark:text-gold-100" />
                       <p className="mt-4 font-semibold text-foreground">{t.NO_ALLOCATIONS_TITLE}</p>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_ALLOCATIONS_DESC}</p>
                     </div>
                   ) : (
                     investor.allocations.map((allocation) => (
-                      <div key={allocation.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                      <div key={allocation.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                         <Link href={`/${locale}/admin/allocations/${allocation.id}`} className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{allocation.supplyCode}</p>
@@ -640,8 +640,8 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                           <label className="grid gap-2">
                             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_UPDATE_STATUS}</span>
-                            <select defaultValue={allocation.status} onChange={(event) => updateAllocation(allocation, { status: event.target.value })} disabled={updatingAllocationId === allocation.id} className="h-11 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                              {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
+                            <select defaultValue={allocation.status} onChange={(event) => updateAllocation(allocation, { status: event.target.value })} disabled={updatingAllocationId === allocation.id} className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+                              {ALLOCATION_STATUSES.map((status) => <option key={status} value={status} className="bg-card dark:bg-graphite-900">{enumLabel("allocationStatus", status, locale)}</option>)}
                             </select>
                           </label>
                           <CrmInput label={t.LABEL_ACTUAL_PROFIT} value={allocation.actualProfit || ""} onChange={(value) => updateAllocation(allocation, { actualProfit: value || null })} placeholder={t.PH_ACTUAL_PROFIT} />
@@ -653,7 +653,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
                   <CardTitle>{t.REPORTS_TITLE}</CardTitle>
                   <CardDescription>{t.REPORTS_DESC}</CardDescription>
@@ -664,14 +664,14 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                     <CrmInput label={t.LABEL_TITLE} value={reportDraft.title} onChange={(value) => setReportDraft((current) => ({ ...current, title: value }))} placeholder={t.PH_TITLE} />
                     <label className="grid gap-2 md:col-span-2">
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_SUMMARY}</span>
-                      <textarea value={reportDraft.summary} onChange={(event) => setReportDraft((current) => ({ ...current, summary: event.target.value }))} className="min-h-24 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
+                      <textarea value={reportDraft.summary} onChange={(event) => setReportDraft((current) => ({ ...current, summary: event.target.value }))} className="min-h-24 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none" />
                     </label>
                     <CrmInput label={t.LABEL_PERFORMANCE_NOTE} value={reportDraft.performanceNote} onChange={(value) => setReportDraft((current) => ({ ...current, performanceNote: value }))} placeholder={t.PH_PERFORMANCE_NOTE} />
                     <CrmInput label={t.LABEL_PAYOUT_NOTE} value={reportDraft.payoutNote} onChange={(value) => setReportDraft((current) => ({ ...current, payoutNote: value }))} placeholder={t.PH_PAYOUT_NOTE} />
                     <label className="grid gap-2">
                       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.LABEL_STATUS}</span>
-                      <select value={reportDraft.status} onChange={(event) => setReportDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none">
-                        {REPORT_STATUSES.map((status) => <option key={status} value={status} className="bg-graphite-900">{enumLabel("reportStatus", status, locale)}</option>)}
+                      <select value={reportDraft.status} onChange={(event) => setReportDraft((current) => ({ ...current, status: event.target.value }))} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none">
+                        {REPORT_STATUSES.map((status) => <option key={status} value={status} className="bg-card dark:bg-graphite-900">{enumLabel("reportStatus", status, locale)}</option>)}
                       </select>
                     </label>
                     <div className="flex items-end">
@@ -680,17 +680,17 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                   </div>
                   <Separator />
                   {investor.monthlyReports.length === 0 ? (
-                    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-6 text-center">
+                    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-6 text-center">
                       <p className="font-semibold text-foreground">{t.NO_REPORTS_TITLE}</p>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.NO_REPORTS_DESC}</p>
                     </div>
                   ) : (
                     investor.monthlyReports.map((report) => (
-                      <div key={report.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                      <div key={report.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{report.month}</p>
-                            <Link href={`/${locale}/admin/reports/${report.id}`} className="mt-2 block text-lg font-semibold text-foreground transition-colors hover:text-gold-100">{report.title}</Link>
+                            <Link href={`/${locale}/admin/reports/${report.id}`} className="mt-2 block text-lg font-semibold text-foreground transition-colors hover:text-amber-700 dark:hover:text-gold-100">{report.title}</Link>
                             <p className="mt-2 text-sm leading-6 text-muted-foreground">{report.summary}</p>
                           </div>
                           <Badge>{enumLabel("reportStatus", report.status, locale)}</Badge>
@@ -705,7 +705,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                             <Button key={status} type="button" variant="outline" size="sm" disabled={updatingReportId === report.id || report.status === status} onClick={() => updateReport(report, { status })}>{enumLabel("reportStatus", status, locale)}</Button>
                           ))}
                           <Button type="button" size="sm" disabled={updatingReportId === report.id || report.status === "PUBLISHED"} onClick={() => updateReport(report, { status: "PUBLISHED" })}>{t.PUBLISH}</Button>
-                          <Link href={`/${locale}/admin/reports/${report.id}`} className="inline-flex h-9 items-center rounded-full border border-white/10 px-4 text-sm font-semibold text-gold-100 transition-colors hover:bg-white/[0.06]">{t.OPEN_REPORT}</Link>
+                          <Link href={`/${locale}/admin/reports/${report.id}`} className="inline-flex h-9 items-center rounded-full border border-border dark:border-white/10 px-4 text-sm font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-muted/50 dark:hover:bg-white/[0.06]">{t.OPEN_REPORT}</Link>
                         </div>
                       </div>
                     ))
@@ -726,7 +726,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
@@ -737,7 +737,7 @@ function KpiCard({ label, value }: { label: string; value: string }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] p-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
       <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>
     </div>
@@ -748,14 +748,14 @@ function CrmInput({ label, value, onChange, placeholder, type = "text" }: { labe
   return (
     <label className="grid gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60" />
+      <input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60" />
     </label>
   );
 }
 
 function AdminNotice({ tone, message }: { tone: "success" | "error"; message: string }) {
   return (
-    <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-200/10 text-gold-100" : "border-white/10 bg-black/30 text-foreground"}`}>
+    <div className={`mb-6 rounded-[1.35rem] border p-4 text-sm ${tone === "success" ? "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 text-foreground"}`}>
       {message}
     </div>
   );
@@ -876,13 +876,13 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
   }
 
   return (
-    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardHeader>
         <CardTitle>{t.title}</CardTitle>
         <CardDescription>{t.desc}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+        <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] p-4">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.agreementTitle}</p>
           <p className="mt-2 text-sm text-foreground">
             {agreement === null
@@ -896,18 +896,18 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
         <div className="flex flex-wrap items-center gap-3">
           <a
             href={`/api/admin/investors/${investorId}/report-template`}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 text-sm font-semibold text-gold-100 transition-colors hover:bg-white/[0.08]"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] px-5 text-sm font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-muted/50 dark:hover:bg-white/[0.08]"
           >
             {t.downloadTemplate}
           </a>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+        <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] p-4">
           <p className="text-sm font-semibold text-foreground">{t.uploadTitle}</p>
           <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
             <label className="grid gap-2">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.monthLabel}</span>
-              <input value={month} onChange={(event) => setMonth(event.target.value)} placeholder={t.monthPlaceholder} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60" />
+              <input value={month} onChange={(event) => setMonth(event.target.value)} placeholder={t.monthPlaceholder} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60" />
             </label>
             <label className="grid gap-2">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.chooseFile}</span>
@@ -916,7 +916,7 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
                 type="file"
                 accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                className="h-12 rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none file:mr-3 file:rounded-full file:border-0 file:bg-gold-200/15 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-gold-100"
+                className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3 py-2.5 text-sm text-foreground outline-none file:mr-3 file:rounded-full file:border-0 file:bg-gold-300/25 dark:bg-gold-200/15 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-amber-700 dark:text-gold-100"
               />
             </label>
             <Button type="button" disabled={isUploading} onClick={upload}>{isUploading ? t.uploading : t.upload}</Button>
@@ -939,12 +939,12 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
               </thead>
               <tbody>
                 {reports.map((report) => (
-                  <tr key={report.id} className="border-t border-white/10">
+                  <tr key={report.id} className="border-t border-border dark:border-white/10">
                     <td className="py-3 pr-4 text-foreground">{report.fileName}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{report.month}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{fmt.date(new Date(report.uploadedAt))}</td>
                     <td className="py-3 text-right">
-                      <a href={`/api/admin/investors/${investorId}/reports/${report.id}/download`} className="font-semibold text-gold-100 hover:underline">{t.download}</a>
+                      <a href={`/api/admin/investors/${investorId}/reports/${report.id}/download`} className="font-semibold text-amber-700 dark:text-gold-100 hover:underline">{t.download}</a>
                     </td>
                   </tr>
                 ))}

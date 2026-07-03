@@ -1236,7 +1236,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(25rem,0.84fr)]">
-            <Card className="overflow-hidden rounded-[1.35rem] bg-graphite-900/[0.78]">
+            <Card className="overflow-hidden rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
@@ -1264,8 +1264,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                         onClick={() => applySavedView(view.key)}
                         className={`rounded-2xl border p-3 text-left transition-colors ${
                           isActive
-                            ? "border-gold-200/35 bg-gold-200/10 text-foreground"
-                            : "border-white/10 bg-black/20 text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+                            ? "border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 text-foreground"
+                            : "border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 text-muted-foreground hover:bg-muted/50 dark:hover:bg-white/[0.05] hover:text-foreground"
                         }`}
                       >
                         <span className="flex items-center justify-between gap-3">
@@ -1277,7 +1277,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                     );
                   })}
                 </div>
-                <div className="mb-4 flex flex-wrap gap-2 rounded-[1.35rem] border border-white/10 bg-black/15 p-3">
+                <div className="mb-4 flex flex-wrap gap-2 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/15 p-3">
                   {SLA_QUICK_FILTER_KEYS.map((filterKey) => {
                     const isActive = slaFilter === filterKey;
                     const description = filterKey === "first-contact-overdue" ? t.slaDescFirstContact : filterKey === "due-soon" ? t.slaDescDueSoon : t.slaDescHighValue;
@@ -1292,8 +1292,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                         }}
                         className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
                           isActive
-                            ? "border-gold-200/35 bg-gold-200/10 text-gold-100"
-                            : "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
+                            ? "border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100"
+                            : "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] text-muted-foreground hover:text-foreground"
                         }`}
                         title={description}
                       >
@@ -1304,7 +1304,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   })}
                 </div>
                 <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_11rem_11rem_13rem]">
-                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
+                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-muted-foreground">
                     <Search className="size-4" />
                     <input
                       aria-label={t.searchAria}
@@ -1324,7 +1324,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   </div>
                 </div>
                 <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_12rem_15rem_8rem]">
-                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
+                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-muted-foreground">
                     <Search className="size-4" />
                     <input
                       aria-label={t.searchSourceAria}
@@ -1344,7 +1344,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                     options={reinvestInterestOptions}
                     renderOption={(value) => (value === "ALL" ? t.all : enumLabel("reinvestInterest", value, locale))}
                   />
-                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-muted-foreground">
+                  <label className="flex h-12 items-center gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-muted-foreground">
                     <input type="checkbox" checked={overdueOnly} onChange={(event) => { setOverdueOnly(event.target.checked); setPage(1); }} aria-label={t.overdueCheckboxAria} />
                     <span>{t.overdueNextActions}</span>
                   </label>
@@ -1354,8 +1354,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                 {notice ? <AdminNotice tone="success" message={notice} /> : null}
                 {error ? <AdminNotice tone="error" message={error} /> : null}
 
-                <div className="overflow-hidden rounded-[1.35rem] border border-white/10">
-                  <div className="hidden grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] gap-3 border-b border-white/10 bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
+                <div className="overflow-hidden rounded-[1.35rem] border border-border dark:border-white/10">
+                  <div className="hidden grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] gap-3 border-b border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:grid">
                     <span>{t.colLead}</span>
                     <span>{t.colPriority}</span>
                     <span>{t.colStatus}</span>
@@ -1377,8 +1377,8 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                           key={application.id}
                           type="button"
                           onClick={() => setSelectedId(application.id)}
-                          className={`grid w-full gap-3 border-b border-white/10 p-4 text-left transition-colors last:border-b-0 lg:grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] lg:items-center ${
-                            selectedApplication?.id === application.id ? "bg-gold-200/10" : "bg-white/[0.02] hover:bg-white/[0.045]"
+                          className={`grid w-full gap-3 border-b border-border dark:border-white/10 p-4 text-left transition-colors last:border-b-0 lg:grid-cols-[1.2fr_0.62fr_0.7fr_0.72fr_0.88fr_0.9fr_0.86fr] lg:items-center ${
+                            selectedApplication?.id === application.id ? "bg-gold-300/20 dark:bg-gold-200/10" : "bg-muted/30 dark:bg-white/[0.02] hover:bg-muted/50 dark:hover:bg-white/[0.045]"
                           } ${application.priority === "VIP" ? "ring-1 ring-gold-200/20" : ""}`}
                         >
                           <span className="flex flex-col gap-2">
@@ -1403,7 +1403,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
                   )}
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 rounded-[1.35rem] border border-white/10 bg-black/20 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-5 flex flex-col gap-3 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                   <span>{t.pageLabel} {pageInfo.page} {t.ofLabel} {pageInfo.totalPages} · {applications.length} {t.shownLabel} · {pageInfo.total} {t.totalSuffix}</span>
                   <div className="flex gap-2">
                     <Button type="button" variant="outline" size="sm" disabled={isLoading || !pageInfo.hasPreviousPage} onClick={() => setPage((current) => Math.max(1, current - 1))}>{t.previous}</Button>
@@ -1437,7 +1437,7 @@ function CrmRulesCard({ config, locale }: { config: CrmConfig; locale: Locale })
   const f = createAdminFormatters(locale);
 
   return (
-    <Card className="mb-6 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.58]">
+    <Card className="mb-6 rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.58]">
       <CardContent className="grid gap-4 px-5 py-4 sm:grid-cols-2 xl:grid-cols-4">
         <RuleMetric label={t.ruleFirstContactSla} value={formatHours(config.firstContactSlaHours, f, t)} />
         <RuleMetric label={t.ruleDueSoonWindow} value={formatHours(config.nextActionDueSoonHours, f, t)} />
@@ -1480,10 +1480,10 @@ function NotificationProcessorPanel({
   const isDisabled = isLoading || isProcessing || pendingCount === 0;
 
   return (
-    <Card className="mb-6 rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.64]">
+    <Card className="mb-6 rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.64]">
       <CardContent className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
             <BellRing className="size-5" />
           </span>
           <div>
@@ -1492,11 +1492,11 @@ function NotificationProcessorPanel({
               {summary.deliveryEnabled ? t.notificationWorkerDescEnabled : t.notificationWorkerDescDisabled}
             </p>
             {result ? (
-              <p className="mt-2 text-xs leading-5 text-gold-100">
+              <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">
                 {t.processedLabel} {formatInteger(result.processed, f)} · {t.skippedSuffix} {formatInteger(result.skipped, f)} · {t.failedSuffix} {formatInteger(result.failed, f)}
               </p>
             ) : null}
-            {error ? <p className="mt-2 text-xs leading-5 text-gold-100">{error}</p> : null}
+            {error ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{error}</p> : null}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -1515,7 +1515,7 @@ function NotificationProcessorPanel({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="rounded-[1.35rem] border border-white/10 bg-graphite-900/[0.64]">
+    <Card className="rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.64]">
       <CardContent className="px-5 py-4">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
@@ -1529,20 +1529,20 @@ function QueueCountBadge({ value, isLoading, hasError, locale }: { value: number
   const f = createAdminFormatters(locale);
 
   if (isLoading) {
-    return <span aria-label={t.loadingQueueCount} className="h-5 w-9 rounded-full border border-white/10 bg-white/[0.06] opacity-70 animate-pulse" />;
+    return <span aria-label={t.loadingQueueCount} className="h-5 w-9 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.06] opacity-70 animate-pulse" />;
   }
 
   if (hasError || typeof value !== "number") {
-    return <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[0.68rem] font-semibold text-muted-foreground">—</span>;
+    return <span className="rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] px-2 py-0.5 text-[0.68rem] font-semibold text-muted-foreground">—</span>;
   }
 
-  return <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.68rem] font-semibold text-foreground">{formatInteger(value, f)}</span>;
+  return <span className="rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.05] px-2 py-0.5 text-[0.68rem] font-semibold text-foreground">{formatInteger(value, f)}</span>;
 }
 
 function CrmSelect({ label, value, options, onChange, renderOption }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; renderOption?: (value: string) => string }) {
   return (
-    <select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
-      {options.map((option) => <option key={option} value={option} className="bg-graphite-900 text-foreground">{renderOption ? renderOption(option) : option}</option>)}
+    <select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
+      {options.map((option) => <option key={option} value={option} className="bg-card dark:bg-graphite-900 text-foreground">{renderOption ? renderOption(option) : option}</option>)}
     </select>
   );
 }
@@ -1551,16 +1551,16 @@ function SortSelect({ value, onChange, locale }: { value: InvestorApplicationSor
   const t = getStrings(locale);
 
   return (
-    <select aria-label={t.sortAria} value={value} onChange={(event) => onChange(event.target.value as InvestorApplicationSort)} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
+    <select aria-label={t.sortAria} value={value} onChange={(event) => onChange(event.target.value as InvestorApplicationSort)} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
       {INVESTOR_APPLICATION_SORT_OPTIONS.map((option) => (
-        <option key={option} value={option} className="bg-graphite-900 text-foreground">{enumLabel("applicationSort", option, locale)}</option>
+        <option key={option} value={option} className="bg-card dark:bg-graphite-900 text-foreground">{enumLabel("applicationSort", option, locale)}</option>
       ))}
     </select>
   );
 }
 
 function AdminNotice({ message, tone }: { message: string; tone: "success" | "error" }) {
-  const toneClass = tone === "success" ? "border-gold-200/20 bg-gold-200/10 text-gold-100" : "border-red-300/20 bg-red-500/10 text-red-100";
+  const toneClass = tone === "success" ? "border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-red-300/20 bg-red-500/10 text-red-100";
   return <div className={`mb-5 flex items-center gap-3 rounded-2xl border p-4 text-sm ${toneClass}`}><CheckCircle2 className="size-4" />{message}</div>;
 }
 
@@ -1595,13 +1595,13 @@ function PendingWithdrawalsWidget({ locale, template }: { locale: Locale; templa
   return (
     <Link
       href={`/${locale}/admin/withdrawals`}
-      className="mb-6 flex items-center justify-between gap-4 rounded-[1.35rem] border border-gold-200/30 bg-gold-200/10 p-5 transition-colors hover:bg-gold-200/15"
+      className="mb-6 flex items-center justify-between gap-4 rounded-[1.35rem] border border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 p-5 transition-colors hover:bg-gold-300/30 dark:hover:bg-gold-200/15"
     >
-      <span className="flex items-center gap-3 text-sm font-semibold text-gold-100">
+      <span className="flex items-center gap-3 text-sm font-semibold text-amber-700 dark:text-gold-100">
         <CalendarClock className="size-5" />
         {label}
       </span>
-      <ArrowRight className="size-4 text-gold-100" />
+      <ArrowRight className="size-4 text-amber-700 dark:text-gold-100" />
     </Link>
   );
 }
@@ -1616,7 +1616,7 @@ function OverdueBadge({ value, locale }: { value: string; locale: Locale }) {
   const f = createAdminFormatters(locale);
   const overdue = isOverdue(value);
   return (
-    <span className={`inline-flex w-fit items-center gap-1 rounded-full border px-2 py-1 text-[0.68rem] ${overdue ? "border-gold-200/30 bg-gold-200/10 text-gold-100" : "border-white/10 bg-white/[0.04] text-muted-foreground"}`}>
+    <span className={`inline-flex w-fit items-center gap-1 rounded-full border px-2 py-1 text-[0.68rem] ${overdue ? "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100" : "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] text-muted-foreground"}`}>
       <Clock3 className="size-3" />
       {overdue ? t.overdueWord : formatDateTime(value, f)}
     </span>
@@ -1624,16 +1624,16 @@ function OverdueBadge({ value, locale }: { value: string; locale: Locale }) {
 }
 
 function getSlaBadgeClass(tone: "attention" | "urgent" | "value") {
-  if (tone === "urgent") return "border-gold-200/40 bg-gold-200/14 text-gold-100";
-  if (tone === "value") return "border-white/15 bg-white/[0.06] text-foreground";
-  return "border-gold-200/25 bg-gold-200/8 text-gold-100";
+  if (tone === "urgent") return "border-gold-200/40 bg-gold-300/25 dark:bg-gold-200/14 text-amber-700 dark:text-gold-100";
+  if (tone === "value") return "border-border dark:border-white/15 bg-muted/30 dark:bg-white/[0.06] text-foreground";
+  return "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/8 text-amber-700 dark:text-gold-100";
 }
 
 function getPriorityReasonClass(tone: ApplicationPriorityReason["tone"]) {
-  if (tone === "urgent") return "border-gold-200/40 bg-gold-200/14 text-gold-100";
-  if (tone === "value") return "border-white/15 bg-white/[0.06] text-foreground";
-  if (tone === "attention") return "border-gold-200/25 bg-gold-200/8 text-gold-100";
-  return "border-white/10 bg-white/[0.04] text-muted-foreground";
+  if (tone === "urgent") return "border-gold-200/40 bg-gold-300/25 dark:bg-gold-200/14 text-amber-700 dark:text-gold-100";
+  if (tone === "value") return "border-border dark:border-white/15 bg-muted/30 dark:bg-white/[0.06] text-foreground";
+  if (tone === "attention") return "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/8 text-amber-700 dark:text-gold-100";
+  return "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] text-muted-foreground";
 }
 
 function SlaBadges({ state, compact = false, locale }: { state: ApplicationSlaState; compact?: boolean; locale: Locale }) {
@@ -1654,7 +1654,7 @@ function PriorityReasonsPanel({ reasons, locale }: { reasons: ApplicationPriorit
   const t = getStrings(locale);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.whyPrioritized}</p>
       {reasons.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2">
@@ -1677,9 +1677,9 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
 
   if (application.investor) {
     return (
-      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-4">
+      <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-4">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/25 bg-black/20 text-gold-100">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold-200/25 bg-muted/30 dark:bg-black/20 text-amber-700 dark:text-gold-100">
             <Users className="size-4" />
           </span>
           <div className="min-w-0">
@@ -1697,7 +1697,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
 
   if (application.status !== "APPROVED") {
     return (
-      <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+      <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.approveBeforeCreate}</p>
       </div>
@@ -1705,7 +1705,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
   }
 
   return (
-    <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-200/10 p-4">
+    <div className="rounded-[1.35rem] border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.investorAccount}</p>
@@ -1716,7 +1716,7 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
           {isCreating ? t.creating : t.createInvestorAccount}
         </Button>
       </div>
-      {!application.email ? <p className="mt-3 text-xs text-gold-100">{t.emailRequired}</p> : null}
+      {!application.email ? <p className="mt-3 text-xs text-amber-700 dark:text-gold-100">{t.emailRequired}</p> : null}
     </div>
   );
 }
@@ -1725,7 +1725,7 @@ function SlaIndicatorPanel({ state, locale }: { state: ApplicationSlaState; loca
   const t = getStrings(locale);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+    <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.slaIndicators}</p>
       {state.badges.length > 0 ? (
         <SlaBadges state={state} locale={locale} />
@@ -1739,7 +1739,7 @@ function SlaIndicatorPanel({ state, locale }: { state: ApplicationSlaState; loca
 function QueueEmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="flex min-h-52 flex-col items-center justify-center p-8 text-center">
-      <FileText className="size-8 text-gold-100" />
+      <FileText className="size-8 text-amber-700 dark:text-gold-100" />
       <p className="mt-4 font-semibold text-foreground">{title}</p>
       <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
@@ -1799,9 +1799,9 @@ function ApplicationDetail({
 
   if (!application) {
     return (
-      <Card className="rounded-[1.35rem] bg-white/[0.035]">
+      <Card className="rounded-[1.35rem] bg-muted/30 dark:bg-white/[0.035]">
         <CardContent className="flex min-h-96 flex-col items-center justify-center p-8 text-center">
-          <FileText className="size-10 text-gold-100" />
+          <FileText className="size-10 text-amber-700 dark:text-gold-100" />
           <p className="mt-5 font-semibold text-foreground">{t.selectApplication}</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.selectApplicationDesc}</p>
         </CardContent>
@@ -1868,7 +1868,7 @@ function ApplicationDetail({
   }
 
   return (
-    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -1888,7 +1888,7 @@ function ApplicationDetail({
 
         <InvestorLinkPanel application={application} isCreating={isCreatingInvestor} onCreate={createInvestorAccount} locale={locale} />
 
-        <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+        <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || application.status === "CONTACTED"} onClick={() => runQuickAction({ status: "CONTACTED" }, t.markedContacted)}>{t.markContacted}</Button>
@@ -1920,20 +1920,20 @@ function ApplicationDetail({
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.priorityLabel}</span>
-            <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value as ApplicationPriority }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
-              {APPLICATION_PRIORITIES.map((nextPriority) => <option key={nextPriority} value={nextPriority} className="bg-graphite-900 text-foreground">{enumLabel("applicationPriority", nextPriority, locale)}</option>)}
+            <select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value as ApplicationPriority }))} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45">
+              {APPLICATION_PRIORITIES.map((nextPriority) => <option key={nextPriority} value={nextPriority} className="bg-card dark:bg-graphite-900 text-foreground">{enumLabel("applicationPriority", nextPriority, locale)}</option>)}
             </select>
           </label>
           <CrmTextInput label={t.sourceLabelField} value={draft.sourceLabel} onChange={(value) => setDraft((current) => ({ ...current, sourceLabel: value }))} placeholder={t.sourcePlaceholder} />
           <CrmTextInput label={t.nextActionField} value={draft.nextAction} onChange={(value) => setDraft((current) => ({ ...current, nextAction: value }))} placeholder={t.nextActionPlaceholder} />
           <label className="flex flex-col gap-2">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.nextActionDateTime}</span>
-            <input type="datetime-local" value={draft.nextActionAt} onChange={(event) => setDraft((current) => ({ ...current, nextActionAt: event.target.value }))} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45" />
+            <input type="datetime-local" value={draft.nextActionAt} onChange={(event) => setDraft((current) => ({ ...current, nextActionAt: event.target.value }))} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none focus:border-gold-200/45" />
           </label>
         </div>
         <label className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.managerNotes}</span>
-          <textarea value={draft.managerNotes} onChange={(event) => setDraft((current) => ({ ...current, managerNotes: event.target.value }))} placeholder={t.managerNotesPlaceholder} className="min-h-32 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none focus:border-gold-200/45" />
+          <textarea value={draft.managerNotes} onChange={(event) => setDraft((current) => ({ ...current, managerNotes: event.target.value }))} placeholder={t.managerNotesPlaceholder} className="min-h-32 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none focus:border-gold-200/45" />
         </label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">{isDirty ? t.unsavedChanges : t.fieldsUpToDate}</p>
@@ -1983,7 +1983,7 @@ function ApplicationDetail({
           ) : (
             <div className="flex flex-col gap-3">
               {auditLogs.map((log) => (
-                <div key={log.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div key={log.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-foreground">{log.action}</p>
                     <p className="text-xs text-muted-foreground">{formatDateTime(log.createdAt, f)}</p>
@@ -2011,10 +2011,10 @@ function NotificationEventsPanel({ events, locale }: { events: NotificationEvent
       ) : (
         <div className="flex flex-col gap-3">
           {events.map((event) => (
-            <div key={event.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div key={event.id} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-full border border-gold-200/20 bg-gold-200/10 text-gold-100">
+                  <span className="flex size-8 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
                     <BellRing className="size-4" />
                   </span>
                   <div>
@@ -2029,13 +2029,13 @@ function NotificationEventsPanel({ events, locale }: { events: NotificationEvent
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{formatNotificationDetail(event, t)}</p>
               {event.messagePreview?.telegramText ? (
-                <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                <div className="mt-3 rounded-xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] p-3">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.telegramPreview}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{event.messagePreview.telegramText}</p>
                 </div>
               ) : null}
               <p className="mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">{t.recipient}: {event.recipient}</p>
-              {event.error ? <p className="mt-2 text-xs leading-5 text-gold-100">{event.error}</p> : null}
+              {event.error ? <p className="mt-2 text-xs leading-5 text-amber-700 dark:text-gold-100">{event.error}</p> : null}
             </div>
           ))}
         </div>
@@ -2053,10 +2053,10 @@ function NextActionState({ application, locale }: { application: AdminApplicatio
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.nextActionField}</p>
       <p className="mt-2 text-sm leading-6 text-foreground">{application.nextAction || t.noActionTextSet}</p>
-      <p className={`mt-2 text-xs ${isOverdue(application.nextActionAt) ? "text-gold-100" : "text-muted-foreground"}`}>{formatDateTime(application.nextActionAt, f)}</p>
+      <p className={`mt-2 text-xs ${isOverdue(application.nextActionAt) ? "text-amber-700 dark:text-gold-100" : "text-muted-foreground"}`}>{formatDateTime(application.nextActionAt, f)}</p>
     </div>
   );
 }
@@ -2072,10 +2072,10 @@ function ActivityTimeline({ items, locale }: { items: ActivityItem[]; locale: Lo
   return (
     <div>
       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.activityTimeline}</p>
-      <div className="relative flex flex-col gap-3 before:absolute before:left-[0.56rem] before:top-3 before:h-[calc(100%-1.5rem)] before:w-px before:bg-white/10">
+      <div className="relative flex flex-col gap-3 before:absolute before:left-[0.56rem] before:top-3 before:h-[calc(100%-1.5rem)] before:w-px before:bg-muted/30 dark:bg-white/10">
         {items.map((item) => (
-          <div key={item.key} className="relative flex gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-            <span className="relative z-10 mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-gold-200/35 bg-gold-200/10 text-gold-100">
+          <div key={item.key} className="relative flex gap-3 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
+            <span className="relative z-10 mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-gold-200/35 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
               <Sparkles className="size-3" />
             </span>
             <span>
@@ -2092,7 +2092,7 @@ function ActivityTimeline({ items, locale }: { items: ActivityItem[]; locale: Lo
 
 function EmptyInlineState({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-sm font-semibold text-foreground">{title}</p>
       <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
@@ -2103,14 +2103,14 @@ function CrmTextInput({ label, value, onChange, placeholder }: { label: string; 
   return (
     <label className="flex flex-col gap-2">
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-gold-200/45" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="h-12 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-gold-200/45" />
     </label>
   );
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
       <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>
     </div>

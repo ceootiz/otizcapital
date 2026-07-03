@@ -245,7 +245,7 @@ function formatMetadataPreview(metadata: Record<string, unknown>) {
 
 function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="flex items-start justify-between gap-4 rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+    <label className="flex items-start justify-between gap-4 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
       <span>
         <span className="block text-sm font-semibold text-foreground">{label}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{description}</span>
@@ -399,9 +399,9 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
   return (
     <main className="min-h-screen bg-background px-5 py-8 text-foreground micro-noise md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="flex flex-col gap-5 rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur md:flex-row md:items-end md:justify-between">
+        <section className="flex flex-col gap-5 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.ADMIN_SETTINGS}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.ADMIN_SETTINGS}</p>
             <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.H1_TITLE}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               {t.PAGE_DESCRIPTION}
@@ -429,15 +429,15 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                 </div>
                 <Separator />
                 <div className="grid gap-3">
-                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.REQUIRED_PROOFS}</p>
                     <p className="mt-2 text-sm text-foreground">{currentActivePolicy.requiredProofCategories.join(", ") || t.NONE}</p>
                   </div>
-                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.WARNING_PROOFS}</p>
                     <p className="mt-2 text-sm text-foreground">{currentActivePolicy.warningProofCategories.join(", ") || t.NONE}</p>
                   </div>
-                  <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
                     <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.COMPLETENESS_THRESHOLD}</p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">{currentActivePolicy.minimumProofCompletenessScore}%</p>
                   </div>
@@ -452,11 +452,11 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
               </CardHeader>
               <CardContent className="space-y-3">
                 {policies.length === 0 ? (
-                  <div className="rounded-[1.35rem] border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
+                  <div className="rounded-[1.35rem] border border-dashed border-border dark:border-white/15 bg-muted/30 dark:bg-white/[0.03] p-4 text-sm text-muted-foreground">
                     {t.NO_DB_POLICIES}
                   </div>
                 ) : policies.map((policy) => (
-                  <div key={policy.id} className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+                  <div key={policy.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{policy.name}</p>
@@ -476,28 +476,28 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                     <CardTitle>{t.HISTORY_TITLE}</CardTitle>
                     <CardDescription>{t.HISTORY_DESC}</CardDescription>
                   </div>
-                  <History className="size-5 text-gold-100" />
+                  <History className="size-5 text-amber-700 dark:text-gold-100" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 text-sm">
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.FILTER_ACTION}</span>
-                    <select value={auditActionFilter} onChange={(event) => setAuditActionFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
+                    <select value={auditActionFilter} onChange={(event) => setAuditActionFilter(event.target.value)} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
                       <option value="ALL">{t.ALL_ACTIONS}</option>
                       {AUDIT_ACTIONS.map((action) => <option key={action} value={action}>{enumLabel("auditAction", action, locale)}</option>)}
                     </select>
                   </label>
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.FILTER_POLICY}</span>
-                    <select value={auditPolicyFilter} onChange={(event) => setAuditPolicyFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
+                    <select value={auditPolicyFilter} onChange={(event) => setAuditPolicyFilter(event.target.value)} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
                       <option value="ALL">{t.ALL_POLICIES}</option>
                       {policyFilterOptions.map((policy) => <option key={policy.id} value={policy.id}>{policy.name}</option>)}
                     </select>
                   </label>
                   <label className="grid gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.FILTER_LIMIT}</span>
-                    <select value={auditLimit} onChange={(event) => setAuditLimit(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
+                    <select value={auditLimit} onChange={(event) => setAuditLimit(event.target.value)} className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-3 py-2 text-sm outline-none focus:border-gold-200/50">
                       <option value="10">10</option>
                       <option value="20">20</option>
                       <option value="50">50</option>
@@ -508,16 +508,16 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                 {auditError ? <div className="rounded-[1.35rem] border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">{auditError}</div> : null}
                 {isAuditLoading ? (
                   <div className="space-y-3">
-                    {[0, 1, 2].map((item) => <div key={item} className="h-20 animate-pulse rounded-[1.35rem] border border-white/10 bg-white/[0.04]" />)}
+                    {[0, 1, 2].map((item) => <div key={item} className="h-20 animate-pulse rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04]" />)}
                   </div>
                 ) : auditEvents.length === 0 ? (
-                  <div className="rounded-[1.35rem] border border-dashed border-white/15 bg-white/[0.03] p-4 text-sm text-muted-foreground">
+                  <div className="rounded-[1.35rem] border border-dashed border-border dark:border-white/15 bg-muted/30 dark:bg-white/[0.03] p-4 text-sm text-muted-foreground">
                     {t.NO_AUDIT_EVENTS}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {auditEvents.map((event) => (
-                      <div key={event.id} className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] p-4">
+                      <div key={event.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-foreground">{event.summary}</p>
@@ -541,7 +541,7 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
                   <CardTitle>{t.EDITOR_TITLE}</CardTitle>
                   <CardDescription>{t.EDITOR_DESC_PREFIX} {proofCategories.join(", ")}.</CardDescription>
                 </div>
-                <ShieldCheck className="size-5 text-gold-100" />
+                <ShieldCheck className="size-5 text-amber-700 dark:text-gold-100" />
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -550,25 +550,25 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
 
               <label className="block space-y-2 text-sm">
                 <span className="font-semibold text-foreground">{t.LABEL_POLICY_NAME}</span>
-                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-gold-200/50" />
+                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className="w-full rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-4 py-3 text-sm outline-none focus:border-gold-200/50" />
               </label>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block space-y-2 text-sm">
                   <span className="font-semibold text-foreground">{t.LABEL_REQUIRED_JSON}</span>
-                  <textarea value={form.requiredProofCategoriesJson} onChange={(event) => setForm((current) => ({ ...current, requiredProofCategoriesJson: event.target.value }))} rows={8} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-xs outline-none focus:border-gold-200/50" />
+                  <textarea value={form.requiredProofCategoriesJson} onChange={(event) => setForm((current) => ({ ...current, requiredProofCategoriesJson: event.target.value }))} rows={8} className="w-full rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-4 py-3 font-mono text-xs outline-none focus:border-gold-200/50" />
                   <span className={requiredPreview.ok ? "text-xs text-emerald-100" : "text-xs text-amber-100"}>{requiredPreview.message}</span>
                 </label>
                 <label className="block space-y-2 text-sm">
                   <span className="font-semibold text-foreground">{t.LABEL_WARNING_JSON}</span>
-                  <textarea value={form.warningProofCategoriesJson} onChange={(event) => setForm((current) => ({ ...current, warningProofCategoriesJson: event.target.value }))} rows={8} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-xs outline-none focus:border-gold-200/50" />
+                  <textarea value={form.warningProofCategoriesJson} onChange={(event) => setForm((current) => ({ ...current, warningProofCategoriesJson: event.target.value }))} rows={8} className="w-full rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-4 py-3 font-mono text-xs outline-none focus:border-gold-200/50" />
                   <span className={warningPreview.ok ? "text-xs text-emerald-100" : "text-xs text-amber-100"}>{warningPreview.message}</span>
                 </label>
               </div>
 
               <label className="block space-y-2 text-sm">
                 <span className="font-semibold text-foreground">{t.LABEL_MIN_SCORE}</span>
-                <input type="number" min={0} max={100} value={form.minimumProofCompletenessScore} onChange={(event) => setForm((current) => ({ ...current, minimumProofCompletenessScore: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-gold-200/50" />
+                <input type="number" min={0} max={100} value={form.minimumProofCompletenessScore} onChange={(event) => setForm((current) => ({ ...current, minimumProofCompletenessScore: event.target.value }))} className="w-full rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/30 px-4 py-3 text-sm outline-none focus:border-gold-200/50" />
               </label>
 
               <div className="grid gap-3 md:grid-cols-2">

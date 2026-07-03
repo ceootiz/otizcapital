@@ -160,14 +160,14 @@ const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<st
 
 function statusTone(status: string) {
   if (status === "CRITICAL") return "border-red-300/25 bg-red-300/10 text-red-100";
-  if (status === "ATTENTION") return "border-gold-200/30 bg-gold-200/10 text-gold-100";
+  if (status === "ATTENTION") return "border-gold-200/30 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100";
   return "border-emerald-300/25 bg-emerald-300/10 text-emerald-100";
 }
 
 function severityTone(severity: string) {
   if (severity === "CRITICAL") return "border-red-300/25 bg-red-300/10 text-red-100";
-  if (severity === "WARNING") return "border-gold-200/25 bg-gold-200/10 text-gold-100";
-  return "border-white/10 bg-white/[0.04] text-muted-foreground";
+  if (severity === "WARNING") return "border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100";
+  return "border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] text-muted-foreground";
 }
 
 function formatIncidentSourceSummary(bySource: Record<string, number>, noneLabel: string) {
@@ -178,7 +178,7 @@ function formatIncidentSourceSummary(bySource: Record<string, number>, noneLabel
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
       <p className="mt-2 text-xl font-semibold text-foreground">{value}</p>
     </div>
@@ -187,10 +187,10 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 
 function HealthCard({ title, description, icon, children }: { title: string; description: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardHeader>
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-gold-100">{icon}</div>
+          <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-amber-700 dark:text-gold-100">{icon}</div>
           <div>
             <CardTitle>{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
@@ -218,10 +218,10 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
             <AdminNavigation locale={locale} activeSection="checkpoint-health" />
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-graphite-900/[0.78]">
+          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-100">{t.eyebrow}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
                 <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.title}</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{t.description}</p>
               </div>
@@ -281,17 +281,17 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
               <Metric label={t.acknowledged} value={metrics.incidents.acknowledgedCount} />
               <Metric label={t.criticalUnresolved} value={metrics.incidents.criticalOpenCount} />
               <Metric label={t.staleUnresolved} value={metrics.incidents.staleUnresolvedCount} />
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:col-span-2">
+              <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4 sm:col-span-2">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.sourceSummary}</p>
                 <p className="mt-2 text-sm leading-6 text-foreground">{formatIncidentSourceSummary(metrics.incidents.bySource, t.none)}</p>
               </div>
             </HealthCard>
           </div>
 
-          <Card className="mt-4 rounded-[1.35rem] bg-graphite-900/[0.72]">
+          <Card className="mt-4 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
             <CardHeader>
               <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-gold-100"><Activity className="size-5" /></div>
+                <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-3 text-amber-700 dark:text-gold-100"><Activity className="size-5" /></div>
                 <div>
                   <CardTitle>{t.snapshotIntegrityTitle}</CardTitle>
                   <CardDescription>{t.snapshotIntegrityDesc}</CardDescription>
@@ -307,16 +307,16 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
           </Card>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader>
                 <CardTitle>{t.issueListTitle}</CardTitle>
                 <CardDescription>{t.issueListDesc}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
                 {snapshot.issues.length === 0 ? (
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noIssues}</div>
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noIssues}</div>
                 ) : snapshot.issues.map((issue) => (
-                  <div key={issue.id} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
+                  <div key={issue.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -333,17 +333,17 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
               </CardContent>
             </Card>
 
-            <Card className="rounded-[1.35rem] bg-graphite-900/[0.72]">
+            <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
               <CardHeader>
                 <CardTitle>{t.recommendedTitle}</CardTitle>
                 <CardDescription>{t.recommendedDesc}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3">
                 {snapshot.recommendedActions.length === 0 ? (
-                  <div className="rounded-[1.35rem] border border-white/10 bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noAction}</div>
+                  <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5 text-sm leading-6 text-muted-foreground">{t.noAction}</div>
                 ) : snapshot.recommendedActions.map((action, index) => (
-                  <div key={action} className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-100">{t.actionPrefix} {index + 1}</p>
+                  <div key={action} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-gold-100">{t.actionPrefix} {index + 1}</p>
                     <Separator className="my-3" />
                     <p className="text-sm leading-6 text-foreground">{action}</p>
                   </div>
