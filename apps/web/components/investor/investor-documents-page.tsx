@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, Download, FileText, PenLine } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Download, FileText, PenLine, Wallet } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 import { createAdminFormatters } from "@otiz/lib";
 import type { SerializedInvestorDocument } from "@otiz/database";
@@ -25,7 +26,12 @@ const STRINGS = {
     signing: "Signing...",
     cancel: "Cancel",
     errorFallback: "Could not sign the document. Please try again.",
-    typeAgreement: "Investment agreement"
+    typeAgreement: "Investment agreement",
+    signedTitle: "Document signed",
+    signedBody: "Thank you — your agreement is signed and stored in your documents.",
+    nextStepTitle: "Next step: send your deposit",
+    nextStepBody: "Fund your account at one of the deposit addresses, then confirm the transfer so your manager can verify it.",
+    nextStepCta: "Go to deposit"
   },
   ru: {
     title: "Документы",
@@ -44,7 +50,12 @@ const STRINGS = {
     signing: "Подписываем...",
     cancel: "Отмена",
     errorFallback: "Не удалось подписать документ. Попробуйте ещё раз.",
-    typeAgreement: "Инвестиционное соглашение"
+    typeAgreement: "Инвестиционное соглашение",
+    signedTitle: "Документ подписан",
+    signedBody: "Спасибо — соглашение подписано и сохранено в ваших документах.",
+    nextStepTitle: "Следующий шаг: отправьте депозит",
+    nextStepBody: "Пополните аккаунт на один из адресов для депозита, затем подтвердите отправку, чтобы менеджер проверил поступление.",
+    nextStepCta: "Перейти к пополнению"
   }
 } as const;
 type Strings = typeof STRINGS.en;
@@ -60,6 +71,7 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [accepted, setAccepted] = React.useState(false);
   const [signingId, setSigningId] = React.useState<string | null>(null);
+  const [justSigned, setJustSigned] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   function typeLabel(type: string) {
@@ -88,6 +100,7 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
       const updated = payload.data;
       setDocuments((current) => current.map((doc) => (doc.id === updated.id ? updated : doc)));
       setOpenId(null);
+      setJustSigned(true); // show the success + next-step banner (F1)
     } catch (signError) {
       setError(signError instanceof Error ? signError.message : t.errorFallback);
     } finally {
@@ -108,6 +121,32 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
 
   return (
     <div className="grid gap-4">
+      {justSigned ? (
+        <Card className="overflow-hidden rounded-[1.35rem] border-gold-200/35 bg-card dark:bg-graphite-900/[0.78]">
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
+          <CardContent className="p-6">
+            <p className="flex items-center gap-2 font-semibold text-foreground">
+              <CheckCircle2 className="size-5 text-amber-700 dark:text-gold-100" />
+              {t.signedTitle}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t.signedBody}</p>
+            <div className="mt-5 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5">
+              <p className="flex items-center gap-2 font-semibold text-foreground">
+                <Wallet className="size-4 text-amber-700 dark:text-gold-100" />
+                {t.nextStepTitle}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.nextStepBody}</p>
+              <Link
+                href={`/${locale}/investor/deposit`}
+                className="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-gold-200 px-5 text-sm font-semibold text-graphite-950 shadow-gold transition-all hover:bg-gold-300"
+              >
+                {t.nextStepCta}
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
       {documents.map((doc) => {
         const isPending = doc.status === PENDING;
         const isOpen = openId === doc.id;

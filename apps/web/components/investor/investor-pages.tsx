@@ -8,6 +8,7 @@ import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdr
 import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 import { ContactManagerButton } from "./contact-manager-button";
+import { DepositClaimForm } from "./deposit-claim-form";
 
 type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "settings";
 
@@ -125,6 +126,17 @@ const INVESTOR_STRINGS = {
       steps: { received: "Request received", review: "Under review", approved: "Approved", scheduled: "Payout scheduled", paid: "Paid" }
     },
     moneyWork: { active: "Active", daysWorking: (days: number) => `${days} ${days === 1 ? "day" : "days"} at work` },
+    howItWorks: {
+      title: "How it works",
+      steps: [
+        { name: "Deposit", desc: "You send a deposit to the provided crypto address" },
+        { name: "Allocation", desc: "Your manager places the capital into a trading cycle" },
+        { name: "Trading", desc: "Capital works in real merchandise deals" },
+        { name: "Reporting", desc: "A monthly report with the cycle results" },
+        { name: "Payout or reinvest", desc: "Profit is paid out or reinvested — your choice" }
+      ]
+    },
+    payoutHint: "The date is estimated from the allocation start date plus the ~45-day trading cycle. The actual date may differ depending on the operational cycle.",
     history: {
       totalsProfit: "Total profit", totalsPayout: "Total payouts", totalsReinvested: "Total reinvested",
       colMonth: "Month", colProfit: "Profit", colPayout: "Payout", colReinvested: "Reinvested", colRoi: "ROI %",
@@ -212,6 +224,17 @@ const INVESTOR_STRINGS = {
       steps: { received: "Запрос получен", review: "На рассмотрении", approved: "Одобрено", scheduled: "Выплата запланирована", paid: "Выплачено" }
     },
     moneyWork: { active: "Активна", daysWorking: (days: number) => `${days} ${pluralizeDaysRu(days)} в работе` },
+    howItWorks: {
+      title: "Как это работает",
+      steps: [
+        { name: "Пополнение", desc: "Вы отправляете депозит на указанный крипто-адрес" },
+        { name: "Аллокация", desc: "Менеджер размещает капитал в торговый цикл" },
+        { name: "Торговля", desc: "Капитал работает в реальных товарных сделках" },
+        { name: "Отчётность", desc: "Ежемесячный отчёт с результатами цикла" },
+        { name: "Выплата или реинвест", desc: "Прибыль выплачивается или реинвестируется по вашему выбору" }
+      ]
+    },
+    payoutHint: "Дата рассчитана на основе даты начала аллокации + 45 дней торгового цикла. Фактическая дата может отличаться в зависимости от операционного цикла.",
     history: {
       totalsProfit: "Общая прибыль", totalsPayout: "Всего выплат", totalsReinvested: "Всего реинвестировано",
       colMonth: "Месяц", colProfit: "Прибыль", colPayout: "Выплата", colReinvested: "Реинвестировано", colRoi: "ROI %",
@@ -265,6 +288,7 @@ export function InvestorShell({
   eyebrow,
   title,
   description,
+  contactContext,
   children
 }: {
   locale: Locale;
@@ -273,6 +297,7 @@ export function InvestorShell({
   eyebrow: string;
   title: string;
   description: string;
+  contactContext?: string;
   children: React.ReactNode;
 }) {
   const t = getInvestorStrings(locale);
@@ -290,7 +315,7 @@ export function InvestorShell({
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-semibold tracking-[0.24em] text-foreground">{t.brand}</span>
-              <ContactManagerButton locale={locale} />
+              <ContactManagerButton locale={locale} context={contactContext} />
               <InvestorLocaleSwitcher locale={locale} />
               <InvestorNotificationBell locale={locale} />
               <ThemeToggle />
@@ -368,7 +393,7 @@ export function InvestorDashboardHome({
         <KpiCard icon={<PackageCheck className="size-5" />} label={t.kpi.activeAllocations} value={f.number(data.summary.activeAllocationsCount)} />
         <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.completedAllocations} value={f.number(data.summary.completedAllocationsCount)} />
         <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.currentAverageRoi} value={f.percent(data.summary.currentAverageRoi)} />
-        <KpiCard icon={<FileText className="size-5" />} label={t.kpi.nextExpectedPayout} value={f.date(data.summary.nextExpectedPayoutDate)} />
+        <KpiCard icon={<FileText className="size-5" />} label={t.kpi.nextExpectedPayout} value={f.date(data.summary.nextExpectedPayoutDate)} hint={t.payoutHint} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -406,6 +431,8 @@ export function InvestorDashboardHome({
           </CardContent>
         </Card>
       </div>
+
+      <HowItWorksSection locale={locale} />
     </div>
   );
 }
@@ -473,6 +500,7 @@ export function InvestorDepositPage({ locale, addresses }: { locale: Locale; add
       ) : (
         <InvestorDepositAddresses locale={locale} addresses={addresses} />
       )}
+      <DepositClaimForm locale={locale} />
     </div>
   );
 }
@@ -712,13 +740,48 @@ export function InvestorReinvestPage({ locale, enabled }: { locale: Locale; enab
   );
 }
 
-function KpiCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function KpiCard({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: string; hint?: string }) {
   return (
     <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <div className="mb-5 flex size-10 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">{icon}</div>
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
         <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
+        {hint ? <p className="mt-2 text-[0.7rem] leading-4 text-muted-foreground/80">{hint}</p> : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+// F4: permanent "how it works" cycle — horizontal on desktop, vertical on
+// mobile. Gold step numbers, intentionally quiet.
+function HowItWorksSection({ locale }: { locale: Locale }) {
+  const t = getInvestorStrings(locale);
+
+  return (
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+      <CardHeader>
+        <CardTitle>{t.howItWorks.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ol className="grid gap-6 lg:grid-cols-5 lg:gap-4">
+          {t.howItWorks.steps.map((step, index) => (
+            <li key={step.name} className="relative flex gap-4 lg:flex-col lg:gap-3">
+              <div className="flex flex-col items-center lg:flex-row lg:gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gold-200/35 bg-gold-300/15 dark:bg-gold-200/10 text-sm font-semibold text-amber-700 dark:text-gold-100">
+                  {index + 1}
+                </span>
+                {index < t.howItWorks.steps.length - 1 ? (
+                  <span className="mt-1 h-full w-px flex-1 bg-border dark:bg-white/10 lg:mt-0 lg:h-px lg:w-full" aria-hidden="true" />
+                ) : null}
+              </div>
+              <div className="pb-1">
+                <p className="text-sm font-semibold text-foreground">{step.name}</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </CardContent>
     </Card>
   );

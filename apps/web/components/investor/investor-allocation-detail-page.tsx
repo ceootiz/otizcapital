@@ -111,8 +111,14 @@ const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<st
 export function InvestorAllocationDetailPage({ locale, investor, allocation }: { locale: Locale; investor: Investor; allocation: AllocationDetail }) {
   const t = getStrings(locale);
   const fmt = createAdminFormatters(locale);
+  // F6: pre-fill the "Contact manager" Telegram message with this allocation's
+  // reference so the manager immediately knows the subject.
+  const contactContext =
+    locale === "ru"
+      ? `Здравствуйте, у меня вопрос по аллокации ${allocation.supplyCode}.`
+      : `Hello, I have a question about allocation ${allocation.supplyCode}.`;
   return (
-    <InvestorShell locale={locale} investor={investor} active="allocations" eyebrow={t.eyebrow} title={allocation.supplyCode} description={t.description}>
+    <InvestorShell locale={locale} investor={investor} active="allocations" eyebrow={t.eyebrow} title={allocation.supplyCode} description={t.description} contactContext={contactContext}>
       <div className="mb-6">
         <Link href={`/${locale}/investor/allocations`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToAllocations}</Link>
       </div>

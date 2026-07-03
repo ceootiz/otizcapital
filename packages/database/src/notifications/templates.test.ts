@@ -137,7 +137,8 @@ describe("notification templates", () => {
       "MONTHLY_REPORT_CREATED",
       "MONTHLY_REPORT_PUBLISHED",
       "INVESTOR_DOCUMENT_READY",
-      "PASSWORD_RESET"
+      "PASSWORD_RESET",
+      "DEPOSIT_CLAIMED"
     ]);
 
     for (const type of NOTIFICATION_EVENT_TYPES) {
@@ -253,6 +254,12 @@ describe("notification templates", () => {
           "telegramText": "A password reset link was requested for an investor account. No administrative action is required.",
           "text": "A password reset link was requested for an investor account. No administrative action is required.",
           "type": "PASSWORD_RESET",
+        },
+        {
+          "subject": "Investor reported a deposit",
+          "telegramText": "Template Safety Lead reported an outgoing deposit. Review the deposit record and confirm receipt before crediting.",
+          "text": "Template Safety Lead reported an outgoing deposit. Review the deposit record and confirm receipt before crediting.",
+          "type": "DEPOSIT_CLAIMED",
         },
       ]
     `);

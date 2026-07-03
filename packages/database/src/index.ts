@@ -26,3 +26,4 @@ export * from "./investor-documents";
 export * from "./password-reset-tokens";
 export * from "./investor-payments";
 export * from "./admin-dashboard";
+export * from "./deposit-notifications";

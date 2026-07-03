@@ -380,6 +380,7 @@ const NOTIFICATION_TITLES: Record<"en" | "ru", Record<string, string>> = {
     ALLOCATION_COMPLETED: "Allocation completed",
     REPORT_PUBLISHED: "New report available",
     WITHDRAWAL_APPROVED: "Withdrawal request approved",
+    WITHDRAWAL_SCHEDULED: "Payout scheduled",
     WITHDRAWAL_PAID: "Payout completed",
     WITHDRAWAL_REJECTED: "Withdrawal request declined"
   },
@@ -388,6 +389,7 @@ const NOTIFICATION_TITLES: Record<"en" | "ru", Record<string, string>> = {
     ALLOCATION_COMPLETED: "Аллокация завершена",
     REPORT_PUBLISHED: "Новый отчёт доступен",
     WITHDRAWAL_APPROVED: "Запрос на вывод одобрен",
+    WITHDRAWAL_SCHEDULED: "Выплата запланирована",
     WITHDRAWAL_PAID: "Выплата произведена",
     WITHDRAWAL_REJECTED: "Запрос на вывод отклонён"
   }

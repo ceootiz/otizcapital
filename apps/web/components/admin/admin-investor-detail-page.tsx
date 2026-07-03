@@ -190,7 +190,11 @@ const STRINGS = {
     ERROR_CREATE_ALLOCATION: "Unable to create allocation.",
     ERROR_UPDATE_ALLOCATION: "Unable to update allocation.",
     ERROR_CREATE_REPORT: "Unable to create report.",
-    ERROR_UPDATE_REPORT: "Unable to update report."
+    ERROR_UPDATE_REPORT: "Unable to update report.",
+    NOTIFY_INVESTOR: "Notify investor",
+    NOTIFY_INVESTOR_BUSY: "Notifying...",
+    NOTICE_INVESTOR_NOTIFIED: "Investor notified about the allocation.",
+    ERROR_NOTIFY_INVESTOR: "Unable to notify the investor."
   },
   ru: {
     BACK_TO_INVESTORS: "К инвесторам",
@@ -279,6 +283,10 @@ const STRINGS = {
     ERROR_UPDATE_INVESTOR: "Не удалось обновить инвестора.",
     ERROR_CREATE_ALLOCATION: "Не удалось создать аллокацию.",
     ERROR_UPDATE_ALLOCATION: "Не удалось обновить аллокацию.",
+    NOTIFY_INVESTOR: "Уведомить инвестора",
+    NOTIFY_INVESTOR_BUSY: "Уведомляем...",
+    NOTICE_INVESTOR_NOTIFIED: "Инвестор уведомлён об аллокации.",
+    ERROR_NOTIFY_INVESTOR: "Не удалось уведомить инвестора.",
     ERROR_CREATE_REPORT: "Не удалось создать отчёт.",
     ERROR_UPDATE_REPORT: "Не удалось обновить отчёт."
   }
@@ -355,6 +363,7 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
   const [isCreatingReport, setIsCreatingReport] = React.useState(false);
   const [updatingReportId, setUpdatingReportId] = React.useState<string | null>(null);
   const [updatingAllocationId, setUpdatingAllocationId] = React.useState<string | null>(null);
+  const [notifyingAllocationId, setNotifyingAllocationId] = React.useState<string | null>(null);
   const kpis = calculateKpis(investor.allocations);
 
   async function saveInvestor() {
@@ -408,6 +417,26 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
       setError(requestError instanceof Error ? requestError.message : t.ERROR_CREATE_ALLOCATION);
     } finally {
       setIsCreatingAllocation(false);
+    }
+  }
+
+  // F3: re-send the "allocation created" bell + email to the investor.
+  async function notifyAllocation(allocation: Allocation) {
+    setNotifyingAllocationId(allocation.id);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/allocations/${allocation.id}/notify`, {
+        method: "POST",
+        headers: getAdminMutationHeaders()
+      });
+      const payload = (await response.json()) as { ok: boolean; error?: string };
+      if (!response.ok || !payload.ok) throw new Error(payload.error || t.ERROR_NOTIFY_INVESTOR);
+      setNotice(t.NOTICE_INVESTOR_NOTIFIED);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : t.ERROR_NOTIFY_INVESTOR);
+    } finally {
+      setNotifyingAllocationId(null);
     }
   }
 
@@ -643,7 +672,12 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                             </select>
                           </label>
                           <CrmInput label={t.LABEL_ACTUAL_PROFIT} value={allocation.actualProfit || ""} onChange={(value) => updateAllocation(allocation, { actualProfit: value || null })} placeholder={t.PH_ACTUAL_PROFIT} />
-                          <span className="text-xs leading-5 text-muted-foreground">{t.UPDATED_LABEL} {formatDate(allocation.updatedAt)}<br />{t.COMPLETED_AT_LABEL} {formatDate(allocation.completedAt)}</span>
+                          <div className="flex flex-col gap-2">
+                            <Button type="button" variant="outline" size="sm" disabled={notifyingAllocationId === allocation.id} onClick={() => notifyAllocation(allocation)}>
+                              {notifyingAllocationId === allocation.id ? t.NOTIFY_INVESTOR_BUSY : t.NOTIFY_INVESTOR}
+                            </Button>
+                            <span className="text-xs leading-5 text-muted-foreground">{t.UPDATED_LABEL} {formatDate(allocation.updatedAt)}<br />{t.COMPLETED_AT_LABEL} {formatDate(allocation.completedAt)}</span>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -715,6 +749,10 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
 
           <div className="mt-6">
             <AdminInvestorReportsSection locale={locale} investorId={investor.id} />
+          </div>
+
+          <div className="mt-6">
+            <AdminDepositClaimsSection locale={locale} investorId={investor.id} />
           </div>
         </div>
       </section>
@@ -966,6 +1004,161 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
               </tbody>
             </table>
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Deposit claims ("I sent a deposit") review — Feature 2 admin side
+// ---------------------------------------------------------------------------
+
+type DepositClaim = {
+  id: string;
+  amount: number;
+  network: string;
+  txHash: string | null;
+  note: string | null;
+  status: string;
+  adminNote: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+};
+
+const DEPOSITS_STRINGS = {
+  en: {
+    title: "Deposit claims",
+    desc: "Transfers the investor reported sending. Confirm after the funds arrive, or reject with a note.",
+    empty: "No deposit claims yet.",
+    colDate: "Date",
+    colAmount: "Amount",
+    colNetwork: "Network",
+    colHash: "Tx hash",
+    colStatus: "Status",
+    statusPending: "Awaiting review",
+    statusConfirmed: "Confirmed",
+    statusRejected: "Rejected",
+    notePlaceholder: "Note for the investor (optional)",
+    confirm: "Confirm",
+    reject: "Reject",
+    busy: "Saving...",
+    investorNote: "Investor note:",
+    adminNote: "Manager note:",
+    errReview: "Unable to update the deposit claim."
+  },
+  ru: {
+    title: "Заявленные депозиты",
+    desc: "Переводы, об отправке которых сообщил инвестор. Подтвердите после поступления средств или отклоните с комментарием.",
+    empty: "Пока нет заявленных депозитов.",
+    colDate: "Дата",
+    colAmount: "Сумма",
+    colNetwork: "Сеть",
+    colHash: "Хэш",
+    colStatus: "Статус",
+    statusPending: "Ожидает проверки",
+    statusConfirmed: "Подтверждён",
+    statusRejected: "Отклонён",
+    notePlaceholder: "Комментарий для инвестора (необязательно)",
+    confirm: "Подтвердить",
+    reject: "Отклонить",
+    busy: "Сохраняем...",
+    investorNote: "Примечание инвестора:",
+    adminNote: "Комментарий менеджера:",
+    errReview: "Не удалось обновить заявленный депозит."
+  }
+} as const;
+
+function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; investorId: string }) {
+  const t = (DEPOSITS_STRINGS as unknown as Record<string, typeof DEPOSITS_STRINGS.en>)[locale] ?? DEPOSITS_STRINGS.en;
+  const fmt = createAdminFormatters(locale);
+  const [claims, setClaims] = React.useState<DepositClaim[]>([]);
+  const [notes, setNotes] = React.useState<Record<string, string>>({});
+  const [busyId, setBusyId] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/admin/investors/${investorId}/deposits`, { cache: "no-store" });
+      const payload = (await response.json()) as { ok: boolean; data?: DepositClaim[] };
+      if (payload.ok) setClaims(payload.data ?? []);
+    } catch {
+      /* non-fatal */
+    }
+  }, [investorId]);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function review(claim: DepositClaim, action: "confirm" | "reject") {
+    setBusyId(claim.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/deposits/${claim.id}`, {
+        method: "PATCH",
+        headers: getAdminMutationHeaders(),
+        body: JSON.stringify({ action, adminNote: notes[claim.id] || null })
+      });
+      const payload = (await response.json()) as { ok: boolean; error?: string };
+      if (!response.ok || !payload.ok) throw new Error(payload.error || t.errReview);
+      await load();
+    } catch (reviewError) {
+      setError(reviewError instanceof Error ? reviewError.message : t.errReview);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function statusLabel(status: string) {
+    if (status === "CONFIRMED") return t.statusConfirmed;
+    if (status === "REJECTED") return t.statusRejected;
+    return t.statusPending;
+  }
+
+  return (
+    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+      <CardHeader>
+        <CardTitle>{t.title}</CardTitle>
+        <CardDescription>{t.desc}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+        {claims.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t.empty}</p>
+        ) : (
+          claims.map((claim) => (
+            <div key={claim.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <span className="text-muted-foreground">{fmt.dateTime(new Date(claim.createdAt))}</span>
+                  <span className="font-semibold text-foreground">{fmt.currency(claim.amount)}</span>
+                  <span className="text-muted-foreground">{claim.network}</span>
+                </div>
+                <Badge variant={claim.status === "CONFIRMED" ? "default" : "secondary"}>{statusLabel(claim.status)}</Badge>
+              </div>
+              {claim.txHash ? <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{claim.txHash}</p> : null}
+              {claim.note ? <p className="mt-2 text-sm text-muted-foreground">{t.investorNote} {claim.note}</p> : null}
+              {claim.status === "PENDING" ? (
+                <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+                  <input
+                    value={notes[claim.id] || ""}
+                    onChange={(event) => setNotes((current) => ({ ...current, [claim.id]: event.target.value }))}
+                    placeholder={t.notePlaceholder}
+                    className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
+                  />
+                  <Button type="button" size="sm" disabled={busyId === claim.id} onClick={() => review(claim, "confirm")}>
+                    {busyId === claim.id ? t.busy : t.confirm}
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" disabled={busyId === claim.id} onClick={() => review(claim, "reject")}>
+                    {t.reject}
+                  </Button>
+                </div>
+              ) : claim.adminNote ? (
+                <p className="mt-2 text-sm text-muted-foreground">{t.adminNote} {claim.adminNote}</p>
+              ) : null}
+            </div>
+          ))
         )}
       </CardContent>
     </Card>

@@ -12,7 +12,9 @@ const LABELS: Record<string, string> = {
 // Header button that opens the admin-configured Telegram handle in a new tab.
 // The handle is read from the public GET /api/settings/contact endpoint; until
 // it resolves we fall back to the default so the button is always functional.
-export function ContactManagerButton({ locale }: { locale: Locale }) {
+// Optional `context` pre-fills the Telegram message so the manager immediately
+// sees which page/entity the question is about (F6).
+export function ContactManagerButton({ locale, context }: { locale: Locale; context?: string }) {
   const label = LABELS[locale] ?? LABELS.en;
   const [handle, setHandle] = React.useState("otizceo");
 
@@ -29,9 +31,11 @@ export function ContactManagerButton({ locale }: { locale: Locale }) {
     return () => controller.abort();
   }, []);
 
+  const href = context ? `https://t.me/${handle}?text=${encodeURIComponent(context)}` : `https://t.me/${handle}`;
+
   return (
     <a
-      href={`https://t.me/${handle}`}
+      href={href}
       target="_blank"
       rel="noreferrer"
       className="inline-flex h-10 items-center gap-2 rounded-full border border-border dark:border-white/10 bg-muted/40 dark:bg-white/[0.06] px-4 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/40 hover:bg-muted/60 dark:hover:bg-white/[0.1]"

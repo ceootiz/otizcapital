@@ -157,6 +157,24 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
       return { subject: "О вашей заявке в OTIZ Capital", html: shell(heading, paragraphs(lines)), text: toText(heading, lines) };
     }
 
+    case "ALLOCATION_CREATED": {
+      const heading = "Аллокация создана";
+      const supplyCode = str(payload, "supplyCode");
+      const allocationId = str(payload, "allocationId");
+      const allocationUrl = allocationId ? `${base}/ru/investor/allocations/${allocationId}` : `${base}/ru/investor/allocations`;
+      const lines = [
+        `${greeting} Ваш капитал размещён в аллокации${supplyCode ? ` ${escapeHtml(supplyCode)}` : ""} — деньги начали работать.`,
+        "Следите за прогрессом торгового цикла в кабинете: статус, подтверждения и ожидаемая выплата обновляются по мере операций.",
+        "Доходность не гарантируется — результаты зависят от исполнения реальных торговых операций."
+      ];
+      const html = shell(heading, paragraphs(lines) + button(allocationUrl, "Открыть аллокацию"));
+      return {
+        subject: "Аллокация создана — OTIZ Capital",
+        html,
+        text: toText(heading, [...lines, `Аллокация: ${allocationUrl}`])
+      };
+    }
+
     case "PASSWORD_RESET": {
       const heading = "Сброс пароля";
       const token = str(payload, "token");

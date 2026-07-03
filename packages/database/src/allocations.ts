@@ -1,5 +1,7 @@
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
+import { createInvestorNotification } from "./investor-notifications";
+import { processPendingEmailNotificationEvents } from "./notification-processor";
 
 export const ALLOCATION_STATUSES = ["DRAFT", "PURCHASING", "SHIPPING", "RECEIVED", "SELLING", "COMPLETED", "CANCELED", "LOSS"] as const;
 export const ALLOCATION_PROOF_TYPES = ["SHIPMENT_PROOF", "WAREHOUSE_MEDIA", "MARKETPLACE_REPORT", "PURCHASE_INVOICE", "PAYOUT_PROOF", "SERIAL_VERIFICATION", "OTHER"] as const;
@@ -246,6 +248,64 @@ export async function getInvestorAllocationDetailRecord(input: { id: string; inv
 }
 
 export async function createAllocationRecord(input: CreateAllocationInput) {
+  const result = await runCreateAllocationTransaction(input);
+
+  // Investor-facing "money started working" notification (bell + email).
+  // Best-effort: a notification failure must never undo the created allocation.
+  if (result.ok) {
+    try {
+      await notifyInvestorAllocationCreated(result.allocation.id);
+    } catch (error) {
+      console.error("[otiz] Allocation-created investor notification failed:", error);
+    }
+  }
+
+  return result;
+}
+
+// Investor-facing "allocation created" notification: cabinet bell + email.
+// Called automatically after creation and re-triggerable from the admin detail
+// page ("Уведомить инвестора") in case the investor missed it.
+export async function notifyInvestorAllocationCreated(allocationId: string) {
+  const allocation = await prisma.allocation.findUnique({ where: { id: allocationId }, include: { investor: true } });
+
+  if (!allocation) {
+    return { ok: false as const, status: 404 as const, error: "Allocation not found." };
+  }
+
+  await createInvestorNotification({
+    investorId: allocation.investorId,
+    type: "ALLOCATION_CREATED",
+    title: "Аллокация создана",
+    body: `Ваш капитал размещён в аллокации ${allocation.supplyCode}. Деньги начали работать.`,
+    linkHref: `/ru/investor/allocations/${allocation.id}`
+  });
+
+  try {
+    await createNotificationEventRecord({
+      type: "ALLOCATION_CREATED",
+      channel: "EMAIL",
+      recipient: allocation.investor.email,
+      entityType: "Allocation",
+      entityId: allocation.id,
+      payload: {
+        allocationId: allocation.id,
+        investorId: allocation.investorId,
+        fullName: allocation.investor.fullName,
+        supplyCode: allocation.supplyCode,
+        productName: allocation.productName
+      },
+      status: "PENDING"
+    });
+    await processPendingEmailNotificationEvents();
+  } catch (error) {
+    console.error("[otiz] ALLOCATION_CREATED email failed:", error);
+  }
+
+  return { ok: true as const };
+}
+
+function runCreateAllocationTransaction(input: CreateAllocationInput) {
   return prisma.$transaction(async (transaction) => {
     const investor = await transaction.investor.findUnique({ where: { id: input.investorId } });
 

@@ -215,6 +215,20 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
       html: paragraph(text),
       telegramText: text
     };
+  },
+  DEPOSIT_CLAIMED: ({ payload }) => {
+    const name = getString(payload, "fullName", "An investor");
+    const amount = getString(payload, "amount", "");
+    const network = getString(payload, "network", "");
+    const detail = [amount && `Amount: ${amount}`, network && `Network: ${network}`].filter(Boolean).join(". ");
+    const text = `${name} reported an outgoing deposit. ${detail ? `${detail}. ` : ""}Review the deposit record and confirm receipt before crediting.`;
+
+    return {
+      subject: "Investor reported a deposit",
+      text,
+      html: paragraph(text),
+      telegramText: text
+    };
   }
 };
 

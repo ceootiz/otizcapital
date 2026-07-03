@@ -45,12 +45,27 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
 
-  // Notify the investor of the outcome (best-effort).
-  const notify = (type: "WITHDRAWAL_APPROVED" | "WITHDRAWAL_REJECTED" | "WITHDRAWAL_PAID", title: string, body: string) =>
-    createInvestorNotification({ investorId: result.request.investorId, type, title, body, linkHref: "/investor/withdrawals" });
-  if (action === "approve") await notify("WITHDRAWAL_APPROVED", "Withdrawal approved", "Your withdrawal request has been approved.");
-  else if (action === "reject") await notify("WITHDRAWAL_REJECTED", "Withdrawal rejected", "Your withdrawal request was not approved.");
-  else if (action === "mark-paid") await notify("WITHDRAWAL_PAID", "Payout completed", "Your withdrawal has been paid.");
+  // Notify the investor at each timeline step (best-effort). Russian to match
+  // the rest of the cabinet, with the amount and a locale-prefixed deep link so
+  // the bell click lands on the withdrawals page.
+  const amountLabel = `${result.request.currency} ${result.request.amount}`;
+  const notify = (
+    type: "WITHDRAWAL_APPROVED" | "WITHDRAWAL_REJECTED" | "WITHDRAWAL_SCHEDULED" | "WITHDRAWAL_PAID",
+    title: string,
+    body: string
+  ) => createInvestorNotification({ investorId: result.request.investorId, type, title, body, linkHref: "/ru/investor/withdrawals" });
+
+  if (action === "approve") {
+    await notify("WITHDRAWAL_APPROVED", "Запрос на вывод одобрен", `Ваш запрос на вывод ${amountLabel} одобрен менеджером. Далее будет назначена дата выплаты.`);
+  } else if (action === "reject") {
+    const reason = sanitizeString(payload.rejectionReason, 1000);
+    await notify("WITHDRAWAL_REJECTED", "Запрос на вывод отклонён", `Ваш запрос на вывод ${amountLabel} не был одобрен.${reason ? ` Причина: ${reason}` : " Свяжитесь с менеджером для уточнения."}`);
+  } else if (action === "schedule") {
+    const dateLabel = scheduledFor ? scheduledFor.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" }) : "";
+    await notify("WITHDRAWAL_SCHEDULED", "Выплата запланирована", `Выплата ${amountLabel} запланирована${dateLabel ? ` на ${dateLabel}` : ""}. Средства поступят в назначенную дату.`);
+  } else if (action === "mark-paid") {
+    await notify("WITHDRAWAL_PAID", "Выплата произведена", `Выплата ${amountLabel} произведена. Спасибо, что инвестируете с OTIZ Capital.`);
+  }
 
   return NextResponse.json({ ok: true, data: serializeInvestorWithdrawalRequest(result.request) });
 }
