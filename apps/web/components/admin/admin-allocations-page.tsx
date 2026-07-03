@@ -5,7 +5,6 @@ import Link from "next/link";
 import { PackagePlus } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
   en: {
@@ -236,7 +235,6 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
               <h1 className="mt-3 font-display text-4xl tracking-[-0.04em] text-foreground md:text-5xl">{t.h1}</h1>
             </div>
-            <AdminNavigation locale={locale} activeSection="allocations" />
           </div>
 
           {notice ? <Notice tone="success" message={notice} /> : null}

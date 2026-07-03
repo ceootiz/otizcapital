@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, CalendarClock, Save } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Separator } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
   en: {
@@ -184,7 +183,6 @@ export function AdminWithdrawalsPage({ locale, withdrawals: initialWithdrawals, 
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Link href={`/${locale}/admin/investors`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToInvestors}</Link>
-            <AdminNavigation locale={locale} activeSection="withdrawals" />
           </div>
 
           <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">

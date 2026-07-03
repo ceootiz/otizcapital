@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { CheckCircle2, History, RotateCcw, Save, ShieldCheck } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
   en: {
@@ -407,7 +405,6 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
               {t.PAGE_DESCRIPTION}
             </p>
           </div>
-          <AdminNavigation locale={locale} activeSection="readiness-policy" className="flex flex-wrap gap-3" />
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[0.95fr_1.35fr]">

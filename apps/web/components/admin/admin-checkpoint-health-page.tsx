@@ -3,7 +3,6 @@ import { ArrowLeft, Activity, Bell, Boxes, FileCheck2, ShieldAlert, ShieldCheck,
 import type { CheckpointHealthSnapshot } from "@otiz/database";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
   en: {
@@ -215,7 +214,6 @@ export function AdminCheckpointHealthPage({ locale, snapshot }: { locale: Locale
         <div className="container">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Link href={`/${locale}/admin/applications`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="size-4" />{t.backToCrm}</Link>
-            <AdminNavigation locale={locale} activeSection="checkpoint-health" />
           </div>
 
           <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">

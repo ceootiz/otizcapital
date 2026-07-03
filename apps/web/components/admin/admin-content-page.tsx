@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { CONTENT_SCOPES, locales, localeNames, type ContentScope, type Locale } from "@otiz/lib";
-import { AdminNavigation } from "./admin-navigation";
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -314,7 +313,6 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
           ← {t.backHome}
         </Link>
 
-        <AdminNavigation locale={locale} className="flex flex-wrap items-center gap-2" />
 
         <header className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-gold-200/70">{t.eyebrow}</span>

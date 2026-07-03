@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, BellRing, CalendarClock, CheckCircle2, Clock3, Download, FileText, LogOut, Save, Search, Sparkles, UserPlus, Users } from "lucide-react";
+import { ArrowRight, BellRing, CalendarClock, CheckCircle2, Clock3, Download, FileText, Save, Search, Sparkles, UserPlus, Users } from "lucide-react";
 import {
   APPLICATION_SLA_FILTERS,
   DEFAULT_CRM_CONFIG,
@@ -23,7 +23,6 @@ import {
 } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Separator } from "@otiz/ui";
 import { getCrmView, getCrmViewKey, type CrmViewKey } from "./crm-views";
-import { AdminNavigation } from "./admin-navigation";
 
 const APPLICATION_STATUSES = ["NEW", "REVIEWED", "APPROVED", "REJECTED", "CONTACTED"] as const;
 const APPLICATION_PRIORITIES = ["LOW", "NORMAL", "HIGH", "VIP"] as const;
@@ -1039,21 +1038,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
     ]);
   }, [loadAuditLogs, loadNotificationEvents, selectedApplicationId]);
 
-  async function logout() {
-    setError(null);
-
-    try {
-      const response = await fetch("/api/admin/logout", { method: "POST", headers: { [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) } });
-      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-
-      if (!response.ok || !payload?.ok) throw new Error(payload?.error || t.unableLogout);
-
-      router.push(`/${locale}/admin/login`);
-      router.refresh();
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : t.unableLogout);
-    }
-  }
+  // Logout moved to the shared AdminHeader (components/admin/admin-header.tsx).
 
   async function patchApplication(application: AdminApplication, payload: ApplicationPatchPayload, successMessage: string) {
     setIsUpdating(true);
@@ -1194,20 +1179,6 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
         <div className="container">
-          <div className="mb-8 flex items-center justify-between gap-4">
-            <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <ArrowLeft className="size-4" />
-              {t.backToHome}
-            </Link>
-            <div className="flex items-center gap-3">
-              <AdminNavigation locale={locale} activeSection="applications" className="hidden items-center gap-2 sm:flex" />
-              <Button type="button" variant="outline" size="sm" onClick={logout}>
-                <LogOut data-icon="inline-start" />
-                {t.logout}
-              </Button>
-            </div>
-          </div>
-
           <CrmRulesCard config={crmConfig} locale={locale} />
 
           <NotificationProcessorPanel

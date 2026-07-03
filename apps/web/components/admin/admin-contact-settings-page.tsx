@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -84,14 +82,6 @@ export function AdminContactSettingsPage({ locale, initialTelegram }: { locale: 
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
         <div className="container">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <ArrowLeft className="size-4" />
-              {t.backToHome}
-            </Link>
-            <AdminNavigation locale={locale} activeSection="contact-settings" className="flex flex-wrap items-center gap-2" />
-          </div>
-
           <Card className="max-w-2xl rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardHeader>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>

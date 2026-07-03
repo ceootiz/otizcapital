@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Search, Users, X } from "lucide-react";
+import { FileText, Search, Users, X } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 export type AdminInvestor = {
   id: string;
@@ -109,14 +108,6 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
         <div className="container">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <ArrowLeft className="size-4" />
-              {t.BACK_TO_HOMEPAGE}
-            </Link>
-            <AdminNavigation locale={locale} activeSection="investors" className="flex flex-wrap items-center gap-2" />
-          </div>
-
           <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardHeader className="pb-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

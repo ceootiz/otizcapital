@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Download } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import type { AdminDashboardData } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const STRINGS = {
   en: {
@@ -85,14 +84,6 @@ export function AdminDashboardPage({ locale, data }: { locale: Locale; data: Adm
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
         <div className="container">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <Link href={`/${locale}`} className="inline-flex items-center gap-3 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <ArrowLeft className="size-4" />
-              {t.backToHome}
-            </Link>
-            <AdminNavigation locale={locale} activeSection="dashboard" className="flex flex-wrap items-center gap-2" />
-          </div>
-
           <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
             <CardContent className="p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>

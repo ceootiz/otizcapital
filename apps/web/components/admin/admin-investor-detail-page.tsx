@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, PackagePlus, Save, ShieldCheck } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { AdminNavigation } from "./admin-navigation";
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -496,7 +495,6 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
               <ArrowLeft className="size-4" />
               {t.BACK_TO_INVESTORS}
             </Link>
-            <AdminNavigation locale={locale} activeSection="investors" />
           </div>
 
           <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.78]">
