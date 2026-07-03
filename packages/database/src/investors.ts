@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
 import { processPendingEmailNotificationEvents } from "./notification-processor";
@@ -211,6 +212,10 @@ export async function createInvestorFromApprovedApplication(input: {
     const existingInvestor = await transaction.investor.findUnique({
       where: { email: application.email.toLowerCase() }
     });
+    // Per-investor login code: closes the shared-INVESTOR_ACCESS_CODE hole for
+    // every account created from here on. Legacy investors (null) keep using
+    // the shared env code as a backward-compatible fallback.
+    const personalAccessCode = crypto.randomBytes(16).toString("hex");
     const investor =
       existingInvestor ??
       (await transaction.investor.create({
@@ -223,7 +228,8 @@ export async function createInvestorFromApprovedApplication(input: {
           totalCapital: String(application.plannedAllocationAmount),
           reinvestEnabled: application.reinvestInterest === "yes",
           lastReportAt: null,
-          notes: application.managerNotes
+          notes: application.managerNotes,
+          personalAccessCode
         }
       }));
     const updatedApplication = await transaction.investorApplication.update({
@@ -270,7 +276,13 @@ export async function createInvestorFromApprovedApplication(input: {
           recipient: investor.email,
           entityType: "InvestorApplication",
           entityId: application.id,
-          payload: { investorId: investor.id, fullName: investor.fullName, email: investor.email },
+          payload: {
+            investorId: investor.id,
+            fullName: investor.fullName,
+            email: investor.email,
+            // Personal code goes into the approval email instead of the shared one.
+            personalAccessCode: investor.personalAccessCode || ""
+          },
           status: "PENDING"
         },
         transaction

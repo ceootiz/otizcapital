@@ -125,9 +125,11 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
     case "INVESTOR_CREATED": {
       const heading = "Заявка одобрена";
       const loginUrl = `${base}/ru/investor/login`;
-      const accessCode = process.env.INVESTOR_ACCESS_CODE || "";
+      // Prefer the investor's personal access code (generated on approval);
+      // the shared env code remains only as a legacy fallback.
+      const accessCode = str(payload, "personalAccessCode") || process.env.INVESTOR_ACCESS_CODE || "";
       const accessLine = accessCode
-        ? `Войдите по адресу ${loginUrl}, используя ваш email и код доступа: <strong style="color:${GOLD};">${escapeHtml(accessCode)}</strong>.`
+        ? `Войдите по адресу ${loginUrl}, используя ваш email и ваш персональный код доступа: <strong style="color:${GOLD};">${escapeHtml(accessCode)}</strong>. Никому не сообщайте этот код.`
         : `Войдите по адресу ${loginUrl}, используя ваш email. Код доступа предоставит ваш менеджер.`;
       const lines = [
         `${greeting} Поздравляем — ваша заявка одобрена, и для вас создан кабинет инвестора.`,

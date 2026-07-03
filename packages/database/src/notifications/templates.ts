@@ -195,7 +195,7 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
   },
   INVESTOR_DOCUMENT_READY: ({ payload }) => {
     const name = getString(payload, "fullName", "Investor");
-    const text = `An onboarding agreement was generated for ${name} and is awaiting signature in the investor cabinet.`;
+    const text = `An onboarding agreement was generated for ${name}. The document record is awaiting the investor signature in the cabinet.`;
 
     return {
       subject: "Investor document ready for signature",
@@ -207,7 +207,7 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
   PASSWORD_RESET: () => {
     // Investor-facing content is built in email-content.ts; this internal
     // template exists only to satisfy the type-complete registry.
-    const text = "A password reset link was requested for an investor account.";
+    const text = "A password reset link was requested for an investor account. No administrative action is required.";
 
     return {
       subject: "Password reset requested",

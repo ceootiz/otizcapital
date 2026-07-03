@@ -135,7 +135,9 @@ describe("notification templates", () => {
       "ALLOCATION_PAYOUT_STATE_CHANGED",
       "ALLOCATION_REINVEST_DECISION_CHANGED",
       "MONTHLY_REPORT_CREATED",
-      "MONTHLY_REPORT_PUBLISHED"
+      "MONTHLY_REPORT_PUBLISHED",
+      "INVESTOR_DOCUMENT_READY",
+      "PASSWORD_RESET"
     ]);
 
     for (const type of NOTIFICATION_EVENT_TYPES) {
@@ -239,6 +241,18 @@ describe("notification templates", () => {
           "telegramText": "May 2026 report was published: May operational report. The investor can now review the operational summary and available proof categories.",
           "text": "May 2026 report was published: May operational report. The investor can now review the operational summary and available proof categories.",
           "type": "MONTHLY_REPORT_PUBLISHED",
+        },
+        {
+          "subject": "Investor document ready for signature",
+          "telegramText": "An onboarding agreement was generated for Template Safety Lead. The document record is awaiting the investor signature in the cabinet.",
+          "text": "An onboarding agreement was generated for Template Safety Lead. The document record is awaiting the investor signature in the cabinet.",
+          "type": "INVESTOR_DOCUMENT_READY",
+        },
+        {
+          "subject": "Password reset requested",
+          "telegramText": "A password reset link was requested for an investor account. No administrative action is required.",
+          "text": "A password reset link was requested for an investor account. No administrative action is required.",
+          "type": "PASSWORD_RESET",
         },
       ]
     `);

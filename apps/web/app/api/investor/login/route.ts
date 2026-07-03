@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createInvestorSessionRecord, findInvestorByEmail, serializeInvestor } from "@otiz/database";
@@ -26,6 +27,12 @@ function isEmail(value: string) {
   return /^\S+@\S+\.\S+$/.test(value);
 }
 
+function safeEqual(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
 export async function POST(request: Request) {
   const rateLimit = checkInvestorLoginRateLimit(request);
 
@@ -49,15 +56,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "A valid investor email is required." }, { status: 422 });
   }
 
-  // Access-code mode is verified before any DB lookup (constant-time, no email
-  // enumeration). Password mode must look the investor up first to read the hash,
-  // so verification happens after the lookup below.
-  if (!usePassword && !verifyInvestorAccessCode(accessCode)) {
-    recordInvestorLoginFailure(request);
-    return NextResponse.json({ ok: false, error: "Invalid investor access code." }, { status: 401 });
-  }
-
   const investor = await findInvestorByEmail(email);
+
+  // Access-code mode. Investors with a personalAccessCode (accounts created
+  // after the shared-code hole was closed) must present THEIR code; the shared
+  // INVESTOR_ACCESS_CODE only works for legacy accounts without one. For an
+  // unknown email the shared code is still verified first so the error ordering
+  // (401 invalid code before 404 unknown account) matches the previous behavior.
+  if (!usePassword) {
+    const codeMatches = investor?.personalAccessCode
+      ? Boolean(accessCode) && safeEqual(accessCode, investor.personalAccessCode)
+      : verifyInvestorAccessCode(accessCode);
+    if (!codeMatches) {
+      recordInvestorLoginFailure(request);
+      return NextResponse.json({ ok: false, error: "Invalid investor access code." }, { status: 401 });
+    }
+  }
 
   if (!investor) {
     recordInvestorLoginFailure(request);

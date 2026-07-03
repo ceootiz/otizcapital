@@ -765,7 +765,17 @@ function AdminNotice({ tone, message }: { tone: "success" | "error"; message: st
 // XLSX report files + agreement status (Blocks B & C)
 // ---------------------------------------------------------------------------
 
-type FileReport = { id: string; fileName: string; month: string; uploadedAt: string };
+type FileReport = { id: string; fileName: string; month: string; uploadedAt: string; parsedRows?: number };
+
+// Russian pluralization for extracted row counts (строка/строки/строк).
+function pluralizeRowsRu(n: number) {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "строк";
+  if (mod10 === 1) return "строка";
+  if (mod10 >= 2 && mod10 <= 4) return "строки";
+  return "строк";
+}
 type AgreementDoc = { id: string; status: string; signedAt: string | null; createdAt: string } | null;
 
 const REPORTS_STRINGS = {
@@ -780,6 +790,7 @@ const REPORTS_STRINGS = {
     upload: "Upload report",
     uploading: "Uploading...",
     noReports: "No report files uploaded yet.",
+    rowsExtracted: (n: number) => `${n} row${n === 1 ? "" : "s"} extracted`,
     colFile: "File",
     colMonth: "Month",
     colDate: "Uploaded",
@@ -802,6 +813,7 @@ const REPORTS_STRINGS = {
     upload: "Загрузить отчёт",
     uploading: "Загрузка...",
     noReports: "Файлы отчётов ещё не загружены.",
+    rowsExtracted: (n: number) => `${n} ${pluralizeRowsRu(n)} извлечено`,
     colFile: "Файл",
     colMonth: "Месяц",
     colDate: "Загружено",
@@ -940,7 +952,12 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
               <tbody>
                 {reports.map((report) => (
                   <tr key={report.id} className="border-t border-border dark:border-white/10">
-                    <td className="py-3 pr-4 text-foreground">{report.fileName}</td>
+                    <td className="py-3 pr-4 text-foreground">
+                      {report.fileName}
+                      {report.parsedRows ? (
+                        <span className="ml-2 text-xs text-muted-foreground">· {t.rowsExtracted(report.parsedRows)}</span>
+                      ) : null}
+                    </td>
                     <td className="py-3 pr-4 text-muted-foreground">{report.month}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{fmt.date(new Date(report.uploadedAt))}</td>
                     <td className="py-3 text-right">

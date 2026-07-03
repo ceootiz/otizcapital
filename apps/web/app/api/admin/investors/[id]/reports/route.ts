@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  countPaymentsByFileReport,
   findInvestorById,
   getLatestAgreementForInvestor,
   listInvestorFileReports,
@@ -22,14 +23,15 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     return NextResponse.json({ ok: false, error: "Investor not found." }, { status: 404 });
   }
 
-  const [reports, agreement] = await Promise.all([
+  const [reports, agreement, paymentCounts] = await Promise.all([
     listInvestorFileReports(investor.id),
-    getLatestAgreementForInvestor(investor.id)
+    getLatestAgreementForInvestor(investor.id),
+    countPaymentsByFileReport(investor.id)
   ]);
 
   return NextResponse.json({
     ok: true,
-    data: reports.map(serializeInvestorFileReport),
+    data: reports.map((report) => ({ ...serializeInvestorFileReport(report), parsedRows: paymentCounts[report.id] ?? 0 })),
     agreement: agreement ? serializeInvestorDocument(agreement) : null
   });
 }

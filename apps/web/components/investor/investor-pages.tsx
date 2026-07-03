@@ -9,7 +9,17 @@ import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 import { ContactManagerButton } from "./contact-manager-button";
 
-type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "withdrawals" | "reinvest" | "settings";
+type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "settings";
+
+export type InvestorPaymentView = {
+  id: string;
+  month: string;
+  period: string | null;
+  profit: number;
+  payout: number;
+  reinvested: number;
+  roiPercent: number | null;
+};
 
 export type InvestorFileReportView = {
   id: string;
@@ -40,13 +50,14 @@ const INVESTOR_STRINGS = {
     backHome: "Back to homepage",
     brand: "OTIZ INVESTOR",
     investorLabel: "Investor",
-    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", withdrawals: "Withdrawals", reinvest: "Reinvest", settings: "Settings" },
+    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", history: "History", withdrawals: "Withdrawals", reinvest: "Reinvest", settings: "Settings" },
     pages: {
       dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
       deposit: { eyebrow: "Account funding", title: "Deposit", description: "Send funds to the address below and notify your manager." },
       allocations: { eyebrow: "Supply cycle visibility", title: "Allocations", description: "Allocation cards show commerce supply IDs, product focus, cycle status, and latest operational update." },
       reports: { eyebrow: "Monthly reporting", title: "Reports", description: "Monthly summaries keep the focus on allocations, performance, payouts, and operational notes." },
       documents: { eyebrow: "Agreements & signatures", title: "Documents", description: "Review and sign your onboarding agreement and other documents prepared by your manager." },
+      history: { eyebrow: "Extracted from monthly reports", title: "Payment history", description: "Structured month-by-month figures extracted from the report files published by your manager." },
       withdrawals: { eyebrow: "Manager-reviewed requests", title: "Withdrawals", description: "Request review and cooldown visibility with manager-controlled payout scheduling." },
       reinvest: { eyebrow: "Instruction preference", title: "Reinvest", description: "A simple preference interface for reinvest instructions, intentionally separated from real money movement." },
       settings: { eyebrow: "Account settings", title: "Settings", description: "Manage your security, language, notification preferences, and account data." }
@@ -114,19 +125,26 @@ const INVESTOR_STRINGS = {
       steps: { received: "Request received", review: "Under review", approved: "Approved", scheduled: "Payout scheduled", paid: "Paid" }
     },
     moneyWork: { active: "Active", daysWorking: (days: number) => `${days} ${days === 1 ? "day" : "days"} at work` },
+    history: {
+      totalsProfit: "Total profit", totalsPayout: "Total payouts", totalsReinvested: "Total reinvested",
+      colMonth: "Month", colProfit: "Profit", colPayout: "Payout", colReinvested: "Reinvested", colRoi: "ROI %",
+      emptyTitle: "Payment history will appear after your manager uploads reports.",
+      emptyDesc: "Each uploaded monthly report file adds its figures here automatically."
+    },
     common: { notScheduled: "Not scheduled", notAvailable: "Not available" }
   },
   ru: {
     backHome: "На главную",
     brand: "OTIZ INVESTOR",
     investorLabel: "Инвестор",
-    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", withdrawals: "Выводы", reinvest: "Реинвест", settings: "Настройки" },
+    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", history: "История", withdrawals: "Выводы", reinvest: "Реинвест", settings: "Настройки" },
     pages: {
       dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
       deposit: { eyebrow: "Пополнение счёта", title: "Пополнение", description: "Отправьте средства на указанный адрес и уведомите менеджера." },
       allocations: { eyebrow: "Видимость циклов поставок", title: "Аллокации", description: "Карточки аллокаций показывают ID поставки, продукт, статус цикла и последнее операционное обновление." },
       reports: { eyebrow: "Ежемесячная отчётность", title: "Отчёты", description: "Ежемесячные сводки фокусируются на аллокациях, результатах, выплатах и операционных заметках." },
       documents: { eyebrow: "Соглашения и подписи", title: "Документы", description: "Ознакомьтесь и подпишите инвестиционное соглашение и другие документы, подготовленные менеджером." },
+      history: { eyebrow: "Извлечено из ежемесячных отчётов", title: "История платежей", description: "Структурированные помесячные показатели, извлечённые из файлов отчётов, опубликованных менеджером." },
       withdrawals: { eyebrow: "Запросы с проверкой менеджером", title: "Выводы", description: "Запрос проверки и видимость периода удержания с планированием выплат под контролем менеджера." },
       reinvest: { eyebrow: "Предпочтение по инструкциям", title: "Реинвест", description: "Простой интерфейс предпочтений по реинвестированию, намеренно отделённый от реального движения средств." },
       settings: { eyebrow: "Настройки аккаунта", title: "Настройки", description: "Управляйте безопасностью, языком, настройками уведомлений и данными аккаунта." }
@@ -194,6 +212,12 @@ const INVESTOR_STRINGS = {
       steps: { received: "Запрос получен", review: "На рассмотрении", approved: "Одобрено", scheduled: "Выплата запланирована", paid: "Выплачено" }
     },
     moneyWork: { active: "Активна", daysWorking: (days: number) => `${days} ${pluralizeDaysRu(days)} в работе` },
+    history: {
+      totalsProfit: "Общая прибыль", totalsPayout: "Всего выплат", totalsReinvested: "Всего реинвестировано",
+      colMonth: "Месяц", colProfit: "Прибыль", colPayout: "Выплата", colReinvested: "Реинвестировано", colRoi: "ROI %",
+      emptyTitle: "История платежей появится после загрузки отчётов менеджером.",
+      emptyDesc: "Каждый загруженный файл ежемесячного отчёта автоматически добавляет сюда свои показатели."
+    },
     common: { notScheduled: "Не запланировано", notAvailable: "Недоступно" }
   }
 } as const;
@@ -601,6 +625,66 @@ export function InvestorWithdrawalsPage({
               <WithdrawalGroup locale={locale} title={t.withdraw.paidHistory} withdrawals={paid} emptyText={t.withdraw.noPaid} />
             </>
           )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Task 2: structured payment history extracted from uploaded XLSX reports.
+export function InvestorHistoryPage({
+  locale,
+  payments,
+  totals
+}: {
+  locale: Locale;
+  payments: InvestorPaymentView[];
+  totals: { profit: number; payout: number; reinvested: number };
+}) {
+  const t = getInvestorStrings(locale);
+  const f = makeFormatters(locale, t);
+
+  if (payments.length === 0) {
+    return <InvestorEmptyState title={t.history.emptyTitle} description={t.history.emptyDesc} />;
+  }
+
+  return (
+    <div className="grid gap-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <KpiCard icon={<BarChart3 className="size-5" />} label={t.history.totalsProfit} value={f.money(totals.profit)} />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.history.totalsPayout} value={f.money(totals.payout)} />
+        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.history.totalsReinvested} value={f.money(totals.reinvested)} />
+      </div>
+
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+        <CardContent className="p-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <th className="pb-3 pr-4">{t.history.colMonth}</th>
+                  <th className="pb-3 pr-4 text-right">{t.history.colProfit}</th>
+                  <th className="pb-3 pr-4 text-right">{t.history.colPayout}</th>
+                  <th className="pb-3 pr-4 text-right">{t.history.colReinvested}</th>
+                  <th className="pb-3 text-right">{t.history.colRoi}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((payment) => (
+                  <tr key={payment.id} className="border-t border-border dark:border-white/10">
+                    <td className="py-3 pr-4">
+                      <span className="font-medium text-foreground">{payment.month}</span>
+                      {payment.period ? <span className="ml-2 text-xs text-muted-foreground">{payment.period}</span> : null}
+                    </td>
+                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.profit)}</td>
+                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.payout)}</td>
+                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.reinvested)}</td>
+                    <td className="py-3 text-right text-muted-foreground">{payment.roiPercent === null ? "—" : f.percent(payment.roiPercent)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>

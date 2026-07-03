@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@otiz/lib";
 
 export type AdminNavigationSection =
+  | "dashboard"
   | "applications"
   | "investors"
   | "allocations"
@@ -14,6 +15,7 @@ export type AdminNavigationSection =
   | "contact-settings";
 
 const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale: Locale) => string }> = [
+  { key: "dashboard", href: (locale) => `/${locale}/admin/dashboard` },
   { key: "applications", href: (locale) => `/${locale}/admin/applications` },
   { key: "investors", href: (locale) => `/${locale}/admin/investors` },
   { key: "allocations", href: (locale) => `/${locale}/admin/allocations` },
@@ -28,6 +30,7 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
 
 const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
   en: {
+    dashboard: "Dashboard",
     applications: "Applications",
     investors: "Investors",
     allocations: "Allocations",
@@ -40,6 +43,7 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     "contact-settings": "Contact"
   },
   ru: {
+    dashboard: "Дашборд",
     applications: "Заявки",
     investors: "Инвесторы",
     allocations: "Аллокации",
