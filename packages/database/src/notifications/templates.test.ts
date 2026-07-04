@@ -138,7 +138,9 @@ describe("notification templates", () => {
       "MONTHLY_REPORT_PUBLISHED",
       "INVESTOR_DOCUMENT_READY",
       "PASSWORD_RESET",
-      "DEPOSIT_CLAIMED"
+      "DEPOSIT_CLAIMED",
+      "ARBITRAGEUR_WELCOME",
+      "REFERRAL_COMMISSION_ACCRUED"
     ]);
 
     for (const type of NOTIFICATION_EVENT_TYPES) {
@@ -260,6 +262,18 @@ describe("notification templates", () => {
           "telegramText": "Template Safety Lead reported an outgoing deposit. Review the deposit record and confirm receipt before crediting.",
           "text": "Template Safety Lead reported an outgoing deposit. Review the deposit record and confirm receipt before crediting.",
           "type": "DEPOSIT_CLAIMED",
+        },
+        {
+          "subject": "Referral partner registered",
+          "telegramText": "A referral partner registered a referral partner account and is pending administrative review. Review the partner record before granting cabinet access.",
+          "text": "A referral partner registered a referral partner account and is pending administrative review. Review the partner record before granting cabinet access.",
+          "type": "ARBITRAGEUR_WELCOME",
+        },
+        {
+          "subject": "Referral commission accrued",
+          "telegramText": "Referral commission accrued for A referrer. Review the commission record in the referral panel and mark it paid once settled.",
+          "text": "Referral commission accrued for A referrer. Review the commission record in the referral panel and mark it paid once settled.",
+          "type": "REFERRAL_COMMISSION_ACCRUED",
         },
       ]
     `);

@@ -8,6 +8,16 @@ const DEFAULT_LOCALE = "en";
 
 const ADMIN_SESSION_COOKIE = "admin_session";
 const INVESTOR_SESSION_COOKIE = "investor_session";
+const ARBITRAGEUR_SESSION_COOKIE = "arbitrageur_session";
+const REFERRAL_COOKIE = "referral_code";
+const REFERRAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+
+// Referral codes are 8-char alphanumeric; accept a slightly wider shape and
+// clamp length so a hostile ?ref= value can never bloat the cookie.
+function sanitizeReferralCode(value: string | null): string {
+  if (!value) return "";
+  return value.replace(/[^A-Za-z0-9]/g, "").slice(0, 32);
+}
 
 // Splits an optional leading /<locale> segment off the pathname so the area
 // checks below are locale-agnostic. Falls back to the default locale when the
@@ -34,6 +44,22 @@ function redirectToLogin(request: NextRequest, locale: string, area: "admin" | "
 // stays in the route handlers / server components — this is defense-in-depth so
 // an unauthenticated request never renders a protected page shell at all.
 export function middleware(request: NextRequest) {
+  // Referral capture: any request carrying ?ref=CODE drops a 30-day cookie that
+  // the application-submit route later reads for attribution. Applied to every
+  // response below (including redirects) so the code survives the "/" redirect.
+  const referralCode = sanitizeReferralCode(request.nextUrl.searchParams.get("ref"));
+  const withReferral = (response: NextResponse) => {
+    if (referralCode) {
+      response.cookies.set(REFERRAL_COOKIE, referralCode, {
+        maxAge: REFERRAL_COOKIE_MAX_AGE,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true
+      });
+    }
+    return response;
+  };
+
   // First-visit language detection: a bare "/" (no locale prefix) redirects to
   // /ru for Russian-preferring browsers, otherwise /en. Locale-prefixed paths
   // (/ru, /en, /es, /de, /zh, ...) are never touched, so an explicit choice is
@@ -42,7 +68,7 @@ export function middleware(request: NextRequest) {
     const acceptsRussian = (request.headers.get("accept-language") || "").trim().toLowerCase().startsWith("ru");
     const url = request.nextUrl.clone();
     url.pathname = acceptsRussian ? "/ru" : "/en";
-    return NextResponse.redirect(url);
+    return withReferral(NextResponse.redirect(url));
   }
 
   const { locale, rest } = splitLocale(request.nextUrl.pathname);
@@ -52,23 +78,35 @@ export function middleware(request: NextRequest) {
     rest === "/admin/login" ||
     rest === "/investor/login" ||
     rest === "/investor/forgot-password" ||
-    rest === "/investor/reset-password"
+    rest === "/investor/reset-password" ||
+    rest === "/arbitrage/login" ||
+    rest === "/arbitrage/register"
   ) {
-    return NextResponse.next();
+    return withReferral(NextResponse.next());
   }
 
   const isAdminArea = rest === "/admin" || rest.startsWith("/admin/");
   if (isAdminArea && !request.cookies.get(ADMIN_SESSION_COOKIE)?.value) {
-    return redirectToLogin(request, locale, "admin");
+    return withReferral(redirectToLogin(request, locale, "admin"));
   }
 
   const isInvestorArea = rest === "/investor" || rest.startsWith("/investor/");
   if (isInvestorArea && !request.cookies.get(INVESTOR_SESSION_COOKIE)?.value) {
-    return redirectToLogin(request, locale, "investor");
+    return withReferral(redirectToLogin(request, locale, "investor"));
+  }
+
+  // Arbitrageur cabinet: everything under /arbitrage except the public
+  // login/register pages (handled above) requires an arbitrageur session.
+  const isArbitrageurArea = rest === "/arbitrage" || rest.startsWith("/arbitrage/");
+  if (isArbitrageurArea && !request.cookies.get(ARBITRAGEUR_SESSION_COOKIE)?.value) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/arbitrage/login`;
+    url.search = "";
+    return withReferral(NextResponse.redirect(url));
   }
 
   // Everything else (/, /apply, marketing sections, static assets) is public.
-  return NextResponse.next();
+  return withReferral(NextResponse.next());
 }
 
 export const config = {

@@ -223,6 +223,25 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
       return { subject: "Новый отчёт доступен — OTIZ Capital", html, text: toText(heading, [...lines, `Отчёты: ${reportsUrl}`]) };
     }
 
+    case "ARBITRAGEUR_WELCOME": {
+      const heading = "Добро пожаловать в реферальную программу";
+      const partnerName = str(payload, "name");
+      const partnerGreeting = partnerName ? `Здравствуйте, ${escapeHtml(partnerName)}!` : "Здравствуйте!";
+      const referralLink = str(payload, "referralLink");
+      const loginUrl = `${base}/ru/arbitrage/login`;
+      const lines = [
+        `${partnerGreeting} Вы зарегистрировались как партнёр реферальной программы OTIZ Capital.`,
+        "Ваш аккаунт проходит проверку. После одобрения администратором вы сможете войти в кабинет и отслеживать переходы, заявки и начисленные комиссии.",
+        referralLink ? `Ваша реферальная ссылка: ${escapeHtml(referralLink)}` : "Реферальная ссылка появится в вашем кабинете после одобрения."
+      ];
+      const html = shell(heading, paragraphs(lines) + button(loginUrl, "Войти в кабинет"));
+      return {
+        subject: "Реферальная программа OTIZ Capital",
+        html,
+        text: toText(heading, [...lines, `Вход: ${loginUrl}`])
+      };
+    }
+
     default:
       return null;
   }

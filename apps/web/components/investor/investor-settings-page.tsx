@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createAdminFormatters, locales, localeNames, localeShortNames, type Locale } from "@otiz/lib";
+import { InvestorReferralSection } from "./investor-referral-section";
 
 // ---------------------------------------------------------------------------
 // Localized strings (EN + RU) — identical keys
@@ -355,6 +356,9 @@ export function InvestorSettingsPage({
 
   return (
     <div className="grid gap-6">
+      {/* Referral program (self-contained: loads its own data) */}
+      <InvestorReferralSection locale={locale} />
+
       {/* 1) SECURITY — Password */}
       <section className={cardClass}>
         <div className="mb-5">

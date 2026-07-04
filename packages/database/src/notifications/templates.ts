@@ -229,6 +229,29 @@ const templates: Record<NotificationEventType, NotificationTemplate> = {
       html: paragraph(text),
       telegramText: text
     };
+  },
+  ARBITRAGEUR_WELCOME: ({ payload }) => {
+    const name = getString(payload, "name", "A referral partner");
+    const text = `${name} registered a referral partner account and is pending administrative review. Review the partner record before granting cabinet access.`;
+
+    return {
+      subject: "Referral partner registered",
+      text,
+      html: paragraph(text),
+      telegramText: text
+    };
+  },
+  REFERRAL_COMMISSION_ACCRUED: ({ payload }) => {
+    const referrer = getString(payload, "referrerName", "A referrer");
+    const amount = getString(payload, "commissionAmount", "");
+    const text = `Referral commission accrued for ${referrer}${amount ? ` — ${amount}` : ""}. Review the commission record in the referral panel and mark it paid once settled.`;
+
+    return {
+      subject: "Referral commission accrued",
+      text,
+      html: paragraph(text),
+      telegramText: text
+    };
   }
 };
 

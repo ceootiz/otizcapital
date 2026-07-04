@@ -12,9 +12,9 @@ datasource db {
 // TS content in packages/lib remains the fallback when a row is missing.
 model SiteContent {
   id        String   @id @default(cuid())
-  scope     String   // "home" | "apply"
-  locale    String   // en | es | de | ru | zh
-  dataJson  String   // JSON object of partial dictionary overrides
+  scope     String // "home" | "apply"
+  locale    String // en | es | de | ru | zh
+  dataJson  String // JSON object of partial dictionary overrides
   updatedBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -56,7 +56,7 @@ model SiteSettings {
 }
 
 model InvestorApplication {
-  id                      String   @id @default(cuid())
+  id                      String    @id @default(cuid())
   investorId              String?
   fullName                String
   telegram                String?
@@ -70,17 +70,21 @@ model InvestorApplication {
   heardFrom               String
   message                 String?
   consentAccepted         Boolean
+  // Referral attribution captured at submit time from the referral_code cookie.
+  // Exactly one is set (or neither); copied onto the Investor on conversion.
+  referredByArbitrageId   String?
+  referredByInvestorId    String?
   managerNotes            String?
-  priority                String   @default("NORMAL")
+  priority                String    @default("NORMAL")
   sourceLabel             String?
   nextAction              String?
   nextActionAt            DateTime?
   contactedAt             DateTime?
   approvedAt              DateTime?
   rejectedAt              DateTime?
-  status                  String   @default("NEW")
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  status                  String    @default("NEW")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
   investor                Investor? @relation(fields: [investorId], references: [id])
 
   @@index([status])
@@ -93,40 +97,51 @@ model InvestorApplication {
 }
 
 model Investor {
-  id                  String                @id @default(cuid())
-  fullName            String
-  email               String                @unique
-  telegram            String?
-  status              String                @default("ACTIVE")
-  sourceApplicationId String?
-  totalCapital        String                @default("0")
-  reinvestEnabled     Boolean               @default(false)
-  passwordHash        String?
+  id                          String                 @id @default(cuid())
+  fullName                    String
+  email                       String                 @unique
+  telegram                    String?
+  status                      String                 @default("ACTIVE")
+  sourceApplicationId         String?
+  totalCapital                String                 @default("0")
+  reinvestEnabled             Boolean                @default(false)
+  passwordHash                String?
   // Per-investor login code (replaces the shared INVESTOR_ACCESS_CODE for
   // accounts created after this field shipped; null = legacy shared-code login).
-  personalAccessCode  String?
-  emailNotificationsEnabled Boolean         @default(true)
-  lastReportAt        DateTime?
-  notes               String?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  applications        InvestorApplication[]
-  allocations         Allocation[]
-  monthlyReports      MonthlyReport[]
-  withdrawalRequests  WithdrawalRequest[]
-  ledgerEntries       LedgerEntry[]
-  operationalIncidents OperationalIncident[]
-  sessions            InvestorSession[]
-  notifications       InvestorNotification[]
-  fileReports         InvestorFileReport[]
-  documents           InvestorDocument[]
-  passwordResetTokens PasswordResetToken[]
-  payments            InvestorPayment[]
-  depositNotifications DepositNotification[]
+  personalAccessCode          String?
+  emailNotificationsEnabled   Boolean                @default(true)
+  lastReportAt                DateTime?
+  notes                       String?
+  // Referral program: this investor's own shareable code, plus who referred them
+  // (at most one of the two). Investor-referrer IDs are stored as plain scalars
+  // (no self-relation) to match the arbitrageur field shape.
+  referralCode                String?                @unique
+  referredByArbitrageId       String?
+  referredByInvestorId        String?
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  applications                InvestorApplication[]
+  allocations                 Allocation[]
+  monthlyReports              MonthlyReport[]
+  withdrawalRequests          WithdrawalRequest[]
+  ledgerEntries               LedgerEntry[]
+  operationalIncidents        OperationalIncident[]
+  sessions                    InvestorSession[]
+  notifications               InvestorNotification[]
+  fileReports                 InvestorFileReport[]
+  documents                   InvestorDocument[]
+  passwordResetTokens         PasswordResetToken[]
+  payments                    InvestorPayment[]
+  depositNotifications        DepositNotification[]
+  referralClicksMade          ReferralClick[]        @relation("InvestorReferralClicks")
+  referralCommissionsEarned   ReferralCommission[]   @relation("InvestorReferralCommissions")
+  referralCommissionsReceived ReferralCommission[]   @relation("ReferredInvestorCommissions")
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
+  @@index([referredByArbitrageId])
+  @@index([referredByInvestorId])
 }
 
 // Single-use, 1-hour password reset tokens for the investor "forgot password"
@@ -149,14 +164,14 @@ model PasswordResetToken {
 // The workbook is stored inline as base64 so no external object storage is
 // required. Downloaded by the investor from the cabinet "Files" section.
 model InvestorFileReport {
-  id         String   @id @default(cuid())
+  id         String            @id @default(cuid())
   investorId String
   fileName   String
-  fileData   String   // base64-encoded .xlsx workbook
+  fileData   String // base64-encoded .xlsx workbook
   month      String
   uploadedBy String
-  uploadedAt DateTime @default(now())
-  investor   Investor @relation(fields: [investorId], references: [id])
+  uploadedAt DateTime          @default(now())
+  investor   Investor          @relation(fields: [investorId], references: [id])
   payments   InvestorPayment[]
 
   @@index([investorId])
@@ -213,9 +228,9 @@ model InvestorPayment {
 model InvestorDocument {
   id         String    @id @default(cuid())
   investorId String
-  type       String    // "AGREEMENT"
+  type       String // "AGREEMENT"
   fileName   String
-  fileData   String    // base64-encoded PDF
+  fileData   String // base64-encoded PDF
   status     String    @default("PENDING_SIGNATURE") // PENDING_SIGNATURE | SIGNED
   signedAt   DateTime?
   createdAt  DateTime  @default(now())
@@ -261,24 +276,24 @@ model InvestorNotification {
 }
 
 model WithdrawalRequest {
-  id                 String   @id @default(cuid())
-  investorId         String
-  amount             String
-  currency           String   @default("USD")
-  status             String   @default("REQUESTED")
-  requestedAt        DateTime @default(now())
-  approvedAt         DateTime?
-  rejectedAt         DateTime?
-  paidAt             DateTime?
-  scheduledFor       DateTime?
-  method             String?
-  destinationMasked  String?
-  adminNote          String?
-  investorNote       String?
-  rejectionReason    String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  investor           Investor @relation(fields: [investorId], references: [id])
+  id                String    @id @default(cuid())
+  investorId        String
+  amount            String
+  currency          String    @default("USD")
+  status            String    @default("REQUESTED")
+  requestedAt       DateTime  @default(now())
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  paidAt            DateTime?
+  scheduledFor      DateTime?
+  method            String?
+  destinationMasked String?
+  adminNote         String?
+  investorNote      String?
+  rejectionReason   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  investor          Investor  @relation(fields: [investorId], references: [id])
 
   @@index([investorId])
   @@index([status])
@@ -286,26 +301,26 @@ model WithdrawalRequest {
 }
 
 model MonthlyReport {
-  id               String    @id @default(cuid())
-  investorId       String
-  month            String
-  title            String
-  summary          String
-  performanceNote  String?
-  payoutNote       String?
-  proofSummaryJson String?
-  readinessScore   Int?
-  readinessState   String?
+  id                    String                    @id @default(cuid())
+  investorId            String
+  month                 String
+  title                 String
+  summary               String
+  performanceNote       String?
+  payoutNote            String?
+  proofSummaryJson      String?
+  readinessScore        Int?
+  readinessState        String?
   readinessSnapshotJson String?
-  readinessEvaluatedAt DateTime?
-  status           String    @default("DRAFT")
-  publishedAt      DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  investor         Investor  @relation(fields: [investorId], references: [id])
-  allocations      MonthlyReportAllocation[]
-  ledgerEntries    LedgerEntry[]
-  operationalIncidents OperationalIncident[]
+  readinessEvaluatedAt  DateTime?
+  status                String                    @default("DRAFT")
+  publishedAt           DateTime?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  investor              Investor                  @relation(fields: [investorId], references: [id])
+  allocations           MonthlyReportAllocation[]
+  ledgerEntries         LedgerEntry[]
+  operationalIncidents  OperationalIncident[]
 
   @@index([investorId])
   @@index([status])
@@ -315,49 +330,49 @@ model MonthlyReport {
 }
 
 model ReadinessPolicy {
-  id                                      String   @id @default(cuid())
-  name                                    String
-  isActive                                Boolean  @default(false)
-  requiredProofCategoriesJson             String
-  warningProofCategoriesJson              String
-  minimumProofCompletenessScore           Int      @default(50)
-  blockOnUnreviewedCriticalArtifacts      Boolean  @default(true)
-  blockOnHiddenInvestorLeakRisk           Boolean  @default(true)
-  blockOnStaleSnapshot                    Boolean  @default(true)
-  allowPublishWithWarnings                Boolean  @default(true)
-  requireWarningAcknowledgment            Boolean  @default(true)
-  createdAt                               DateTime @default(now())
-  updatedAt                               DateTime @updatedAt
+  id                                 String   @id @default(cuid())
+  name                               String
+  isActive                           Boolean  @default(false)
+  requiredProofCategoriesJson        String
+  warningProofCategoriesJson         String
+  minimumProofCompletenessScore      Int      @default(50)
+  blockOnUnreviewedCriticalArtifacts Boolean  @default(true)
+  blockOnHiddenInvestorLeakRisk      Boolean  @default(true)
+  blockOnStaleSnapshot               Boolean  @default(true)
+  allowPublishWithWarnings           Boolean  @default(true)
+  requireWarningAcknowledgment       Boolean  @default(true)
+  createdAt                          DateTime @default(now())
+  updatedAt                          DateTime @updatedAt
 
   @@index([isActive])
   @@index([updatedAt])
 }
 
 model Allocation {
-  id                  String   @id @default(cuid())
-  investorId          String
-  supplyCode          String
-  productName         String
-  marketplace         String?
-  allocationAmount    String
-  currency            String   @default("USD")
-  status              String
-  expectedCycleDays   Int?
-  expectedPayoutAt    DateTime?
-  riskLevel           String   @default("STANDARD")
-  estimatedResult     String?
-  actualProfit        String?
-  startedAt           DateTime?
-  completedAt         DateTime?
-  payoutStatus        String   @default("NOT_READY")
-  reinvestDecision    String   @default("UNDECIDED")
-  notes               String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  investor            Investor @relation(fields: [investorId], references: [id])
-  proofs              AllocationProof[]
-  monthlyReports      MonthlyReportAllocation[]
-  ledgerEntries       LedgerEntry[]
+  id                   String                    @id @default(cuid())
+  investorId           String
+  supplyCode           String
+  productName          String
+  marketplace          String?
+  allocationAmount     String
+  currency             String                    @default("USD")
+  status               String
+  expectedCycleDays    Int?
+  expectedPayoutAt     DateTime?
+  riskLevel            String                    @default("STANDARD")
+  estimatedResult      String?
+  actualProfit         String?
+  startedAt            DateTime?
+  completedAt          DateTime?
+  payoutStatus         String                    @default("NOT_READY")
+  reinvestDecision     String                    @default("UNDECIDED")
+  notes                String?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  investor             Investor                  @relation(fields: [investorId], references: [id])
+  proofs               AllocationProof[]
+  monthlyReports       MonthlyReportAllocation[]
+  ledgerEntries        LedgerEntry[]
   operationalIncidents OperationalIncident[]
 
   @@index([investorId])
@@ -388,16 +403,16 @@ model MonthlyReportAllocation {
 }
 
 model AllocationProof {
-  id            String     @id @default(cuid())
-  allocationId  String
-  type          String
-  title         String
-  description   String?
-  proofUrl      String?
-  status        String     @default("PENDING")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  allocation    Allocation @relation(fields: [allocationId], references: [id])
+  id           String     @id @default(cuid())
+  allocationId String
+  type         String
+  title        String
+  description  String?
+  proofUrl     String?
+  status       String     @default("PENDING")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  allocation   Allocation @relation(fields: [allocationId], references: [id])
 
   @@index([allocationId])
   @@index([type])
@@ -406,33 +421,33 @@ model AllocationProof {
 }
 
 model LedgerEntry {
-  id              String         @id @default(cuid())
-  ledgerType      String
-  allocationId    String?
-  investorId      String?
-  monthlyReportId String?
-  entryType       String
-  amount          String
-  currency        String         @default("USD")
-  quantity        Int?
-  unitCost        String?
-  occurredAt      DateTime
-  sourceType      String
-  sourceId        String?
-  description     String
-  metadataJson    String?
-  createdBy       String
-  isReversal      Boolean        @default(false)
-  reversesLedgerEntryId String?
-  reversalReason  String?
+  id                       String         @id @default(cuid())
+  ledgerType               String
+  allocationId             String?
+  investorId               String?
+  monthlyReportId          String?
+  entryType                String
+  amount                   String
+  currency                 String         @default("USD")
+  quantity                 Int?
+  unitCost                 String?
+  occurredAt               DateTime
+  sourceType               String
+  sourceId                 String?
+  description              String
+  metadataJson             String?
+  createdBy                String
+  isReversal               Boolean        @default(false)
+  reversesLedgerEntryId    String?
+  reversalReason           String?
   correctedByLedgerEntryId String?
-  voidedAt        DateTime?
-  voidedBy        String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  allocation      Allocation?    @relation(fields: [allocationId], references: [id])
-  investor        Investor?      @relation(fields: [investorId], references: [id])
-  monthlyReport   MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
+  voidedAt                 DateTime?
+  voidedBy                 String?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  allocation               Allocation?    @relation(fields: [allocationId], references: [id])
+  investor                 Investor?      @relation(fields: [investorId], references: [id])
+  monthlyReport            MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
 
   @@index([ledgerType])
   @@index([allocationId])
@@ -479,27 +494,27 @@ model NotificationEvent {
 }
 
 model OperationalIncident {
-  id              String   @id @default(cuid())
+  id              String         @id @default(cuid())
   incidentType    String
   severity        String
-  status          String   @default("OPEN")
+  status          String         @default("OPEN")
   title           String
   summary         String
   allocationId    String?
   monthlyReportId String?
   investorId      String?
   source          String
-  detectedAt      DateTime @default(now())
+  detectedAt      DateTime       @default(now())
   acknowledgedAt  DateTime?
   acknowledgedBy  String?
   resolvedAt      DateTime?
   resolvedBy      String?
   metadataJson    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  allocation      Allocation? @relation(fields: [allocationId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  allocation      Allocation?    @relation(fields: [allocationId], references: [id])
   monthlyReport   MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
-  investor        Investor? @relation(fields: [investorId], references: [id])
+  investor        Investor?      @relation(fields: [investorId], references: [id])
 
   @@index([incidentType])
   @@index([severity])
@@ -510,4 +525,86 @@ model OperationalIncident {
   @@index([monthlyReportId])
   @@index([investorId])
   @@index([source, incidentType, status])
+}
+
+// ---------------------------------------------------------------------------
+// Referral program
+// ---------------------------------------------------------------------------
+
+// Singleton program settings (one row, id "default"). Rates are stored as
+// fractions (0.10 = 10%). Follows the YieldSettings/SiteSettings singleton
+// pattern rather than a cuid id so get-or-create is trivial.
+model ReferralProgram {
+  id                      String   @id @default("default")
+  arbitrageurRate         Decimal  @default(0.10)
+  investorReferrerRate    Decimal  @default(0.10)
+  minDepositForCommission Decimal  @default(5000)
+  updatedAt               DateTime @updatedAt
+}
+
+// External traffic partner with their own cabinet. Self-registers (status
+// PENDING) and must be approved by an admin (ACTIVE) before they can log in.
+model Arbitrageur {
+  id             String               @id @default(cuid())
+  name           String
+  email          String               @unique
+  telegramHandle String?
+  referralCode   String               @unique
+  passwordHash   String?
+  // Optional per-partner override of the program's arbitrageurRate (fraction).
+  customRate     Decimal?
+  status         String               @default("PENDING") // PENDING | ACTIVE | SUSPENDED
+  totalEarned    Decimal              @default(0)
+  totalPaid      Decimal              @default(0)
+  createdAt      DateTime             @default(now())
+  referralClicks ReferralClick[]
+  commissions    ReferralCommission[]
+
+  @@index([status])
+  @@index([referralCode])
+}
+
+// One row per referral-link landing (or per attributed application). Carries the
+// IP + User-Agent used for fraud scoring; `suspicious` marks flagged clicks.
+model ReferralClick {
+  id                       String       @id @default(cuid())
+  arbitrageurId            String?
+  investorReferrerId       String?
+  ipAddress                String?
+  userAgent                String?
+  suspicious               Boolean      @default(false)
+  convertedToApplicationId String?
+  createdAt                DateTime     @default(now())
+  arbitrageur              Arbitrageur? @relation(fields: [arbitrageurId], references: [id])
+  investorReferrer         Investor?    @relation("InvestorReferralClicks", fields: [investorReferrerId], references: [id])
+
+  @@index([arbitrageurId])
+  @@index([investorReferrerId])
+  @@index([ipAddress])
+  @@index([createdAt])
+}
+
+// A commission accrued when a referred investor's deposit is CONFIRMED and meets
+// the minimum. Exactly one of arbitrageurId / investorReferrerId is set.
+model ReferralCommission {
+  id                 String       @id @default(cuid())
+  arbitrageurId      String?
+  investorReferrerId String?
+  referredInvestorId String
+  depositAmount      Decimal
+  commissionRate     Decimal
+  commissionAmount   Decimal
+  status             String       @default("PENDING") // PENDING | PAID
+  note               String?
+  paidAt             DateTime?
+  createdAt          DateTime     @default(now())
+  arbitrageur        Arbitrageur? @relation(fields: [arbitrageurId], references: [id])
+  investorReferrer   Investor?    @relation("InvestorReferralCommissions", fields: [investorReferrerId], references: [id])
+  referredInvestor   Investor     @relation("ReferredInvestorCommissions", fields: [referredInvestorId], references: [id])
+
+  @@index([arbitrageurId])
+  @@index([investorReferrerId])
+  @@index([referredInvestorId])
+  @@index([status])
+  @@index([createdAt])
 }

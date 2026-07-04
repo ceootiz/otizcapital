@@ -4,6 +4,7 @@ import { prisma } from "./client";
 import { createNotificationEventRecord } from "./notification-events";
 import { processPendingEmailNotificationEvents } from "./notification-processor";
 import { getSiteSettings } from "./site-settings";
+import { createReferralClick } from "./referrals";
 
 export const APPLICATION_STATUSES = ["NEW", "REVIEWED", "APPROVED", "REJECTED", "CONTACTED"] as const;
 export const APPLICATION_PRIORITIES = ["LOW", "NORMAL", "HIGH", "VIP"] as const;
@@ -32,6 +33,12 @@ export type CreateInvestorApplicationInput = {
   heardFrom: string;
   message?: string | null;
   consentAccepted: boolean;
+  // Referral attribution resolved from the referral_code cookie at the API
+  // layer (at most one is set), plus the client fingerprint for the click row.
+  referredByArbitrageId?: string | null;
+  referredByInvestorId?: string | null;
+  referralClientIp?: string | null;
+  referralUserAgent?: string | null;
 };
 
 export type InvestorApplicationListOptions = {
@@ -78,7 +85,9 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
         reinvestInterest: input.reinvestInterest,
         heardFrom: input.heardFrom,
         message: input.message || null,
-        consentAccepted: input.consentAccepted
+        consentAccepted: input.consentAccepted,
+        referredByArbitrageId: input.referredByArbitrageId ?? null,
+        referredByInvestorId: input.referredByInvestorId ?? null
       }
     });
 
@@ -118,6 +127,22 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
 
     return application;
   });
+
+  // Referral click row (best-effort, outside the tx): records the attributed
+  // application with the client fingerprint and runs the fraud scoring.
+  if (input.referredByArbitrageId || input.referredByInvestorId) {
+    try {
+      await createReferralClick({
+        arbitrageurId: input.referredByArbitrageId ?? null,
+        investorReferrerId: input.referredByInvestorId ?? null,
+        ipAddress: input.referralClientIp ?? null,
+        userAgent: input.referralUserAgent ?? null,
+        convertedToApplicationId: application.id
+      });
+    } catch (error) {
+      console.error("[otiz] Referral click creation failed:", error);
+    }
+  }
 
   await processPendingEmailNotificationEvents();
 

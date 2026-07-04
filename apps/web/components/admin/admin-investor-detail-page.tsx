@@ -123,6 +123,9 @@ const STRINGS = {
     SAVE_INVESTOR_BUSY: "Saving...",
     SOURCE_APPLICATION_TITLE: "Source application",
     SOURCE_APPLICATION_DESC: "Original approved lead context.",
+    REFERRAL_SOURCE_LABEL: "Referred by",
+    REFERRAL_SOURCE_ARB: "Arbitrageur",
+    REFERRAL_SOURCE_INV: "Investor",
     NO_EMAIL: "No email",
     PLANNED_ALLOCATION: "Planned allocation:",
     OPEN_SOURCE_APPLICATION: "Open source application",
@@ -217,6 +220,9 @@ const STRINGS = {
     SAVE_INVESTOR_BUSY: "Сохранение...",
     SOURCE_APPLICATION_TITLE: "Исходная заявка",
     SOURCE_APPLICATION_DESC: "Контекст исходного одобренного лида.",
+    REFERRAL_SOURCE_LABEL: "Источник",
+    REFERRAL_SOURCE_ARB: "Арбитражник",
+    REFERRAL_SOURCE_INV: "Инвестор",
     NO_EMAIL: "Нет email",
     PLANNED_ALLOCATION: "Планируемая аллокация:",
     OPEN_SOURCE_APPLICATION: "Открыть исходную заявку",
@@ -323,7 +329,17 @@ function calculateKpis(allocations: Allocation[]) {
   };
 }
 
-export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: { locale: Locale; investor: InvestorDetail }) {
+type ReferralSource = { type: "arbitrageur" | "investor"; name: string } | null;
+
+export function AdminInvestorDetailPage({
+  locale,
+  investor: initialInvestor,
+  referralSource = null
+}: {
+  locale: Locale;
+  investor: InvestorDetail;
+  referralSource?: ReferralSource;
+}) {
   const t = getStrings(locale);
   const formatters = createAdminFormatters(locale);
 
@@ -587,6 +603,17 @@ export function AdminInvestorDetailPage({ locale, investor: initialInvestor }: {
                   <CardDescription>{t.SOURCE_APPLICATION_DESC}</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {referralSource ? (
+                    <div className="mb-4 rounded-[1.35rem] border border-gold-200/30 bg-gold-300/15 dark:bg-gold-200/10 p-4">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.REFERRAL_SOURCE_LABEL}</p>
+                      <p className="mt-1 font-semibold text-foreground">
+                        {referralSource.name}
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">
+                          {referralSource.type === "arbitrageur" ? t.REFERRAL_SOURCE_ARB : t.REFERRAL_SOURCE_INV}
+                        </span>
+                      </p>
+                    </div>
+                  ) : null}
                   {investor.sourceApplication ? (
                     <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
                       <p className="font-semibold text-foreground">{investor.sourceApplication.fullName}</p>

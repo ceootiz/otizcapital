@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { createInvestorNotification, reviewDepositNotification, serializeDepositNotification } from "@otiz/database";
+import {
+  accrueReferralCommission,
+  createInvestorNotification,
+  recordCommissionAccruedEvent,
+  reviewDepositNotification,
+  serializeDepositNotification
+} from "@otiz/database";
 import { sanitizeAdminInput, verifyAdminCsrfToken } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +48,28 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         : `Менеджер не смог подтвердить поступление $${Number(record.amount)} (${record.network}).${adminNote ? ` Комментарий: ${adminNote}` : " Свяжитесь с менеджером."}`,
     linkHref: "/ru/investor/deposit"
   });
+
+  // Referral commission (Block 2): accrue only on a real PENDING→CONFIRMED
+  // transition (the `updated` guard above already enforced that). Best-effort —
+  // a commission failure must not fail the confirmation the manager just made.
+  if (action === "confirm") {
+    try {
+      const accrual = await accrueReferralCommission({
+        investorId: record.investorId,
+        depositAmount: Number(record.amount)
+      });
+      if (accrual.created) {
+        await recordCommissionAccruedEvent({
+          commissionId: accrual.commission.id,
+          referrerName: accrual.referrerName,
+          referrerType: accrual.referrerType,
+          commissionAmount: Number(accrual.commission.commissionAmount)
+        });
+      }
+    } catch (error) {
+      console.error("[otiz] Referral commission accrual failed:", error);
+    }
+  }
 
   return NextResponse.json({ ok: true, data: serializeDepositNotification(record) });
 }

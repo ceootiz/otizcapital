@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getAdminSession } from "@/lib/admin-session";
 import { clientIpFromRequest, hitRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import {
@@ -10,6 +11,7 @@ import {
   REINVEST_INTEREST_OPTIONS,
   createInvestorApplicationRecord,
   listInvestorApplicationRecords,
+  resolveReferralCode,
   serializeInvestorApplication,
   type ApplicationPriority,
   type ApplicationSlaFilter,
@@ -154,7 +156,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, errors: validated.errors }, { status: 422 });
     }
 
-    const application = await createInvestorApplicationRecord(validated.data);
+    // Referral attribution: resolve the referral_code cookie to an arbitrageur
+    // or investor referrer. Best-effort — a bad/expired code never blocks the
+    // application from being created.
+    const referralCode = sanitizeString(cookies().get("referral_code")?.value, 32);
+    let referredByArbitrageId: string | null = null;
+    let referredByInvestorId: string | null = null;
+    if (referralCode) {
+      try {
+        const resolved = await resolveReferralCode(referralCode);
+        if (resolved) {
+          referredByArbitrageId = resolved.arbitrageurId;
+          referredByInvestorId = resolved.investorReferrerId;
+        }
+      } catch {
+        /* ignore resolution failures */
+      }
+    }
+
+    const application = await createInvestorApplicationRecord({
+      ...validated.data,
+      referredByArbitrageId,
+      referredByInvestorId,
+      referralClientIp: clientIpFromRequest(request),
+      referralUserAgent: (request.headers.get("user-agent") || "").slice(0, 400) || null
+    });
 
     return NextResponse.json({ ok: true, data: serializeInvestorApplication(application) }, { status: 201 });
   } catch {

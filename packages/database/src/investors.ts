@@ -4,6 +4,7 @@ import { createNotificationEventRecord } from "./notification-events";
 import { processPendingEmailNotificationEvents } from "./notification-processor";
 import { serializeAllocation } from "./allocations";
 import { serializeMonthlyReport } from "./monthly-reports";
+import { generateReferralCode } from "./referrals";
 
 export const INVESTOR_STATUSES = ["ACTIVE", "PAUSED", "CLOSED"] as const;
 
@@ -216,6 +217,10 @@ export async function createInvestorFromApprovedApplication(input: {
     // every account created from here on. Legacy investors (null) keep using
     // the shared env code as a backward-compatible fallback.
     const personalAccessCode = crypto.randomBytes(16).toString("hex");
+    // Own shareable referral code for investor-to-investor referrals. Generated
+    // inline (no DB round-trip inside the tx); the @unique constraint backstops
+    // the negligible collision risk on an 8-char/32-symbol code.
+    const referralCode = generateReferralCode();
     const investor =
       existingInvestor ??
       (await transaction.investor.create({
@@ -229,7 +234,12 @@ export async function createInvestorFromApprovedApplication(input: {
           reinvestEnabled: application.reinvestInterest === "yes",
           lastReportAt: null,
           notes: application.managerNotes,
-          personalAccessCode
+          personalAccessCode,
+          referralCode,
+          // Carry the referral attribution captured on the application through
+          // to the investor so deposit-confirmation can accrue the commission.
+          referredByArbitrageId: application.referredByArbitrageId,
+          referredByInvestorId: application.referredByInvestorId
         }
       }));
     const updatedApplication = await transaction.investorApplication.update({
