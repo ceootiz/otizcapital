@@ -752,7 +752,7 @@ export async function regenerateMonthlyReportProofSnapshotRecord(input: Regenera
     }, transaction);
 
     return { ok: true as const, report };
-  });
+  }, { timeout: 30000, maxWait: 15000 });
 }
 
 export async function getReportAllocations(monthlyReportId: string) {

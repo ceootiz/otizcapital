@@ -530,8 +530,13 @@ describe("risk engine v1", () => {
     const adminReportSource = readFileSync("apps/web/components/admin/admin-report-detail-page.tsx", "utf8");
     const investorSource = `${readSourceTree("apps/web/app/[locale]/investor")}\n${readSourceTree("apps/web/components/investor")}`;
 
-    expect(adminAllocationSource).toContain(">Details</Button>");
-    expect(adminReportSource).toContain(">Details</Button>");
+    // The details toggle is now localized (button renders {t.DETAILS}/{t.details}
+    // with an English "Details" label), so scan for the localized markup + label
+    // rather than the old hard-coded button text.
+    expect(adminAllocationSource).toContain(">{t.DETAILS}</Button>");
+    expect(adminAllocationSource).toContain('DETAILS: "Details"');
+    expect(adminReportSource).toContain(">{t.details}</Button>");
+    expect(adminReportSource).toContain('details: "Details"');
     expect(investorSource).not.toContain("Risk timeline");
     expect(investorSource).not.toContain("No detailed diff stored for this event.");
     expect(investorSource).not.toContain("Manual evaluation");
