@@ -34,6 +34,48 @@ const STRINGS = {
     successBody: "Если аккаунт существует, письмо отправлено. Проверьте почту.",
     emailRequired: "Введите корректный email инвестора.",
     errorFallback: "Что-то пошло не так. Попробуйте ещё раз."
+  },
+  es: {
+    backToLogin: "Volver al inicio de sesión",
+    title: "Restablecer su contraseña",
+    description: "Introduzca su correo de inversor y le enviaremos un enlace para establecer una nueva contraseña.",
+    email: "Correo electrónico",
+    emailAria: "Correo del inversor",
+    emailPlaceholder: "you@example.com",
+    submit: "Enviar instrucciones",
+    sending: "Enviando...",
+    successTitle: "Revise su correo",
+    successBody: "Si existe una cuenta para este correo, se ha enviado un enlace de restablecimiento. Revise su bandeja de entrada.",
+    emailRequired: "Introduzca un correo de inversor válido.",
+    errorFallback: "Algo salió mal. Vuelva a intentarlo."
+  },
+  de: {
+    backToLogin: "Zurück zur Anmeldung",
+    title: "Passwort zurücksetzen",
+    description: "Geben Sie Ihre Investor-E-Mail ein, und wir senden Ihnen einen Link zum Festlegen eines neuen Passworts.",
+    email: "E-Mail",
+    emailAria: "Investor-E-Mail",
+    emailPlaceholder: "you@example.com",
+    submit: "Anweisungen senden",
+    sending: "Wird gesendet...",
+    successTitle: "Prüfen Sie Ihre E-Mails",
+    successBody: "Falls für diese E-Mail ein Konto besteht, wurde ein Link zum Zurücksetzen gesendet. Prüfen Sie Ihren Posteingang.",
+    emailRequired: "Geben Sie eine gültige Investor-E-Mail ein.",
+    errorFallback: "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  zh: {
+    backToLogin: "返回登录",
+    title: "重置您的密码",
+    description: "请输入您的投资者邮箱，我们将向您发送用于设置新密码的链接。",
+    email: "邮箱",
+    emailAria: "投资者邮箱",
+    emailPlaceholder: "you@example.com",
+    submit: "发送说明",
+    sending: "正在发送……",
+    successTitle: "请查收邮件",
+    successBody: "如果该邮箱存在对应账户，重置链接已发送。请查收您的收件箱。",
+    emailRequired: "请输入有效的投资者邮箱。",
+    errorFallback: "出现问题，请重试。"
   }
 } as const;
 type Strings = typeof STRINGS.en;

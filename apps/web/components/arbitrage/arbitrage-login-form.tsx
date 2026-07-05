@@ -34,6 +34,48 @@ const STRINGS = {
     errPending: "Аккаунт ожидает одобрения. Дождитесь подтверждения администратора.",
     errSuspended: "Аккаунт заблокирован. Свяжитесь с менеджером.",
     errFallback: "Не удалось войти. Попробуйте ещё раз."
+  },
+  es: {
+    title: "Acceso de socios",
+    desc: "Acceda a su panel de referidos.",
+    email: "Correo electrónico",
+    password: "Contraseña",
+    submit: "Iniciar sesión",
+    submitting: "Iniciando sesión...",
+    noAccount: "¿No tiene una cuenta?",
+    register: "Registrarse",
+    errInvalid: "Correo electrónico o contraseña incorrectos.",
+    errPending: "Su cuenta está pendiente de aprobación. Espere a que un administrador la revise.",
+    errSuspended: "Esta cuenta está suspendida. Contacte con su gestor.",
+    errFallback: "No se pudo iniciar sesión. Inténtelo de nuevo."
+  },
+  de: {
+    title: "Partner-Anmeldung",
+    desc: "Greifen Sie auf Ihr Empfehlungs-Dashboard zu.",
+    email: "E-Mail",
+    password: "Passwort",
+    submit: "Anmelden",
+    submitting: "Anmeldung läuft...",
+    noAccount: "Sie haben noch kein Konto?",
+    register: "Registrieren",
+    errInvalid: "E-Mail oder Passwort ist falsch.",
+    errPending: "Ihr Konto wartet auf Freigabe. Bitte warten Sie auf einen Administrator.",
+    errSuspended: "Dieses Konto ist gesperrt. Wenden Sie sich an Ihren Manager.",
+    errFallback: "Anmeldung nicht möglich. Bitte versuchen Sie es erneut."
+  },
+  zh: {
+    title: "合作伙伴登录",
+    desc: "访问您的推荐面板。",
+    email: "电子邮箱",
+    password: "密码",
+    submit: "登录",
+    submitting: "正在登录...",
+    noAccount: "还没有账户？",
+    register: "注册",
+    errInvalid: "电子邮箱或密码不正确。",
+    errPending: "您的账户正在等待审批。请等待管理员处理。",
+    errSuspended: "该账户已被停用。请联系您的客户经理。",
+    errFallback: "无法登录。请重试。"
   }
 } as const;
 type Strings = typeof STRINGS.en;

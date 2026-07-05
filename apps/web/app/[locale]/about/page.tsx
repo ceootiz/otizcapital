@@ -23,7 +23,7 @@ type AboutContent = {
   team: { heading: string; label: string; mission: string; note: string };
 };
 
-const CONTENT: Record<"en" | "ru", AboutContent> = {
+const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
   en: {
     back: "Back to home",
     meta: {
@@ -106,6 +106,132 @@ const CONTENT: Record<"en" | "ru", AboutContent> = {
         "Наша миссия — сделать реальную торговлю спокойным, задокументированным и доступным пространством для частного капитала, соответствующим операционному, а не рекламному стандарту.",
       note:
         "Информация о руководстве и команде предоставляется напрямую в ходе процесса рассмотрения инвестора вместе с операционной документацией и рекомендациями."
+    }
+  },
+  es: {
+    back: "Volver al inicio",
+    meta: {
+      title: "Acerca de OTIZ CAPITAL",
+      description:
+        "OTIZ CAPITAL es una plataforma privada de capital comercial que asigna recursos a inventario real de electrónica, operaciones en marketplaces e informes auditados."
+    },
+    title: "Acerca de OTIZ CAPITAL",
+    intro:
+      "OTIZ CAPITAL conecta el capital privado con el comercio real de electrónica. En lugar de una exposición especulativa, construimos asignaciones en torno a inventario tangible, ciclos de venta en marketplaces, logística y una disciplinada elaboración de informes operativos.",
+    sections: [
+      {
+        heading: "Quiénes somos",
+        paragraphs: [
+          "Somos una plataforma de capital comercial orientada a las operaciones. Nuestra labor se sitúa en la intersección de las compras, la logística y la ejecución en marketplaces, donde el capital se destina a inventario físico de electrónica en lugar de a instrumentos financieros.",
+          "La plataforma es deliberadamente privada y sujeta a revisión. Trabajamos con un número limitado de participantes cualificados que valoran la documentación, la claridad y una comunicación mesurada por encima de las narrativas de marketing y la exaltación de la rentabilidad."
+        ]
+      },
+      {
+        heading: "Nuestro enfoque",
+        paragraphs: [
+          "Cada asignación sigue un ciclo definido: el capital se destina a un mandato comercial, el inventario se adquiere y se verifica, los productos circulan a través de canales de marketplace establecidos y los resultados se liquidan y se informan.",
+          "La transparencia está integrada en el modelo operativo. Los inversores pueden seguir los registros de envío, el material de almacén, los extractos de los marketplaces y los comprobantes de pago, en lugar de observar pantallas de cotización. No se garantiza rentabilidad alguna y comunicamos el riesgo operativo con claridad."
+        ]
+      },
+      {
+        heading: "Por qué el comercio de electrónica",
+        paragraphs: [
+          "El comercio de electrónica ofrece ciclos cortos y medibles, con una demanda real de los clientes y registros de liquidación claros. Los productos circulan, las ventas se liquidan y cada paso genera una prueba operativa.",
+          "Esa tangibilidad es precisamente el objetivo. Mantiene el capital vinculado a una actividad económica genuina, acorta los ciclos de retroalimentación y hace que el desempeño sea más fácil de documentar y comprender que en estrategias puramente especulativas."
+        ]
+      }
+    ],
+    team: {
+      heading: "Equipo",
+      label: "Equipo fundador",
+      mission:
+        "Nuestra misión es hacer del comercio real un espacio sereno, documentado y accesible para el capital privado, sujeto a un estándar operativo y no promocional.",
+      note:
+        "Los detalles sobre la dirección y el equipo se comparten directamente durante el proceso de revisión del inversor, junto con la documentación operativa y las referencias."
+    }
+  },
+  de: {
+    back: "Zurück zur Startseite",
+    meta: {
+      title: "Über OTIZ CAPITAL",
+      description:
+        "OTIZ CAPITAL ist eine private Plattform für Handelskapital, die Mittel in reale Elektronikbestände, Marktplatzbetrieb und geprüfte Berichterstattung allokiert."
+    },
+    title: "Über OTIZ CAPITAL",
+    intro:
+      "OTIZ CAPITAL verbindet privates Kapital mit realem Elektronikhandel. Anstelle spekulativer Positionen strukturieren wir Allokationen rund um materielle Bestände, Verkaufszyklen auf Marktplätzen, Logistik und eine disziplinierte operative Berichterstattung.",
+    sections: [
+      {
+        heading: "Wer wir sind",
+        paragraphs: [
+          "Wir sind eine operativ ausgerichtete Plattform für Handelskapital. Unsere Tätigkeit liegt an der Schnittstelle von Beschaffung, Logistik und Marktplatzausführung, wo Kapital in physische Elektronikbestände statt in Finanzinstrumente eingesetzt wird.",
+          "Die Plattform ist bewusst privat und geprüft. Wir arbeiten mit einer begrenzten Zahl qualifizierter Teilnehmer zusammen, die Dokumentation, Klarheit und eine besonnene Kommunikation höher schätzen als Marketingerzählungen und Renditeversprechen."
+        ]
+      },
+      {
+        heading: "Unser Ansatz",
+        paragraphs: [
+          "Jede Allokation folgt einem definierten Zyklus: Kapital wird einem Handelsmandat zugewiesen, Bestände werden beschafft und verifiziert, Produkte durchlaufen etablierte Marktplatzkanäle, und die Ergebnisse werden abgerechnet und berichtet.",
+          "Transparenz ist im Betriebsmodell angelegt. Investoren können Versandnachweise, Lagermedien, Marktplatzauszüge und Auszahlungsbelege verfolgen, anstatt Kursanzeigen zu beobachten. Es wird keine Rendite garantiert, und wir kommunizieren operative Risiken offen."
+        ]
+      },
+      {
+        heading: "Warum Elektronikhandel",
+        paragraphs: [
+          "Der Elektronikhandel bietet kurze, messbare Zyklen mit realer Kundennachfrage und klaren Abrechnungsnachweisen. Produkte bewegen sich, Verkäufe werden abgerechnet, und jeder Schritt erzeugt einen operativen Nachweis.",
+          "Genau diese Greifbarkeit ist entscheidend. Sie hält das Kapital mit echter wirtschaftlicher Aktivität verbunden, verkürzt die Rückkopplungsschleifen und macht die Wertentwicklung leichter dokumentierbar und verständlicher als bei rein spekulativen Strategien."
+        ]
+      }
+    ],
+    team: {
+      heading: "Team",
+      label: "Gründungsteam",
+      mission:
+        "Unsere Mission ist es, realen Handel zu einem ruhigen, dokumentierten und zugänglichen Ort für privates Kapital zu machen, der einem operativen und nicht einem werblichen Maßstab verpflichtet ist.",
+      note:
+        "Angaben zur Führung und zum Team werden direkt im Rahmen des Investorenprüfungsprozesses gemeinsam mit der operativen Dokumentation und Referenzen mitgeteilt."
+    }
+  },
+  zh: {
+    back: "返回首页",
+    meta: {
+      title: "关于 OTIZ CAPITAL",
+      description:
+        "OTIZ CAPITAL 是一家私募商贸资本平台，将资金配置于真实的电子产品库存、电商平台运营及经审计的报告。"
+    },
+    title: "关于 OTIZ CAPITAL",
+    intro:
+      "OTIZ CAPITAL 将私人资本与真实的电子产品商贸相连接。我们不追求投机性敞口，而是围绕实物库存、电商平台销售周期、物流以及严谨的运营报告来构建资金配置。",
+    sections: [
+      {
+        heading: "关于我们",
+        paragraphs: [
+          "我们是一家以运营为主导的商贸资本平台。业务处于采购、物流与电商平台执行的交汇点，资本投入实物电子产品库存，而非金融工具。",
+          "本平台刻意保持私密并经审核。我们仅与数量有限的合格参与者合作，他们更看重文档、清晰度与稳健的沟通，而非营销叙事与收益炒作。"
+        ]
+      },
+      {
+        heading: "我们的方法",
+        paragraphs: [
+          "每一笔资金配置都遵循既定周期：资本分配至商贸授权，库存经采购并核实，产品通过成熟的电商平台渠道流通，结果随后结算并报告。",
+          "透明度已融入运营模式。投资者可查阅发货记录、仓储影像、电商平台对账单及付款凭证，而无需盯着价格屏幕。我们不保证任何收益，并如实说明运营风险。"
+        ]
+      },
+      {
+        heading: "为何选择电子产品商贸",
+        paragraphs: [
+          "电子产品商贸提供周期短、可衡量的运作，具有真实的客户需求与清晰的结算记录。产品流通、销售结算，每一步都产生运营凭证。",
+          "这种实物属性正是关键所在。它使资本与真实的经济活动相连，缩短反馈周期，并使业绩比纯投机策略更易于记录与理解。"
+        ]
+      }
+    ],
+    team: {
+      heading: "团队",
+      label: "创始团队",
+      mission:
+        "我们的使命是让真实商贸成为私人资本可依循的、有据可查且可及的稳健之地，恪守运营标准而非宣传标准。",
+      note:
+        "管理层与团队的详细信息将在投资者审核流程中，连同运营文档与推荐资料一并直接提供。"
     }
   }
 };

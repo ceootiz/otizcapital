@@ -140,6 +140,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       title: "Solicitud de inversor",
       subtitle: "Este es un formulario preliminar. Un manager te contactará antes de cualquier acuerdo o asignación.",
       fullName: "Nombre completo",
+      email: "Correo",
       country: "País",
       preferredContactMethod: "Método de contacto preferido",
       plannedAllocationAmount: "Monto de asignación previsto",
@@ -152,15 +153,30 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       submit: "Enviar solicitud",
       submitting: "Enviando...",
       successTitle: "Solicitud recibida.",
-      successMessage: "Application received. Our manager will contact you after review.",
+      successMessage: "Solicitud recibida. Nuestro manager le contactará tras la revisión.",
       startAnother: "Enviar otra solicitud",
       validationRequired: "Completa todos los campos requeridos.",
       validationEmail: "Introduce un email válido.",
       validationMinimum: "La asignación mínima prevista es $5,000.",
       validationConsent: "Confirma el consentimiento antes de enviar."
     },
+    options: {
+      contact: { telegram: "Telegram", email: "Correo" },
+      deposit: { usdt: "USDT", btc: "BTC", cash: "Efectivo", bank_transfer: "Transferencia bancaria" },
+      investorType: { individual: "Particular", company: "Empresa" },
+      reinvest: { yes: "Sí", no: "No", not_sure: "No estoy seguro" }
+    },
     sidebar: { title: "Acceso revisado, no onboarding instantáneo.", subtitle: "OTIZ CAPITAL mantiene el acceso medido, documentado y conectado a ciclos reales.", trustTitle: "Modelo de confianza", stepsTitle: "Flujo de solicitud" },
-    faq: { ...base.faq, title: "FAQ de solicitud" }
+    faq: {
+      title: "FAQ de solicitud",
+      items: [
+        { question: "¿Cuál es el capital mínimo?", answer: "La asignación mínima prevista actual es de $5,000. La elegibilidad final depende de la revisión manual y de los términos del acuerdo." },
+        { question: "¿Cómo funciona la aprobación?", answer: "Las solicitudes se revisan manualmente. Si es adecuada, un manager le contactará para el KYC, la revisión del acuerdo y la disponibilidad de la asignación." },
+        { question: "¿Cómo se gestionan los informes?", answer: "Los inversores aprobados reciben informes de ciclo mensuales conectados a las operaciones de comercio, la actividad de marketplace y los registros de prueba." },
+        { question: "¿Cómo funcionan los retiros?", answer: "Las solicitudes de retiro siguen los términos del acuerdo y un cooldown de 60 días. El modelo no está diseñado para liquidez especulativa instantánea." },
+        { question: "¿Puedo reinvertir?", answer: "Sí. La reinversión puede seleccionarse tras el informe y el cierre del ciclo cuando hay capacidad de asignación elegible disponible." }
+      ]
+    }
   },
   de: {
     ...base,
@@ -181,6 +197,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       title: "Investor-Anfrage",
       subtitle: "Dies ist ein Vorprüfungsformular. Ein Manager kontaktiert Sie vor Vertrag oder Allokation.",
       fullName: "Vollständiger Name",
+      email: "E-Mail",
       country: "Land",
       preferredContactMethod: "Bevorzugte Kontaktmethode",
       plannedAllocationAmount: "Geplanter Allokationsbetrag",
@@ -193,15 +210,30 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       submit: "Anfrage senden",
       submitting: "Wird gesendet...",
       successTitle: "Anfrage erhalten.",
-      successMessage: "Application received. Our manager will contact you after review.",
+      successMessage: "Anfrage erhalten. Unser Manager kontaktiert Sie nach der Prüfung.",
       startAnother: "Weitere Anfrage senden",
       validationRequired: "Bitte füllen Sie alle Pflichtfelder aus.",
       validationEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
       validationMinimum: "Die Mindestallokation beträgt $5,000.",
       validationConsent: "Bitte bestätigen Sie die Zustimmung vor dem Absenden."
     },
+    options: {
+      contact: { telegram: "Telegram", email: "E-Mail" },
+      deposit: { usdt: "USDT", btc: "BTC", cash: "Bargeld", bank_transfer: "Banküberweisung" },
+      investorType: { individual: "Privatperson", company: "Unternehmen" },
+      reinvest: { yes: "Ja", no: "Nein", not_sure: "Nicht sicher" }
+    },
     sidebar: { title: "Geprüfter Zugang, kein Instant-Onboarding.", subtitle: "OTIZ CAPITAL hält Allokationszugang gemessen, dokumentiert und an reale Zyklen gebunden.", trustTitle: "Vertrauensmodell", stepsTitle: "Bewerbungsablauf" },
-    faq: { ...base.faq, title: "Bewerbungs-FAQ" }
+    faq: {
+      title: "Bewerbungs-FAQ",
+      items: [
+        { question: "Wie hoch ist das Mindestkapital?", answer: "Die aktuelle geplante Mindestallokation beträgt $5,000. Die endgültige Eignung hängt von der manuellen Prüfung und den Vertragsbedingungen ab." },
+        { question: "Wie funktioniert die Freigabe?", answer: "Anfragen werden manuell geprüft. Bei Eignung kontaktiert Sie ein Manager für KYC, Vertragsprüfung und Allokationsverfügbarkeit." },
+        { question: "Wie wird das Reporting gehandhabt?", answer: "Genehmigte Investoren erhalten monatliche Zyklusberichte, die mit den Handelsoperationen, der Marktplatzaktivität und den Nachweisunterlagen verbunden sind." },
+        { question: "Wie funktionieren Auszahlungen?", answer: "Auszahlungsanfragen folgen den Vertragsbedingungen und einer Cooldown-Frist von 60 Tagen. Das Modell ist nicht auf sofortige spekulative Liquidität ausgelegt." },
+        { question: "Kann ich reinvestieren?", answer: "Ja. Die Reinvestition kann nach dem Reporting und dem Zyklusabschluss gewählt werden, sofern geeignete Allokationskapazität verfügbar ist." }
+      ]
+    }
   },
   ru: {
     ...base,
@@ -265,6 +297,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       title: "投资人申请",
       subtitle: "这是初步审核表。任何协议或配置开放前，经理会先与你联系。",
       fullName: "姓名",
+      email: "邮箱",
       country: "国家",
       preferredContactMethod: "首选联系方式",
       plannedAllocationAmount: "计划配置金额",
@@ -277,15 +310,30 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       submit: "提交申请",
       submitting: "提交中...",
       successTitle: "申请已收到。",
-      successMessage: "Application received. Our manager will contact you after review.",
+      successMessage: "申请已收到。我们的经理将在审核后与您联系。",
       startAnother: "提交另一份申请",
       validationRequired: "请填写所有必填字段。",
       validationEmail: "请输入有效的邮箱地址。",
       validationMinimum: "最低计划配置为 $5,000。",
       validationConsent: "提交前请确认同意。"
     },
+    options: {
+      contact: { telegram: "Telegram", email: "邮箱" },
+      deposit: { usdt: "USDT", btc: "BTC", cash: "现金", bank_transfer: "银行转账" },
+      investorType: { individual: "个人", company: "公司" },
+      reinvest: { yes: "是", no: "否", not_sure: "不确定" }
+    },
     sidebar: { title: "审核式准入，而非即时开户。", subtitle: "OTIZ CAPITAL 保持配置准入有节制、有文件记录，并连接到真实运营周期。", trustTitle: "信任模型", stepsTitle: "申请流程" },
-    faq: { ...base.faq, title: "申请 FAQ" }
+    faq: {
+      title: "申请 FAQ",
+      items: [
+        { question: "最低资本是多少？", answer: "当前计划最低配置为 $5,000。最终资格取决于人工审核和协议条款。" },
+        { question: "批准流程如何运作？", answer: "申请均经人工审核。若符合条件，经理将就 KYC、协议审核和配置可用性与您联系。" },
+        { question: "报告如何处理？", answer: "已批准的投资者会收到与商务运营、市场活动和证明记录相关的月度周期报告。" },
+        { question: "提款如何运作？", answer: "提款请求遵循协议条款和 60 天冷却期。该模型并非为即时投机性流动性而设计。" },
+        { question: "我可以复投吗？", answer: "可以。在报告和周期结束后，当有符合条件的配置额度可用时，可选择复投。" }
+      ]
+    }
   }
 };
 

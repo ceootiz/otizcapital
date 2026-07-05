@@ -23,7 +23,7 @@ type ContactContent = {
   responseNote: string;
 };
 
-const CONTENT: Record<"en" | "ru", ContactContent> = {
+const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", ContactContent> = {
   en: {
     back: "Back to home",
     meta: {
@@ -51,6 +51,48 @@ const CONTENT: Record<"en" | "ru", ContactContent> = {
     emailLabel: "Электронная почта",
     responseTitle: "Время ответа",
     responseNote: "Мы отвечаем в течение 1–2 рабочих дней."
+  },
+  es: {
+    back: "Volver al inicio",
+    meta: {
+      title: "Contacto | OTIZ CAPITAL",
+      description: "Contacte al equipo de OTIZ CAPITAL por Telegram o correo electrónico en relación con el acceso a asignaciones privadas y los informes."
+    },
+    title: "Contacto",
+    intro:
+      "Para el acceso a asignaciones, la documentación o cualquier consulta sobre la plataforma, contáctenos directamente. Mantenemos una comunicación mesurada y respondemos de forma personal.",
+    telegramLabel: "Telegram",
+    emailLabel: "Correo electrónico",
+    responseTitle: "Tiempo de respuesta",
+    responseNote: "Respondemos en un plazo de 1–2 días hábiles."
+  },
+  de: {
+    back: "Zurück zur Startseite",
+    meta: {
+      title: "Kontakt | OTIZ CAPITAL",
+      description: "Kontaktieren Sie das Team von OTIZ CAPITAL per Telegram oder E-Mail zu Fragen des Zugangs zu privaten Allokationen und der Berichterstattung."
+    },
+    title: "Kontakt",
+    intro:
+      "Für den Zugang zu Allokationen, Dokumentation oder Fragen zur Plattform erreichen Sie uns direkt. Wir halten die Kommunikation besonnen und antworten persönlich.",
+    telegramLabel: "Telegram",
+    emailLabel: "E-Mail",
+    responseTitle: "Antwortzeit",
+    responseNote: "Wir antworten innerhalb von 1–2 Werktagen."
+  },
+  zh: {
+    back: "返回首页",
+    meta: {
+      title: "联系我们 | OTIZ CAPITAL",
+      description: "如需了解私募资金配置的准入与报告事宜，请通过 Telegram 或电子邮件联系 OTIZ CAPITAL 团队。"
+    },
+    title: "联系我们",
+    intro:
+      "如需申请资金配置准入、获取文档或就平台提出任何问题，请直接与我们联系。我们保持稳健的沟通，并亲自回复。",
+    telegramLabel: "Telegram",
+    emailLabel: "电子邮件",
+    responseTitle: "回复时间",
+    responseNote: "我们将在 1–2 个工作日内回复。"
   }
 };
 

@@ -60,6 +60,87 @@ const STRINGS = {
       PASSWORD_TOO_SHORT: "Пароль должен содержать минимум 8 символов.",
       PASSWORD_TOO_LONG: "Пароль слишком длинный."
     }
+  },
+  es: {
+    backToLogin: "Volver al inicio de sesión",
+    validating: "Comprobando su enlace...",
+    title: "Establecer una nueva contraseña",
+    description: "Elija una nueva contraseña para su cuenta de inversor.",
+    newPassword: "Nueva contraseña",
+    confirmPassword: "Confirmar contraseña",
+    passwordPlaceholder: "Al menos 8 caracteres",
+    confirmPlaceholder: "Repita su contraseña",
+    submit: "Guardar nueva contraseña",
+    saving: "Guardando...",
+    successTitle: "Contraseña cambiada",
+    successBody: "Su contraseña se ha cambiado correctamente. Ya puede iniciar sesión.",
+    goToLogin: "Ir al inicio de sesión",
+    invalidTitle: "Este enlace no es válido",
+    requestNew: "Solicitar un nuevo enlace",
+    tooShort: "La contraseña debe tener al menos 8 caracteres.",
+    mismatch: "Las contraseñas no coinciden.",
+    errorFallback: "No se pudo restablecer su contraseña. Vuelva a intentarlo.",
+    errors: {
+      invalid: "Este enlace de restablecimiento no es válido. Solicite uno nuevo.",
+      expired: "Este enlace de restablecimiento ha caducado. Solicite uno nuevo.",
+      used: "Este enlace de restablecimiento ya se ha utilizado. Solicite uno nuevo.",
+      PASSWORD_TOO_SHORT: "La contraseña debe tener al menos 8 caracteres.",
+      PASSWORD_TOO_LONG: "La contraseña es demasiado larga."
+    }
+  },
+  de: {
+    backToLogin: "Zurück zur Anmeldung",
+    validating: "Ihr Link wird geprüft...",
+    title: "Neues Passwort festlegen",
+    description: "Wählen Sie ein neues Passwort für Ihr Investor-Konto.",
+    newPassword: "Neues Passwort",
+    confirmPassword: "Passwort bestätigen",
+    passwordPlaceholder: "Mindestens 8 Zeichen",
+    confirmPlaceholder: "Passwort wiederholen",
+    submit: "Neues Passwort speichern",
+    saving: "Wird gespeichert...",
+    successTitle: "Passwort geändert",
+    successBody: "Ihr Passwort wurde erfolgreich geändert. Sie können sich jetzt anmelden.",
+    goToLogin: "Zur Anmeldung",
+    invalidTitle: "Dieser Link ist ungültig",
+    requestNew: "Neuen Link anfordern",
+    tooShort: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+    mismatch: "Die Passwörter stimmen nicht überein.",
+    errorFallback: "Ihr Passwort konnte nicht zurückgesetzt werden. Bitte versuchen Sie es erneut.",
+    errors: {
+      invalid: "Dieser Link zum Zurücksetzen ist ungültig. Bitte fordern Sie einen neuen an.",
+      expired: "Dieser Link zum Zurücksetzen ist abgelaufen. Bitte fordern Sie einen neuen an.",
+      used: "Dieser Link zum Zurücksetzen wurde bereits verwendet. Bitte fordern Sie einen neuen an.",
+      PASSWORD_TOO_SHORT: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      PASSWORD_TOO_LONG: "Das Passwort ist zu lang."
+    }
+  },
+  zh: {
+    backToLogin: "返回登录",
+    validating: "正在检查您的链接……",
+    title: "设置新密码",
+    description: "请为您的投资者账户选择一个新密码。",
+    newPassword: "新密码",
+    confirmPassword: "确认密码",
+    passwordPlaceholder: "至少 8 个字符",
+    confirmPlaceholder: "重复输入您的密码",
+    submit: "保存新密码",
+    saving: "正在保存……",
+    successTitle: "密码已更改",
+    successBody: "您的密码已成功更改。现在您可以登录。",
+    goToLogin: "前往登录",
+    invalidTitle: "此链接无效",
+    requestNew: "申请新链接",
+    tooShort: "密码长度至少为 8 个字符。",
+    mismatch: "两次输入的密码不一致。",
+    errorFallback: "无法重置您的密码。请重试。",
+    errors: {
+      invalid: "此重置链接无效。请申请新的链接。",
+      expired: "此重置链接已过期。请申请新的链接。",
+      used: "此重置链接已被使用。请申请新的链接。",
+      PASSWORD_TOO_SHORT: "密码长度至少为 8 个字符。",
+      PASSWORD_TOO_LONG: "密码过长。"
+    }
   }
 } as const;
 type Strings = typeof STRINGS.en;

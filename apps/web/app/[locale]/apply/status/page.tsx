@@ -42,6 +42,57 @@ const STRINGS = {
     contactNote: "Если у вас есть вопросы — напишите нам в Telegram.",
     contactCta: "Написать в Telegram",
     homeCta: "Вернуться на главную"
+  },
+  es: {
+    metaTitle: "Solicitud recibida",
+    back: "Volver al inicio",
+    eyebrow: "Estado de la solicitud",
+    heading: "Solicitud recibida y en revisión",
+    sentTo: "Confirmación enviada a",
+    timelineTitle: "Qué ocurre a continuación",
+    steps: [
+      "Solicitud recibida",
+      "Nuestro equipo le contactará en un plazo de 24-48 horas",
+      "Revisión de idoneidad",
+      "Aprobación y acceso al gabinete"
+    ],
+    contactNote: "¿Tiene preguntas? Escríbanos por Telegram.",
+    contactCta: "Escribir por Telegram",
+    homeCta: "Volver al inicio"
+  },
+  de: {
+    metaTitle: "Anfrage erhalten",
+    back: "Zur Startseite",
+    eyebrow: "Status der Anfrage",
+    heading: "Anfrage erhalten und in Prüfung",
+    sentTo: "Bestätigung gesendet an",
+    timelineTitle: "Wie es weitergeht",
+    steps: [
+      "Anfrage erhalten",
+      "Unser Team kontaktiert Sie innerhalb von 24-48 Stunden",
+      "Eignungsprüfung",
+      "Freigabe und Zugang zum Kabinett"
+    ],
+    contactNote: "Haben Sie Fragen? Schreiben Sie uns auf Telegram.",
+    contactCta: "Auf Telegram schreiben",
+    homeCta: "Zur Startseite"
+  },
+  zh: {
+    metaTitle: "申请已收到",
+    back: "返回首页",
+    eyebrow: "申请状态",
+    heading: "申请已收到，正在审核中",
+    sentTo: "确认信息已发送至",
+    timelineTitle: "后续流程",
+    steps: [
+      "申请已收到",
+      "我们的团队将在 24-48 小时内与您联系",
+      "适格性审核",
+      "批准并开通后台访问"
+    ],
+    contactNote: "有疑问？请通过 Telegram 联系我们。",
+    contactCta: "通过 Telegram 联系",
+    homeCta: "返回首页"
   }
 } as const;
 type Strings = typeof STRINGS.en;

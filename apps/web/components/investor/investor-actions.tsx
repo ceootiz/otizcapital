@@ -71,6 +71,99 @@ const STRINGS = {
     lockTitle: "Выводы заблокированы (90-дневный период)",
     lockBodyWithDate: "Средства можно вывести после 90-дневного периода удержания с момента первой аллокации. Вывод станет доступен {date}.",
     lockBodyNoDate: "Выводы станут доступны через 90 дней после начала первой аллокации капитала."
+  },
+  es: {
+    logout: "Cerrar sesión",
+    loggingOut: "Cerrando...",
+    language: "Idioma",
+    currentPreference: "Preferencia actual",
+    reinvestEnabled: "Reinversión activada",
+    reinvestDisabled: "Reinversión desactivada",
+    reinvestNote: "Esta versión MVP almacena la preferencia únicamente de forma local en la interfaz. Una revisión por parte de un gestor debe confirmar cualquier instrucción permanente.",
+    enableReinvest: "Activar reinversión",
+    disableReinvest: "Desactivar reinversión",
+    requestTitle: "Solicitar retiro",
+    requestSubtitle: "Envíe una solicitud de retiro revisada por un gestor. Las solicitudes se revisan antes de programar cualquier pago.",
+    available: "Disponible para retiro",
+    amountLabel: "Importe (USD)",
+    networkLabel: "Red",
+    addressLabel: "Dirección de destino",
+    addressPlaceholder: "Dirección de la cartera",
+    noteLabel: "Nota (opcional)",
+    submit: "Enviar solicitud",
+    submitting: "Enviando...",
+    successTitle: "Solicitud enviada, pendiente de revisión por el administrador",
+    successBody: "Puede seguir su estado en su historial de retiros a continuación.",
+    another: "Enviar otra solicitud",
+    errAmount: "Introduzca un importe válido mayor que 0.",
+    errExceeds: "El importe supera su saldo disponible.",
+    errAddress: "La dirección de destino es obligatoria.",
+    errGeneric: "No se pudo enviar la solicitud de retiro.",
+    lockTitle: "Retiros bloqueados (periodo de 90 días)",
+    lockBodyWithDate: "Los fondos pueden retirarse tras un periodo de retención de 90 días desde su primera asignación. Los retiros se desbloquean el {date}.",
+    lockBodyNoDate: "Los retiros se desbloquean 90 días después del inicio de su primera asignación de capital."
+  },
+  de: {
+    logout: "Abmelden",
+    loggingOut: "Wird geschlossen...",
+    language: "Sprache",
+    currentPreference: "Aktuelle Einstellung",
+    reinvestEnabled: "Wiederanlage aktiviert",
+    reinvestDisabled: "Wiederanlage deaktiviert",
+    reinvestNote: "Diese MVP-Version speichert die Einstellung nur lokal in der Oberfläche. Eine Prüfung durch einen Manager sollte jede dauerhafte Anweisung bestätigen.",
+    enableReinvest: "Wiederanlage aktivieren",
+    disableReinvest: "Wiederanlage deaktivieren",
+    requestTitle: "Auszahlung anfordern",
+    requestSubtitle: "Reichen Sie einen von einem Manager geprüften Auszahlungsantrag ein. Anträge werden vor jeder geplanten Auszahlung geprüft.",
+    available: "Verfügbar zur Auszahlung",
+    amountLabel: "Betrag (USD)",
+    networkLabel: "Netzwerk",
+    addressLabel: "Zieladresse",
+    addressPlaceholder: "Wallet-Adresse",
+    noteLabel: "Notiz (optional)",
+    submit: "Antrag einreichen",
+    submitting: "Wird eingereicht...",
+    successTitle: "Antrag eingereicht, wartet auf Prüfung durch den Administrator",
+    successBody: "Sie können den Status unten in Ihrem Auszahlungsverlauf verfolgen.",
+    another: "Weiteren Antrag einreichen",
+    errAmount: "Geben Sie einen gültigen Betrag größer als 0 ein.",
+    errExceeds: "Der Betrag übersteigt Ihr verfügbares Guthaben.",
+    errAddress: "Die Zieladresse ist erforderlich.",
+    errGeneric: "Der Auszahlungsantrag konnte nicht eingereicht werden.",
+    lockTitle: "Auszahlungen gesperrt (90-Tage-Frist)",
+    lockBodyWithDate: "Guthaben kann nach einer Haltefrist von 90 Tagen ab Ihrer ersten Allokation ausgezahlt werden. Auszahlungen werden am {date} freigegeben.",
+    lockBodyNoDate: "Auszahlungen werden 90 Tage nach Beginn Ihrer ersten Kapitalallokation freigegeben."
+  },
+  zh: {
+    logout: "退出登录",
+    loggingOut: "正在关闭……",
+    language: "语言",
+    currentPreference: "当前偏好",
+    reinvestEnabled: "已启用复投",
+    reinvestDisabled: "已停用复投",
+    reinvestNote: "此 MVP 版本仅在界面本地保存该偏好。任何永久性指令均应经由经理审核确认。",
+    enableReinvest: "启用复投",
+    disableReinvest: "停用复投",
+    requestTitle: "申请提现",
+    requestSubtitle: "提交由经理审核的提现申请。所有申请在安排付款前均会经过审核。",
+    available: "可提现金额",
+    amountLabel: "金额（USD）",
+    networkLabel: "网络",
+    addressLabel: "目标地址",
+    addressPlaceholder: "钱包地址",
+    noteLabel: "备注（可选）",
+    submit: "提交申请",
+    submitting: "正在提交……",
+    successTitle: "申请已提交，等待管理员审核",
+    successBody: "您可在下方的提现历史中查看其状态。",
+    another: "提交另一份申请",
+    errAmount: "请输入大于 0 的有效金额。",
+    errExceeds: "金额超出您的可用余额。",
+    errAddress: "目标地址为必填项。",
+    errGeneric: "无法提交提现申请。",
+    lockTitle: "提现已锁定（90 天期限）",
+    lockBodyWithDate: "资金可在自首次资金配置起 90 天持有期后提现。提现将于 {date} 解锁。",
+    lockBodyNoDate: "提现将在您首次资金配置开始 90 天后解锁。"
   }
 } as const;
 
@@ -291,7 +384,10 @@ export function InvestorWithdrawalForm({
 
 const DEPOSIT_STRINGS = {
   en: { network: "Network", copy: "Copy", copied: "Copied" },
-  ru: { network: "Сеть", copy: "Копировать", copied: "Скопировано" }
+  ru: { network: "Сеть", copy: "Копировать", copied: "Скопировано" },
+  es: { network: "Red", copy: "Copiar", copied: "Copiado" },
+  de: { network: "Netzwerk", copy: "Kopieren", copied: "Kopiert" },
+  zh: { network: "网络", copy: "复制", copied: "已复制" }
 } as const;
 
 type DepositStrings = typeof DEPOSIT_STRINGS.en;
@@ -374,7 +470,7 @@ type InvestorNotificationItem = {
   createdAt: string;
 };
 
-const NOTIFICATION_TITLES: Record<"en" | "ru", Record<string, string>> = {
+const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
   en: {
     ALLOCATION_UPDATED: "Allocation updated",
     ALLOCATION_COMPLETED: "Allocation completed",
@@ -392,17 +488,47 @@ const NOTIFICATION_TITLES: Record<"en" | "ru", Record<string, string>> = {
     WITHDRAWAL_SCHEDULED: "Выплата запланирована",
     WITHDRAWAL_PAID: "Выплата произведена",
     WITHDRAWAL_REJECTED: "Запрос на вывод отклонён"
+  },
+  es: {
+    ALLOCATION_UPDATED: "Asignación actualizada",
+    ALLOCATION_COMPLETED: "Asignación completada",
+    REPORT_PUBLISHED: "Nuevo informe disponible",
+    WITHDRAWAL_APPROVED: "Solicitud de retiro aprobada",
+    WITHDRAWAL_SCHEDULED: "Pago programado",
+    WITHDRAWAL_PAID: "Pago completado",
+    WITHDRAWAL_REJECTED: "Solicitud de retiro rechazada"
+  },
+  de: {
+    ALLOCATION_UPDATED: "Allokation aktualisiert",
+    ALLOCATION_COMPLETED: "Allokation abgeschlossen",
+    REPORT_PUBLISHED: "Neuer Bericht verfügbar",
+    WITHDRAWAL_APPROVED: "Auszahlungsantrag genehmigt",
+    WITHDRAWAL_SCHEDULED: "Auszahlung geplant",
+    WITHDRAWAL_PAID: "Auszahlung abgeschlossen",
+    WITHDRAWAL_REJECTED: "Auszahlungsantrag abgelehnt"
+  },
+  zh: {
+    ALLOCATION_UPDATED: "资金配置已更新",
+    ALLOCATION_COMPLETED: "资金配置已完成",
+    REPORT_PUBLISHED: "新报告已发布",
+    WITHDRAWAL_APPROVED: "提现申请已批准",
+    WITHDRAWAL_SCHEDULED: "付款已安排",
+    WITHDRAWAL_PAID: "付款已完成",
+    WITHDRAWAL_REJECTED: "提现申请已拒绝"
   }
 };
 
 const BELL_STRINGS = {
   en: { title: "Notifications", empty: "No notifications yet.", ariaOpen: "Open notifications" },
-  ru: { title: "Уведомления", empty: "Пока нет уведомлений.", ariaOpen: "Открыть уведомления" }
+  ru: { title: "Уведомления", empty: "Пока нет уведомлений.", ariaOpen: "Открыть уведомления" },
+  es: { title: "Notificaciones", empty: "Aún no hay notificaciones.", ariaOpen: "Abrir notificaciones" },
+  de: { title: "Benachrichtigungen", empty: "Noch keine Benachrichtigungen.", ariaOpen: "Benachrichtigungen öffnen" },
+  zh: { title: "通知", empty: "暂无通知。", ariaOpen: "打开通知" }
 } as const;
 
 export function InvestorNotificationBell({ locale }: { locale: Locale }) {
   const s = (BELL_STRINGS as unknown as Record<string, (typeof BELL_STRINGS)["en"]>)[locale] ?? BELL_STRINGS.en;
-  const titles = NOTIFICATION_TITLES[locale === "ru" ? "ru" : "en"];
+  const titles = NOTIFICATION_TITLES[locale] ?? NOTIFICATION_TITLES.en;
   const fmt = React.useMemo(() => createAdminFormatters(locale), [locale]);
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<InvestorNotificationItem[]>([]);

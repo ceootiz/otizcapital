@@ -118,6 +118,168 @@ const STRINGS = {
       desc: "Скачайте PDF-сводку по вашим аллокациям, выводам и опубликованным отчётам.",
       button: "Скачать историю аккаунта (PDF)"
     }
+  },
+  es: {
+    security: {
+      setTitle: "Establezca su contraseña",
+      setDesc: "Cree una contraseña para proteger el acceso directo a su gabinete de inversor.",
+      changeTitle: "Cambiar contraseña",
+      changeDesc: "Actualice la contraseña que utiliza para iniciar sesión en su gabinete de inversor.",
+      current: "Contraseña actual",
+      new: "Nueva contraseña",
+      confirm: "Confirmar nueva contraseña",
+      save: "Guardar",
+      saving: "Guardando...",
+      success: "Su contraseña se ha actualizado.",
+      errTooShort: "La contraseña debe tener al menos 8 caracteres.",
+      errMismatch: "Las contraseñas no coinciden.",
+      errWrongCurrent: "La contraseña actual es incorrecta.",
+      errGeneric: "No pudimos actualizar su contraseña. Vuelva a intentarlo."
+    },
+    preferences: {
+      title: "Idioma",
+      desc: "Elija el idioma utilizado en todo su gabinete de inversor.",
+      current: "Idioma actual",
+      themeNote: "El tema puede cambiarse con el conmutador del encabezado."
+    },
+    notifications: {
+      title: "Notificaciones por correo",
+      desc: "Controle si OTIZ envía actualizaciones operativas a su correo.",
+      label: "Recibir notificaciones por correo",
+      saved: "Guardado",
+      error: "No se pudo guardar su preferencia. Vuelva a intentarlo."
+    },
+    sessions: {
+      title: "Historial de sesiones",
+      desc: "Inicios de sesión recientes en su gabinete de inversor, con detalles de dispositivo y red.",
+      loading: "Cargando el historial de sesiones...",
+      empty: "Aún no hay sesiones registradas.",
+      thisDevice: "Este dispositivo",
+      active: "Activa",
+      expired: "Finalizada",
+      unknownDevice: "Dispositivo desconocido",
+      ipLabel: "IP"
+    },
+    terminate: {
+      title: "Dispositivos activos",
+      desc: "Finalice todas las demás sesiones iniciadas. Permanecerá conectado en este dispositivo.",
+      button: "Cerrar sesión en todos los demás dispositivos",
+      confirm: "Se cerrará su sesión en todos los demás dispositivos. ¿Continuar?",
+      working: "Cerrando sesión en otros dispositivos..."
+    },
+    data: {
+      title: "Historial de la cuenta",
+      desc: "Descargue un resumen en PDF de sus asignaciones, retiros e informes publicados.",
+      button: "Descargar historial de la cuenta (PDF)"
+    }
+  },
+  de: {
+    security: {
+      setTitle: "Passwort festlegen",
+      setDesc: "Erstellen Sie ein Passwort, um den direkten Zugang zu Ihrem Investor-Bereich zu schützen.",
+      changeTitle: "Passwort ändern",
+      changeDesc: "Aktualisieren Sie das Passwort für die Anmeldung in Ihrem Investor-Bereich.",
+      current: "Aktuelles Passwort",
+      new: "Neues Passwort",
+      confirm: "Neues Passwort bestätigen",
+      save: "Speichern",
+      saving: "Wird gespeichert...",
+      success: "Ihr Passwort wurde aktualisiert.",
+      errTooShort: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      errMismatch: "Die Passwörter stimmen nicht überein.",
+      errWrongCurrent: "Das aktuelle Passwort ist falsch.",
+      errGeneric: "Ihr Passwort konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut."
+    },
+    preferences: {
+      title: "Sprache",
+      desc: "Wählen Sie die Sprache für Ihren gesamten Investor-Bereich.",
+      current: "Aktuelle Sprache",
+      themeNote: "Das Design kann über den Schalter in der Kopfzeile geändert werden."
+    },
+    notifications: {
+      title: "E-Mail-Benachrichtigungen",
+      desc: "Legen Sie fest, ob OTIZ betriebliche Updates an Ihre E-Mail sendet.",
+      label: "E-Mail-Benachrichtigungen erhalten",
+      saved: "Gespeichert",
+      error: "Ihre Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+    },
+    sessions: {
+      title: "Sitzungsverlauf",
+      desc: "Kürzliche Anmeldungen in Ihrem Investor-Bereich, mit Geräte- und Netzwerkdetails.",
+      loading: "Sitzungsverlauf wird geladen...",
+      empty: "Noch keine aufgezeichneten Sitzungen.",
+      thisDevice: "Dieses Gerät",
+      active: "Aktiv",
+      expired: "Abgelaufen",
+      unknownDevice: "Unbekanntes Gerät",
+      ipLabel: "IP"
+    },
+    terminate: {
+      title: "Aktive Geräte",
+      desc: "Beenden Sie alle anderen angemeldeten Sitzungen. Auf diesem Gerät bleiben Sie angemeldet.",
+      button: "Von allen anderen Geräten abmelden",
+      confirm: "Dadurch werden Sie von allen anderen Geräten abgemeldet. Fortfahren?",
+      working: "Andere Geräte werden abgemeldet..."
+    },
+    data: {
+      title: "Kontoverlauf",
+      desc: "Laden Sie eine PDF-Zusammenfassung Ihrer Allokationen, Auszahlungen und veröffentlichten Berichte herunter.",
+      button: "Kontoverlauf herunterladen (PDF)"
+    }
+  },
+  zh: {
+    security: {
+      setTitle: "设置您的密码",
+      setDesc: "创建密码以保护直接访问您投资者专区的安全。",
+      changeTitle: "更改密码",
+      changeDesc: "更新用于登录您投资者专区的密码。",
+      current: "当前密码",
+      new: "新密码",
+      confirm: "确认新密码",
+      save: "保存",
+      saving: "正在保存……",
+      success: "您的密码已更新。",
+      errTooShort: "密码长度至少为 8 个字符。",
+      errMismatch: "两次输入的密码不一致。",
+      errWrongCurrent: "当前密码不正确。",
+      errGeneric: "无法更新您的密码。请重试。"
+    },
+    preferences: {
+      title: "语言",
+      desc: "选择您投资者专区所使用的语言。",
+      current: "当前语言",
+      themeNote: "可通过页眉中的切换开关更改主题。"
+    },
+    notifications: {
+      title: "邮件通知",
+      desc: "控制 OTIZ 是否向您的邮箱发送运营更新。",
+      label: "接收邮件通知",
+      saved: "已保存",
+      error: "无法保存您的偏好设置。请重试。"
+    },
+    sessions: {
+      title: "会话历史",
+      desc: "近期登录您投资者专区的记录，含设备与网络详情。",
+      loading: "正在加载会话历史……",
+      empty: "尚无会话记录。",
+      thisDevice: "本设备",
+      active: "活动中",
+      expired: "已过期",
+      unknownDevice: "未知设备",
+      ipLabel: "IP"
+    },
+    terminate: {
+      title: "活动设备",
+      desc: "结束所有其他已登录会话。您将继续在本设备保持登录。",
+      button: "退出所有其他设备的登录",
+      confirm: "此操作将使您从所有其他设备退出登录。是否继续？",
+      working: "正在退出其他设备……"
+    },
+    data: {
+      title: "账户历史",
+      desc: "下载您的资金配置、提现和已发布报告的 PDF 摘要。",
+      button: "下载账户历史（PDF）"
+    }
   }
 } as const;
 
