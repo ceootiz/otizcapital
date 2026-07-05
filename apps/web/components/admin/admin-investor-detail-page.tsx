@@ -1041,6 +1041,16 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
 // Deposit claims ("I sent a deposit") review — Feature 2 admin side
 // ---------------------------------------------------------------------------
 
+type DepositVerification = {
+  status?: string;
+  verified?: boolean;
+  amount?: number;
+  assetSymbol?: string;
+  confirmations?: number;
+  error?: string;
+  explorerUrl?: string;
+};
+
 type DepositClaim = {
   id: string;
   amount: number;
@@ -1050,8 +1060,21 @@ type DepositClaim = {
   status: string;
   adminNote: string | null;
   reviewedAt: string | null;
+  verificationStatus: string | null;
+  verificationData: DepositVerification | null;
   createdAt: string;
 };
+
+// Explorer link per network (mirrors explorerUrlFor in @otiz/lib; inlined to
+// keep the server verification module out of the client bundle).
+function explorerLinkFor(network: string, txHash: string): string {
+  const h = encodeURIComponent(txHash.trim());
+  if (network === "BTC") return `https://blockstream.info/tx/${h}`;
+  if (network === "ETH" || network === "USDT ERC20") return `https://etherscan.io/tx/${h}`;
+  if (network === "USDT TRC20") return `https://tronscan.org/#/transaction/${h}`;
+  if (network === "USDT BEP20") return `https://bscscan.com/tx/${h}`;
+  return "";
+}
 
 const DEPOSITS_STRINGS = {
   en: {
@@ -1072,7 +1095,15 @@ const DEPOSITS_STRINGS = {
     busy: "Saving...",
     investorNote: "Investor note:",
     adminNote: "Manager note:",
-    errReview: "Unable to update the deposit claim."
+    errReview: "Unable to update the deposit claim.",
+    verifyVerified: "✓ Verified on-chain",
+    verifyFailed: "✗ Not found on-chain",
+    verifyApiError: "⚠ Verification API error",
+    verifySkipped: "No hash — manual check",
+    onchainAmount: "On-chain amount:",
+    explorer: "View in explorer ↗",
+    verifyWarnTitle: "Automatic verification did not pass",
+    overrideLabel: "Confirm manually despite the verification error"
   },
   ru: {
     title: "Заявленные депозиты",
@@ -1092,7 +1123,15 @@ const DEPOSITS_STRINGS = {
     busy: "Сохраняем...",
     investorNote: "Примечание инвестора:",
     adminNote: "Комментарий менеджера:",
-    errReview: "Не удалось обновить заявленный депозит."
+    errReview: "Не удалось обновить заявленный депозит.",
+    verifyVerified: "✓ Подтверждено в сети",
+    verifyFailed: "✗ Не найдено в сети",
+    verifyApiError: "⚠ Ошибка API проверки",
+    verifySkipped: "Хэш не указан — ручная проверка",
+    onchainAmount: "Сумма в сети:",
+    explorer: "Просмотреть в Explorer ↗",
+    verifyWarnTitle: "Автоматическая проверка не пройдена",
+    overrideLabel: "Подтвердить вручную несмотря на ошибку проверки"
   }
 } as const;
 
@@ -1103,6 +1142,10 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
   const [notes, setNotes] = React.useState<Record<string, string>>({});
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  // Verification warning surfaced when a confirm attempt fails on-chain checks,
+  // and the per-claim "confirm anyway" override toggle.
+  const [verifyWarn, setVerifyWarn] = React.useState<Record<string, DepositVerification>>({});
+  const [override, setOverride] = React.useState<Record<string, boolean>>({});
 
   const load = React.useCallback(async () => {
     try {
@@ -1125,16 +1168,40 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
       const response = await fetch(`/api/admin/deposits/${claim.id}`, {
         method: "PATCH",
         headers: getAdminMutationHeaders(),
-        body: JSON.stringify({ action, adminNote: notes[claim.id] || null })
+        body: JSON.stringify({ action, adminNote: notes[claim.id] || null, manualOverride: override[claim.id] === true })
       });
-      const payload = (await response.json()) as { ok: boolean; error?: string };
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        code?: string;
+        verification?: DepositVerification;
+      };
+      // Verification blocked the confirmation: surface the details + override
+      // checkbox instead of a hard error, so the admin can confirm manually.
+      if (!response.ok && payload.code === "VERIFICATION_FAILED" && payload.verification) {
+        setVerifyWarn((current) => ({ ...current, [claim.id]: payload.verification as DepositVerification }));
+        return;
+      }
       if (!response.ok || !payload.ok) throw new Error(payload.error || t.errReview);
+      setVerifyWarn((current) => {
+        const next = { ...current };
+        delete next[claim.id];
+        return next;
+      });
       await load();
     } catch (reviewError) {
       setError(reviewError instanceof Error ? reviewError.message : t.errReview);
     } finally {
       setBusyId(null);
     }
+  }
+
+  // Verification badge label + tone for a given status.
+  function verifyBadge(status: string | null | undefined) {
+    if (status === "VERIFIED") return { label: t.verifyVerified, cls: "text-emerald-600 dark:text-emerald-400" };
+    if (status === "FAILED") return { label: t.verifyFailed, cls: "text-red-600 dark:text-red-400" };
+    if (status === "API_ERROR") return { label: t.verifyApiError, cls: "text-amber-700 dark:text-gold-100" };
+    return null;
   }
 
   function statusLabel(status: string) {
@@ -1154,7 +1221,17 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
         {claims.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t.empty}</p>
         ) : (
-          claims.map((claim) => (
+          claims.map((claim) => {
+            // Verification source: the live warning from the last failed confirm
+            // attempt (pending), else the stored result (decided claims).
+            const warn = verifyWarn[claim.id];
+            const vStatus = warn?.status ?? claim.verificationStatus;
+            const vData = warn ?? claim.verificationData ?? undefined;
+            const badge = verifyBadge(vStatus);
+            const explorer = vData?.explorerUrl || (claim.txHash ? explorerLinkFor(claim.network, claim.txHash) : "");
+            const hasWarn = Boolean(warn);
+            const confirmBlocked = hasWarn && override[claim.id] !== true;
+            return (
             <div key={claim.id} className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -1164,8 +1241,38 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
                 </div>
                 <Badge variant={claim.status === "CONFIRMED" ? "default" : "secondary"}>{statusLabel(claim.status)}</Badge>
               </div>
-              {claim.txHash ? <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{claim.txHash}</p> : null}
+              {claim.txHash ? (
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="break-all font-mono text-xs text-muted-foreground">{claim.txHash}</span>
+                  {badge ? <span className={`text-xs font-semibold ${badge.cls}`}>{badge.label}</span> : null}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">{t.verifySkipped}</p>
+              )}
+              {vData?.amount != null ? (
+                <p className="mt-1 text-xs text-muted-foreground">{t.onchainAmount} {vData.amount} {vData.assetSymbol ?? ""}</p>
+              ) : null}
+              {explorer ? (
+                <a href={explorer} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-amber-700 dark:text-gold-100 hover:underline">
+                  {t.explorer}
+                </a>
+              ) : null}
               {claim.note ? <p className="mt-2 text-sm text-muted-foreground">{t.investorNote} {claim.note}</p> : null}
+              {hasWarn ? (
+                <div className="mt-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3">
+                  <p className="text-sm font-semibold text-amber-700 dark:text-gold-100">{t.verifyWarnTitle}</p>
+                  {warn?.error ? <p className="mt-1 text-xs text-muted-foreground">{warn.error}</p> : null}
+                  <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={override[claim.id] === true}
+                      onChange={(event) => setOverride((current) => ({ ...current, [claim.id]: event.target.checked }))}
+                      className="size-4 accent-gold-300"
+                    />
+                    {t.overrideLabel}
+                  </label>
+                </div>
+              ) : null}
               {claim.status === "PENDING" ? (
                 <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
                   <input
@@ -1174,7 +1281,7 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
                     placeholder={t.notePlaceholder}
                     className="h-11 rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
                   />
-                  <Button type="button" size="sm" disabled={busyId === claim.id} onClick={() => review(claim, "confirm")}>
+                  <Button type="button" size="sm" disabled={busyId === claim.id || confirmBlocked} onClick={() => review(claim, "confirm")}>
                     {busyId === claim.id ? t.busy : t.confirm}
                   </Button>
                   <Button type="button" size="sm" variant="outline" disabled={busyId === claim.id} onClick={() => review(claim, "reject")}>
@@ -1185,7 +1292,8 @@ function AdminDepositClaimsSection({ locale, investorId }: { locale: Locale; inv
                 <p className="mt-2 text-sm text-muted-foreground">{t.adminNote} {claim.adminNote}</p>
               ) : null}
             </div>
-          ))
+            );
+          })
         )}
       </CardContent>
     </Card>

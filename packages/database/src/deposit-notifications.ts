@@ -8,6 +8,9 @@ export type DepositNotificationStatus = (typeof DEPOSIT_NOTIFICATION_STATUSES)[n
 
 export const DEPOSIT_NETWORKS = ["BTC", "ETH", "USDT TRC20", "USDT ERC20", "USDT BEP20"] as const;
 
+export const DEPOSIT_VERIFICATION_STATUSES = ["VERIFIED", "FAILED", "SKIPPED", "API_ERROR"] as const;
+export type DepositVerificationStatus = (typeof DEPOSIT_VERIFICATION_STATUSES)[number];
+
 export type SerializedDepositNotification = {
   id: string;
   investorId: string;
@@ -18,6 +21,8 @@ export type SerializedDepositNotification = {
   status: string;
   adminNote: string | null;
   reviewedAt: string | null;
+  verificationStatus: string | null;
+  verificationData: unknown;
   createdAt: string;
 };
 
@@ -32,8 +37,16 @@ export function serializeDepositNotification(record: DepositNotification): Seria
     status: record.status,
     adminNote: record.adminNote,
     reviewedAt: record.reviewedAt ? record.reviewedAt.toISOString() : null,
+    verificationStatus: record.verificationStatus ?? null,
+    verificationData: record.verificationData ?? null,
     createdAt: record.createdAt.toISOString()
   };
+}
+
+// Fetch a single claim (used by the confirm route to read txHash/network before
+// running on-chain verification).
+export async function getDepositNotificationById(id: string) {
+  return prisma.depositNotification.findUnique({ where: { id } });
 }
 
 export async function createDepositNotification(input: {
@@ -65,10 +78,19 @@ export async function reviewDepositNotification(input: {
   status: Exclude<DepositNotificationStatus, "PENDING">;
   adminNote: string | null;
   reviewedBy: string;
+  verificationStatus?: DepositVerificationStatus | null;
+  verificationData?: unknown;
 }) {
   const result = await prisma.depositNotification.updateMany({
     where: { id: input.id, status: "PENDING" },
-    data: { status: input.status, adminNote: input.adminNote, reviewedBy: input.reviewedBy, reviewedAt: new Date() }
+    data: {
+      status: input.status,
+      adminNote: input.adminNote,
+      reviewedBy: input.reviewedBy,
+      reviewedAt: new Date(),
+      ...(input.verificationStatus !== undefined ? { verificationStatus: input.verificationStatus } : {}),
+      ...(input.verificationData !== undefined ? { verificationData: (input.verificationData ?? Prisma.JsonNull) as Prisma.InputJsonValue } : {})
+    }
   });
   const record = await prisma.depositNotification.findUnique({ where: { id: input.id }, include: { investor: true } });
   return { updated: result.count > 0, record };

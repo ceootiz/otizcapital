@@ -2,32 +2,83 @@ import { NextResponse } from "next/server";
 import {
   accrueReferralCommission,
   createInvestorNotification,
+  getDepositNotificationById,
   recordCommissionAccruedEvent,
   reviewDepositNotification,
-  serializeDepositNotification
+  serializeDepositNotification,
+  type DepositVerificationStatus
 } from "@otiz/database";
+import { verifyTransaction, type VerificationResult } from "@otiz/lib";
 import { sanitizeAdminInput, verifyAdminCsrfToken } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-// PATCH: confirm or reject a pending deposit claim. On confirmation the
-// investor gets a cabinet bell notification.
+// Classify a verification outcome into a stored status. API/timeout problems are
+// distinguished from genuine "not found / failed on-chain" so the admin knows
+// whether to retry or to treat it as a real mismatch.
+function classifyVerification(result: VerificationResult): DepositVerificationStatus {
+  if (result.verified) return "VERIFIED";
+  const apiIssue = /unavailable|timed out|rate limit/i.test(result.error || "");
+  return apiIssue ? "API_ERROR" : "FAILED";
+}
+
+// PATCH: confirm or reject a pending deposit claim. On confirmation, if the
+// claim carries a txHash we auto-verify it on-chain first; a failed/errored
+// verification blocks confirmation UNLESS the admin passes manualOverride.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 
-  const payload = (await request.json().catch(() => null)) as { action?: unknown; adminNote?: unknown } | null;
+  const payload = (await request.json().catch(() => null)) as
+    | { action?: unknown; adminNote?: unknown; manualOverride?: unknown }
+    | null;
   const action = typeof payload?.action === "string" ? payload.action : "";
+  const manualOverride = payload?.manualOverride === true;
   if (action !== "confirm" && action !== "reject") {
     return NextResponse.json({ ok: false, error: "action must be confirm or reject." }, { status: 422 });
   }
 
   const adminNote = sanitizeAdminInput(payload?.adminNote, 1000) || null;
+
+  const existing = await getDepositNotificationById(params.id);
+  if (!existing) {
+    return NextResponse.json({ ok: false, error: "Deposit notification not found." }, { status: 404 });
+  }
+  if (existing.status !== "PENDING") {
+    return NextResponse.json({ ok: false, error: "This deposit claim was already reviewed." }, { status: 409 });
+  }
+
+  // On-chain verification only runs on confirmation and only when a hash exists.
+  let verificationStatus: DepositVerificationStatus | null = null;
+  let verificationData: (VerificationResult & { network: string; checkedAt: string }) | null = null;
+
+  if (action === "confirm") {
+    if (existing.txHash && existing.txHash.trim()) {
+      const result = await verifyTransaction(existing.txHash, existing.network, Number(existing.amount));
+      verificationStatus = classifyVerification(result);
+      verificationData = { ...result, network: existing.network, checkedAt: new Date().toISOString() };
+
+      // Failed or errored verification blocks confirmation until the admin
+      // explicitly overrides. The UI reads `verification` to show the warning,
+      // amount, and explorer link, then re-submits with manualOverride: true.
+      if (verificationStatus !== "VERIFIED" && !manualOverride) {
+        return NextResponse.json(
+          { ok: false, code: "VERIFICATION_FAILED", verification: { status: verificationStatus, ...verificationData } },
+          { status: 409 }
+        );
+      }
+    } else {
+      verificationStatus = "SKIPPED";
+    }
+  }
+
   const { updated, record } = await reviewDepositNotification({
     id: params.id,
     status: action === "confirm" ? "CONFIRMED" : "REJECTED",
     adminNote,
-    reviewedBy: csrf.session.actor
+    reviewedBy: csrf.session.actor,
+    verificationStatus,
+    verificationData
   });
 
   if (!record) {

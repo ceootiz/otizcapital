@@ -191,6 +191,10 @@ model DepositNotification {
   adminNote  String?
   reviewedAt DateTime?
   reviewedBy String?
+  // Automatic blockchain verification result captured at confirmation time.
+  // verificationStatus: VERIFIED | FAILED | SKIPPED | API_ERROR
+  verificationStatus String?
+  verificationData   Json?
   createdAt  DateTime  @default(now())
   investor   Investor  @relation(fields: [investorId], references: [id])
 

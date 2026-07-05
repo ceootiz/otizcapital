@@ -16,7 +16,10 @@ const STRINGS = {
     amountPlaceholder: "1000",
     network: "Network",
     txHash: "Transaction hash",
-    txHashPlaceholder: "Optional, but speeds up verification",
+    txHashPlaceholder: "e.g. 0x… or a TxID",
+    txHashHelper: "Provide the transaction hash for automatic verification. It speeds up deposit confirmation.",
+    howToFind: "How to find the transaction hash?",
+    howToFindBody: "In your wallet or exchange, open the transfer history, find this payment, and copy its “Transaction ID / TxID / Hash”. USDT TRC20 → TronScan, ERC20 / ETH → Etherscan, BEP20 → BscScan, BTC → your wallet or Blockstream.",
     note: "Note",
     notePlaceholder: "Anything the manager should know (optional)",
     submit: "Send notification",
@@ -36,7 +39,10 @@ const STRINGS = {
     amountPlaceholder: "1000",
     network: "Сеть",
     txHash: "Хэш транзакции",
-    txHashPlaceholder: "Необязательно, но ускорит проверку",
+    txHashPlaceholder: "например, 0x… или TxID",
+    txHashHelper: "Укажите хэш транзакции для автоматической проверки. Это ускорит подтверждение депозита.",
+    howToFind: "Как найти хэш транзакции?",
+    howToFindBody: "В кошельке или на бирже откройте историю переводов, найдите этот платёж и скопируйте «Transaction ID / TxID / Hash». USDT TRC20 → TronScan, ERC20 / ETH → Etherscan, BEP20 → BscScan, BTC → кошелёк или Blockstream.",
     note: "Примечание",
     notePlaceholder: "Что менеджеру стоит знать (необязательно)",
     submit: "Отправить уведомление",
@@ -56,7 +62,10 @@ const STRINGS = {
     amountPlaceholder: "1000",
     network: "Red",
     txHash: "Hash de la transacción",
-    txHashPlaceholder: "Opcional, pero agiliza la verificación",
+    txHashPlaceholder: "p. ej. 0x… o un TxID",
+    txHashHelper: "Indique el hash de la transacción para la verificación automática. Agiliza la confirmación del depósito.",
+    howToFind: "¿Cómo encontrar el hash de la transacción?",
+    howToFindBody: "En su monedero o exchange, abra el historial de transferencias, localice este pago y copie su «Transaction ID / TxID / Hash». USDT TRC20 → TronScan, ERC20 / ETH → Etherscan, BEP20 → BscScan, BTC → su monedero o Blockstream.",
     note: "Nota",
     notePlaceholder: "Cualquier cosa que el gestor deba saber (opcional)",
     submit: "Enviar notificación",
@@ -76,7 +85,10 @@ const STRINGS = {
     amountPlaceholder: "1000",
     network: "Netzwerk",
     txHash: "Transaktions-Hash",
-    txHashPlaceholder: "Optional, beschleunigt aber die Prüfung",
+    txHashPlaceholder: "z. B. 0x… oder eine TxID",
+    txHashHelper: "Geben Sie den Transaktions-Hash für die automatische Prüfung an. Das beschleunigt die Bestätigung der Einzahlung.",
+    howToFind: "Wie finde ich den Transaktions-Hash?",
+    howToFindBody: "Öffnen Sie in Ihrer Wallet oder Börse den Transaktionsverlauf, suchen Sie diese Zahlung und kopieren Sie deren „Transaction ID / TxID / Hash“. USDT TRC20 → TronScan, ERC20 / ETH → Etherscan, BEP20 → BscScan, BTC → Ihre Wallet oder Blockstream.",
     note: "Notiz",
     notePlaceholder: "Alles, was der Manager wissen sollte (optional)",
     submit: "Benachrichtigung senden",
@@ -96,7 +108,10 @@ const STRINGS = {
     amountPlaceholder: "1000",
     network: "网络",
     txHash: "交易哈希",
-    txHashPlaceholder: "可选，但可加快核实速度",
+    txHashPlaceholder: "例如 0x… 或 TxID",
+    txHashHelper: "请提供交易哈希以便自动核实。这将加快充值确认。",
+    howToFind: "如何找到交易哈希？",
+    howToFindBody: "在您的钱包或交易所中打开转账记录，找到这笔付款并复制其“Transaction ID / TxID / Hash”。USDT TRC20 → TronScan，ERC20 / ETH → Etherscan，BEP20 → BscScan，BTC → 您的钱包或 Blockstream。",
     note: "备注",
     notePlaceholder: "任何经理需要了解的信息（可选）",
     submit: "发送通知",
@@ -126,6 +141,7 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
   const [note, setNote] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [showHelp, setShowHelp] = React.useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -217,10 +233,24 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
                 </select>
               </label>
             </div>
-            <label className="flex flex-col gap-2">
-              <span className={labelClass}>{t.txHash}</span>
-              <input value={txHash} onChange={(event) => setTxHash(event.target.value)} placeholder={t.txHashPlaceholder} className={inputClass} />
-            </label>
+            <div className="rounded-2xl border border-gold-200/30 bg-gold-300/10 dark:bg-gold-200/[0.06] p-4">
+              <label className="flex flex-col gap-2">
+                <span className={labelClass}>{t.txHash}</span>
+                <input value={txHash} onChange={(event) => setTxHash(event.target.value)} placeholder={t.txHashPlaceholder} className={inputClass} />
+              </label>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{t.txHashHelper}</p>
+              <button
+                type="button"
+                onClick={() => setShowHelp((value) => !value)}
+                aria-expanded={showHelp}
+                className="mt-2 text-xs font-semibold text-amber-700 transition-colors hover:underline dark:text-gold-100"
+              >
+                {t.howToFind}
+              </button>
+              {showHelp ? (
+                <p className="mt-2 rounded-xl border border-border bg-background/60 p-3 text-xs leading-5 text-muted-foreground dark:border-white/10">{t.howToFindBody}</p>
+              ) : null}
+            </div>
             <label className="flex flex-col gap-2">
               <span className={labelClass}>{t.note}</span>
               <textarea
