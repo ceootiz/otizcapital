@@ -112,7 +112,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
           </div>
           <ThemeToggle />
           <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-            <a href={`/${activeLocale}/investor/login`}>Кабинет инвестора</a>
+            <a href={`/${activeLocale}/investor/login`}>{dictionary.nav.investorCabinet}</a>
           </Button>
           <Button asChild size="sm" className="hidden sm:inline-flex">
             <a href={`/${activeLocale}/apply`}>{dictionary.nav.cta}</a>
@@ -179,7 +179,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
               </div>
               <div className="flex flex-col gap-3">
                 <Button asChild variant="outline" size="lg" className="w-full">
-                  <a href={`/${activeLocale}/investor/login`} onClick={() => setMenuOpen(false)}>Кабинет инвестора</a>
+                  <a href={`/${activeLocale}/investor/login`} onClick={() => setMenuOpen(false)}>{dictionary.nav.investorCabinet}</a>
                 </Button>
                 <Button asChild size="lg" className="w-full">
                   <a href={`/${activeLocale}/apply`} onClick={() => setMenuOpen(false)}>Стать инвестором</a>

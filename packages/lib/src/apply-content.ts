@@ -52,6 +52,8 @@ export type ApplyDictionary = {
     title: string;
     items: Array<{ question: string; answer: string }>;
   };
+  trustSignals: string[];
+  flowSteps: string[];
 };
 
 const base: ApplyDictionary = {
@@ -116,7 +118,9 @@ const base: ApplyDictionary = {
       { question: "How do withdrawals work?", answer: "Withdrawal requests follow agreement terms and a 60-day cooldown. The model is not designed for instant speculative liquidity." },
       { question: "Can I reinvest?", answer: "Yes. Reinvestment can be selected after reporting and cycle close when eligible allocation capacity is available." }
     ]
-  }
+  },
+  trustSignals: ["Real commerce operations", "Manual review", "Monthly reporting", "Proof-based transparency", "Managed allocation"],
+  flowSteps: ["Application", "Review", "Approval", "KYC", "Agreement", "Allocation", "Reporting", "Payout / Reinvest"]
 };
 
 export const applyDictionaries: Record<Locale, ApplyDictionary> = {
@@ -166,7 +170,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       investorType: { individual: "Particular", company: "Empresa" },
       reinvest: { yes: "Sí", no: "No", not_sure: "No estoy seguro" }
     },
-    sidebar: { title: "Acceso revisado, no onboarding instantáneo.", subtitle: "OTIZ CAPITAL mantiene el acceso medido, documentado y conectado a ciclos reales.", trustTitle: "Modelo de confianza", stepsTitle: "Flujo de solicitud" },
+    sidebar: { title: "Acceso revisado, no incorporación instantánea.", subtitle: "OTIZ CAPITAL mantiene el acceso medido, documentado y conectado a ciclos reales.", trustTitle: "Modelo de confianza", stepsTitle: "Flujo de solicitud" },
     faq: {
       title: "FAQ de solicitud",
       items: [
@@ -176,7 +180,9 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
         { question: "¿Cómo funcionan los retiros?", answer: "Las solicitudes de retiro siguen los términos del acuerdo y un cooldown de 60 días. El modelo no está diseñado para liquidez especulativa instantánea." },
         { question: "¿Puedo reinvertir?", answer: "Sí. La reinversión puede seleccionarse tras el informe y el cierre del ciclo cuando hay capacidad de asignación elegible disponible." }
       ]
-    }
+    },
+    trustSignals: ["Operaciones de comercio real", "Revisión manual", "Informes mensuales", "Transparencia basada en pruebas", "Asignación gestionada"],
+    flowSteps: ["Solicitud", "Revisión", "Aprobación", "KYC", "Acuerdo", "Asignación", "Informes", "Pago / Reinversión"]
   },
   de: {
     ...base,
@@ -223,7 +229,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       investorType: { individual: "Privatperson", company: "Unternehmen" },
       reinvest: { yes: "Ja", no: "Nein", not_sure: "Nicht sicher" }
     },
-    sidebar: { title: "Geprüfter Zugang, kein Instant-Onboarding.", subtitle: "OTIZ CAPITAL hält Allokationszugang gemessen, dokumentiert und an reale Zyklen gebunden.", trustTitle: "Vertrauensmodell", stepsTitle: "Bewerbungsablauf" },
+    sidebar: { title: "Geprüfter Zugang, keine sofortige Aufnahme.", subtitle: "OTIZ CAPITAL hält Allokationszugang gemessen, dokumentiert und an reale Zyklen gebunden.", trustTitle: "Vertrauensmodell", stepsTitle: "Bewerbungsablauf" },
     faq: {
       title: "Bewerbungs-FAQ",
       items: [
@@ -233,7 +239,9 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
         { question: "Wie funktionieren Auszahlungen?", answer: "Auszahlungsanfragen folgen den Vertragsbedingungen und einer Cooldown-Frist von 60 Tagen. Das Modell ist nicht auf sofortige spekulative Liquidität ausgelegt." },
         { question: "Kann ich reinvestieren?", answer: "Ja. Die Reinvestition kann nach dem Reporting und dem Zyklusabschluss gewählt werden, sofern geeignete Allokationskapazität verfügbar ist." }
       ]
-    }
+    },
+    trustSignals: ["Reale Handelsoperationen", "Manuelle Prüfung", "Monatliches Reporting", "Nachweisbasierte Transparenz", "Verwaltete Allokation"],
+    flowSteps: ["Antrag", "Prüfung", "Genehmigung", "KYC", "Vereinbarung", "Allokation", "Reporting", "Auszahlung / Reinvestition"]
   },
   ru: {
     ...base,
@@ -281,7 +289,7 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       investorType: { individual: "Физическое лицо", company: "Юридическое лицо" },
       reinvest: { yes: "Да", no: "Нет", not_sure: "Не уверен" }
     },
-    sidebar: { title: "Проверенный доступ, не мгновенный onboarding.", subtitle: "OTIZ CAPITAL держит доступ к аллокациям измеримым, документированным и привязанным к реальным операционным циклам.", trustTitle: "Модель доверия", stepsTitle: "Путь заявки" },
+    sidebar: { title: "Проверенный доступ, без мгновенного подключения.", subtitle: "OTIZ CAPITAL держит доступ к аллокациям измеримым, документированным и привязанным к реальным операционным циклам.", trustTitle: "Модель доверия", stepsTitle: "Путь заявки" },
     faq: {
       title: "FAQ по заявке",
       items: [
@@ -291,7 +299,9 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
         { question: "Как работают выводы?", answer: "Запросы на вывод следуют условиям соглашения и 60-дневному периоду ожидания. Модель не рассчитана на мгновенную спекулятивную ликвидность." },
         { question: "Могу ли я реинвестировать?", answer: "Да. Реинвест можно выбрать после отчётности и закрытия цикла при наличии доступной ёмкости аллокации." }
       ]
-    }
+    },
+    trustSignals: ["Реальные торговые операции", "Ручная проверка", "Ежемесячная отчётность", "Прозрачность на основе подтверждений", "Управляемая аллокация"],
+    flowSteps: ["Заявка", "Проверка", "Одобрение", "KYC", "Соглашение", "Аллокация", "Отчётность", "Выплата / Реинвест"]
   },
   zh: {
     ...base,
@@ -348,7 +358,9 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
         { question: "提款如何运作？", answer: "提款请求遵循协议条款和 60 天冷却期。该模型并非为即时投机性流动性而设计。" },
         { question: "我可以复投吗？", answer: "可以。在报告和周期结束后，当有符合条件的配置额度可用时，可选择复投。" }
       ]
-    }
+    },
+    trustSignals: ["真实商贸运营", "人工审核", "月度报告", "基于凭证的透明度", "受管理的资金配置"],
+    flowSteps: ["申请", "审核", "批准", "KYC", "协议", "资金配置", "报告", "派息 / 复投"]
   }
 };
 

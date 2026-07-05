@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, FileCheck2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import {
-  applicationFlowSteps,
-  applyTrustSignals,
   createInvestorApplication,
   type ApplyDictionary,
   type CountryOption,
@@ -295,7 +293,7 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
             {dictionary.sidebar.trustTitle}
           </div>
           <div className="grid gap-3">
-            {applyTrustSignals.map((signal) => (
+            {dictionary.trustSignals.map((signal) => (
               <div key={signal} className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 p-4">
                 <span className="text-sm text-foreground">{signal}</span>
                 <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
@@ -310,7 +308,7 @@ function TrustSidebar({ dictionary }: { dictionary: ApplyDictionary }) {
             {dictionary.sidebar.stepsTitle}
           </div>
           <div className="grid gap-2">
-            {applicationFlowSteps.map((step, index) => (
+            {dictionary.flowSteps.map((step, index) => (
               <div key={step} className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span className="flex size-7 items-center justify-center rounded-full bg-gold-300/20 dark:bg-gold-200/10 text-[0.65rem] font-semibold text-amber-700 dark:text-gold-100">
                   {index + 1}
