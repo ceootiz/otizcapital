@@ -183,7 +183,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
                   <a href={`/${activeLocale}/investor/login`} onClick={() => setMenuOpen(false)}>{dictionary.nav.investorCabinet}</a>
                 </Button>
                 <Button asChild size="lg" className="w-full">
-                  <a href={`/${activeLocale}/apply`} onClick={() => setMenuOpen(false)}>Стать инвестором</a>
+                  <a href={`/${activeLocale}/apply`} onClick={() => setMenuOpen(false)}>{dictionary.nav.cta}</a>
                 </Button>
               </div>
             </div>

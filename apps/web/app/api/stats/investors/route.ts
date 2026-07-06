@@ -20,7 +20,11 @@ export async function GET() {
     return NextResponse.json({ activeCount: cache.value });
   }
   try {
-    const count = await prisma.investor.count({ where: { status: "ACTIVE" } });
+    // Exclude test-fixture rows (the vitest suite seeds "…@example.com"
+    // investors into this database) so the public count reflects real investors.
+    const count = await prisma.investor.count({
+      where: { status: "ACTIVE", NOT: { email: { endsWith: "@example.com" } } }
+    });
     const rounded = roundToNearestFive(count);
     cache = { value: rounded, at: now };
     return NextResponse.json({ activeCount: rounded });
