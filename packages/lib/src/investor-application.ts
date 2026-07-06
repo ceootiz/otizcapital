@@ -22,6 +22,8 @@ export type InvestorApplication = {
   heardFrom: string;
   message: string;
   consent: boolean;
+  // Optional promo code entered on the apply form (validated server-side).
+  promoCode?: string;
   status: InvestorApplicationStatus;
   createdAt: string;
 };

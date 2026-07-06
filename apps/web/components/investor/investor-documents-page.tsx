@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Download, FileText, PenLine, Wallet } from "lucide-react";
+import { ArrowRight, CheckCircle2, Download, FileArchive, FileText, Loader2, PenLine, Wallet } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 import { createAdminFormatters } from "@otiz/lib";
 import type { SerializedInvestorDocument } from "@otiz/database";
@@ -19,6 +19,9 @@ const STRINGS = {
     signedOn: "Signed",
     viewAndSign: "View & sign",
     download: "Download",
+    downloadAll: "Download all documents",
+    generating: "Preparing ZIP...",
+    noDocuments: "No documents to download.",
     reviewTitle: "Review and sign",
     openDocument: "Open document (PDF)",
     ack: "I have read the document and accept the terms",
@@ -43,6 +46,9 @@ const STRINGS = {
     signedOn: "Подписано",
     viewAndSign: "Просмотреть и подписать",
     download: "Скачать",
+    downloadAll: "Скачать все документы",
+    generating: "Готовим ZIP...",
+    noDocuments: "Нет документов для скачивания.",
     reviewTitle: "Просмотр и подписание",
     openDocument: "Открыть документ (PDF)",
     ack: "Я ознакомился с документом и принимаю условия",
@@ -67,6 +73,9 @@ const STRINGS = {
     signedOn: "Firmado",
     viewAndSign: "Ver y firmar",
     download: "Descargar",
+    downloadAll: "Descargar todos los documentos",
+    generating: "Preparando ZIP...",
+    noDocuments: "No hay documentos para descargar.",
     reviewTitle: "Revisar y firmar",
     openDocument: "Abrir documento (PDF)",
     ack: "He leído el documento y acepto las condiciones",
@@ -91,6 +100,9 @@ const STRINGS = {
     signedOn: "Unterzeichnet",
     viewAndSign: "Ansehen und unterzeichnen",
     download: "Herunterladen",
+    downloadAll: "Alle Dokumente herunterladen",
+    generating: "ZIP wird vorbereitet...",
+    noDocuments: "Keine Dokumente zum Herunterladen.",
     reviewTitle: "Prüfen und unterzeichnen",
     openDocument: "Dokument öffnen (PDF)",
     ack: "Ich habe das Dokument gelesen und akzeptiere die Bedingungen",
@@ -115,6 +127,9 @@ const STRINGS = {
     signedOn: "签署于",
     viewAndSign: "查看并签署",
     download: "下载",
+    downloadAll: "下载全部文件",
+    generating: "正在生成 ZIP...",
+    noDocuments: "没有可下载的文件。",
     reviewTitle: "查看并签署",
     openDocument: "打开文件（PDF）",
     ack: "我已阅读该文件并接受相关条款",
@@ -145,6 +160,43 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
   const [signingId, setSigningId] = React.useState<string | null>(null);
   const [justSigned, setJustSigned] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [downloadingAll, setDownloadingAll] = React.useState(false);
+  const [downloadError, setDownloadError] = React.useState<string | null>(null);
+
+  async function downloadAll() {
+    setDownloadingAll(true);
+    setDownloadError(null);
+    try {
+      const response = await fetch("/api/investor/documents/download-all");
+      if (!response.ok) {
+        setDownloadError(t.noDocuments);
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "otiz-documents.zip";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError(t.noDocuments);
+    } finally {
+      setDownloadingAll(false);
+    }
+  }
+
+  const downloadAllControl = (
+    <div className="flex flex-col items-start gap-1 sm:items-end">
+      <Button size="sm" variant="outline" onClick={downloadAll} disabled={downloadingAll} className="gap-2">
+        {downloadingAll ? <Loader2 className="size-4 animate-spin" /> : <FileArchive className="size-4" />}
+        {downloadingAll ? t.generating : t.downloadAll}
+      </Button>
+      {downloadError ? <p className="text-sm text-red-600 dark:text-red-400">{downloadError}</p> : null}
+    </div>
+  );
 
   function typeLabel(type: string) {
     return type === "AGREEMENT" ? t.typeAgreement : type;
@@ -182,17 +234,21 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
 
   if (documents.length === 0) {
     return (
-      <Card className="rounded-[1.35rem] bg-muted/30 dark:bg-white/[0.035]">
-        <CardContent className="p-8 text-center">
-          <FileText className="mx-auto size-9 text-amber-700 dark:text-gold-100" />
-          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">{t.empty}</p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4">
+        <div className="flex justify-end">{downloadAllControl}</div>
+        <Card className="rounded-[1.35rem] bg-muted/30 dark:bg-white/[0.035]">
+          <CardContent className="p-8 text-center">
+            <FileText className="mx-auto size-9 text-amber-700 dark:text-gold-100" />
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">{t.empty}</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="grid gap-4">
+      <div className="flex justify-end">{downloadAllControl}</div>
       {justSigned ? (
         <Card className="overflow-hidden rounded-[1.35rem] border-gold-200/35 bg-card dark:bg-graphite-900/[0.78]">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />

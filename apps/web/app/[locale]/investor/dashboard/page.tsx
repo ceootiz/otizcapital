@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
-import { listActiveDepositAddresses, serializeDepositAddress } from "@otiz/database";
+import { getYieldSettings, listActiveDepositAddresses, serializeDepositAddress } from "@otiz/database";
 import { InvestorDashboardHome, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
@@ -27,9 +27,22 @@ export default async function InvestorDashboardRoute({ params }: { params: { loc
   const hasNoAllocations = data.summary.activeAllocationsCount === 0 && data.summary.completedAllocationsCount === 0;
   const depositAddresses = hasNoAllocations ? (await listActiveDepositAddresses()).map(serializeDepositAddress) : [];
 
+  // Effective annual yield rate: the investor's promo-code override if set,
+  // otherwise the global YieldSettings rate.
+  const yieldSettings = await getYieldSettings();
+  const hasCustomRate = investor.yieldRateOverride != null;
+  const annualRatePercent = hasCustomRate ? Number(investor.yieldRateOverride) : yieldSettings.annualRatePercent;
+
   return (
     <InvestorShell locale={params.locale} investor={investor} active="dashboard" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorDashboardHome locale={params.locale} data={data} investorName={investor.fullName} depositAddresses={depositAddresses} />
+      <InvestorDashboardHome
+        locale={params.locale}
+        data={data}
+        investorName={investor.fullName}
+        depositAddresses={depositAddresses}
+        annualRatePercent={annualRatePercent}
+        hasCustomRate={hasCustomRate}
+      />
     </InvestorShell>
   );
 }

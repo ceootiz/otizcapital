@@ -1,6 +1,34 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Download, FileSpreadsheet, FileText, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
+import { ActiveInvestorCount } from "./active-investor-count";
+
+// Anonymized active-investor count label (single string; kept inline rather than
+// threaded through the large INVESTOR_STRINGS dict).
+const ACTIVE_INVESTORS_LABEL: Record<string, string> = {
+  en: "Active investors on the platform:",
+  ru: "Активных инвесторов на платформе:",
+  es: "Inversores activos en la plataforma:",
+  de: "Aktive Investoren auf der Plattform:",
+  zh: "平台活跃投资者："
+};
+
+// Effective annual yield-rate line (single strings kept inline). {rate} is the
+// numeric percent; the personal tag shows when the investor has a promo override.
+const YIELD_RATE_LABEL: Record<string, string> = {
+  en: "Your annual yield rate:",
+  ru: "Ваша годовая ставка доходности:",
+  es: "Su tasa de rendimiento anual:",
+  de: "Ihr jährlicher Renditesatz:",
+  zh: "您的年化收益率："
+};
+const YIELD_RATE_PERSONAL_TAG: Record<string, string> = {
+  en: "personal rate",
+  ru: "персональная ставка",
+  es: "tasa personal",
+  de: "persönlicher Satz",
+  zh: "专属费率"
+};
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
@@ -366,15 +394,24 @@ export function InvestorDashboardHome({
   locale,
   data,
   investorName = "",
-  depositAddresses = []
+  depositAddresses = [],
+  annualRatePercent,
+  hasCustomRate = false
 }: {
   locale: Locale;
   data: InvestorDashboardData;
   investorName?: string;
   depositAddresses?: SerializedDepositAddress[];
+  annualRatePercent?: number;
+  hasCustomRate?: boolean;
 }) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
+
+  // A zero money-metric is only meaningful ("$0") once the investor has some
+  // allocation/withdrawal history; before that we render "—" to avoid a wall of
+  // hollow "$0"s. Allocation counters always show their real number.
+  const moneyMetric = (value: number) => (value === 0 && !data.summary.hasHistory ? "—" : f.money(value));
 
   // Zero-allocation onboarding view: no capital assigned yet.
   if (data.summary.activeAllocationsCount === 0 && data.summary.completedAllocationsCount === 0) {
@@ -384,16 +421,33 @@ export function InvestorDashboardHome({
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.activeCapital} value={f.money(data.summary.activeCapital)} />
-        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.totalInvested} value={f.money(data.summary.totalInvested)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.realizedProfit} value={f.money(data.summary.realizedProfit)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.expectedProfit} value={f.money(data.summary.expectedProfit)} />
-        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalPayouts} value={f.money(data.summary.totalPayouts)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.pendingPayouts} value={f.money(data.summary.pendingPayouts)} />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.activeCapital} value={moneyMetric(data.summary.activeCapital)} />
+        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.totalInvested} value={moneyMetric(data.summary.totalInvested)} />
+        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.realizedProfit} value={moneyMetric(data.summary.realizedProfit)} />
+        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.expectedProfit} value={moneyMetric(data.summary.expectedProfit)} />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalPayouts} value={moneyMetric(data.summary.totalPayouts)} />
+        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.pendingPayouts} value={moneyMetric(data.summary.pendingPayouts)} />
         <KpiCard icon={<PackageCheck className="size-5" />} label={t.kpi.activeAllocations} value={f.number(data.summary.activeAllocationsCount)} />
         <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.completedAllocations} value={f.number(data.summary.completedAllocationsCount)} />
         <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.currentAverageRoi} value={f.percent(data.summary.currentAverageRoi)} />
         <KpiCard icon={<FileText className="size-5" />} label={t.kpi.nextExpectedPayout} value={f.date(data.summary.nextExpectedPayoutDate)} hint={t.payoutHint} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {typeof annualRatePercent === "number" ? (
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {YIELD_RATE_LABEL[locale] ?? YIELD_RATE_LABEL.en} {f.number(annualRatePercent)}%
+            {hasCustomRate ? (
+              <span className="ml-2 rounded-full border border-gold-200/40 bg-gold-300/15 px-2 py-0.5 text-[0.6rem] text-amber-700 dark:text-gold-100">
+                {YIELD_RATE_PERSONAL_TAG[locale] ?? YIELD_RATE_PERSONAL_TAG.en}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
+        <ActiveInvestorCount
+          label={ACTIVE_INVESTORS_LABEL[locale] ?? ACTIVE_INVESTORS_LABEL.en}
+          className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

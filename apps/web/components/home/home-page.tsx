@@ -25,6 +25,7 @@ import {
   type HomeDictionary,
   type Locale
 } from "@otiz/lib";
+import { ActiveInvestorCount } from "@/components/investor/active-investor-count";
 import {
   Accordion,
   AccordionContent,
@@ -51,7 +52,7 @@ export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; l
     <main className="relative overflow-hidden micro-noise">
       <Header dictionary={dictionary} activeLocale={locale} />
       <Hero dictionary={dictionary} locale={locale} />
-      <TrustMetrics dictionary={dictionary} />
+      <TrustMetrics dictionary={dictionary} locale={locale} />
       <HowItWorks dictionary={dictionary} />
       <Transparency dictionary={dictionary} />
       <LiveOperations dictionary={dictionary} />
@@ -259,7 +260,15 @@ function Hero({ dictionary, locale }: { dictionary: HomeDictionary; locale: Loca
   );
 }
 
-function TrustMetrics({ dictionary }: { dictionary: HomeDictionary }) {
+const HOME_ACTIVE_INVESTORS_LABEL: Record<string, string> = {
+  en: "Active investors on the platform:",
+  ru: "Активных инвесторов на платформе:",
+  es: "Inversores activos en la plataforma:",
+  de: "Aktive Investoren auf der Plattform:",
+  zh: "平台活跃投资者："
+};
+
+function TrustMetrics({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   return (
     <SectionShell title={dictionary.trust.title} subtitle={dictionary.trust.subtitle}>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -276,6 +285,10 @@ function TrustMetrics({ dictionary }: { dictionary: HomeDictionary }) {
           </Reveal>
         ))}
       </div>
+      <ActiveInvestorCount
+        label={HOME_ACTIVE_INVESTORS_LABEL[locale] ?? HOME_ACTIVE_INVESTORS_LABEL.en}
+        className="mt-6 block text-center text-sm font-semibold text-muted-foreground"
+      />
     </SectionShell>
   );
 }

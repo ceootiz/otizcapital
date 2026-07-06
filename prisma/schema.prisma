@@ -74,6 +74,9 @@ model InvestorApplication {
   // Exactly one is set (or neither); copied onto the Investor on conversion.
   referredByArbitrageId   String?
   referredByInvestorId    String?
+  // Optional promo code entered on the apply form (validated at submit). On
+  // approval its yield-rate override is copied onto the Investor.
+  promoCode               String?
   managerNotes            String?
   priority                String    @default("NORMAL")
   sourceLabel             String?
@@ -105,6 +108,9 @@ model Investor {
   sourceApplicationId         String?
   totalCapital                String                 @default("0")
   reinvestEnabled             Boolean                @default(false)
+  // Per-investor annual yield rate override (percent, e.g. 60 = 60%/yr), set
+  // from a promo code on approval. Null = use the global YieldSettings rate.
+  yieldRateOverride           Decimal?
   passwordHash                String?
   // Per-investor login code (replaces the shared INVESTOR_ACCESS_CODE for
   // accounts created after this field shipped; null = legacy shared-code login).
@@ -133,6 +139,7 @@ model Investor {
   passwordResetTokens         PasswordResetToken[]
   payments                    InvestorPayment[]
   depositNotifications        DepositNotification[]
+  wallets                     InvestorWallet[]
   referralClicksMade          ReferralClick[]        @relation("InvestorReferralClicks")
   referralCommissionsEarned   ReferralCommission[]   @relation("InvestorReferralCommissions")
   referralCommissionsReceived ReferralCommission[]   @relation("ReferredInvestorCommissions")
@@ -302,6 +309,34 @@ model WithdrawalRequest {
   @@index([investorId])
   @@index([status])
   @@index([scheduledFor])
+}
+
+// Saved withdrawal destinations for an investor (max 5, enforced in code).
+// Exactly one row per investor should have isDefault = true.
+model InvestorWallet {
+  id         String   @id @default(cuid())
+  investorId String
+  label      String
+  network    String
+  address    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+}
+
+// Promo codes granting a custom annual yield rate. Applied on the /apply form;
+// the override is copied onto the Investor when the application is approved.
+model PromoCode {
+  id                String    @id @default(cuid())
+  code              String    @unique
+  yieldRateOverride Decimal
+  maxUses           Int?
+  usedCount         Int       @default(0)
+  expiresAt         DateTime?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
 }
 
 model MonthlyReport {

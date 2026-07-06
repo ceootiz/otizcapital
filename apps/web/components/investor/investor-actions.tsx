@@ -27,6 +27,8 @@ const STRINGS = {
     networkLabel: "Network",
     addressLabel: "Destination address",
     addressPlaceholder: "Wallet address",
+    walletLabel: "Withdrawal wallet",
+    noWallets: "You have no saved withdrawal wallets. Add one in Settings before requesting a withdrawal.",
     noteLabel: "Note (optional)",
     submit: "Submit request",
     submitting: "Submitting...",
@@ -58,6 +60,8 @@ const STRINGS = {
     networkLabel: "Сеть",
     addressLabel: "Адрес назначения",
     addressPlaceholder: "Адрес кошелька",
+    walletLabel: "Кошелёк для вывода",
+    noWallets: "У вас нет сохранённых кошельков для вывода. Добавьте один в Настройках, прежде чем запрашивать вывод.",
     noteLabel: "Примечание (необязательно)",
     submit: "Отправить запрос",
     submitting: "Отправка...",
@@ -89,6 +93,8 @@ const STRINGS = {
     networkLabel: "Red",
     addressLabel: "Dirección de destino",
     addressPlaceholder: "Dirección de la cartera",
+    walletLabel: "Cartera de retiro",
+    noWallets: "No tiene carteras de retiro guardadas. Agregue una en Ajustes antes de solicitar un retiro.",
     noteLabel: "Nota (opcional)",
     submit: "Enviar solicitud",
     submitting: "Enviando...",
@@ -120,6 +126,8 @@ const STRINGS = {
     networkLabel: "Netzwerk",
     addressLabel: "Zieladresse",
     addressPlaceholder: "Wallet-Adresse",
+    walletLabel: "Auszahlungs-Wallet",
+    noWallets: "Sie haben keine gespeicherten Auszahlungs-Wallets. Fügen Sie in den Einstellungen eine hinzu, bevor Sie eine Auszahlung anfordern.",
     noteLabel: "Notiz (optional)",
     submit: "Antrag einreichen",
     submitting: "Wird eingereicht...",
@@ -151,6 +159,8 @@ const STRINGS = {
     networkLabel: "网络",
     addressLabel: "目标地址",
     addressPlaceholder: "钱包地址",
+    walletLabel: "提现钱包",
+    noWallets: "您没有已保存的提现钱包。请先在设置中添加一个，然后再申请提现。",
     noteLabel: "备注（可选）",
     submit: "提交申请",
     submitting: "正在提交……",
@@ -170,7 +180,16 @@ const STRINGS = {
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
-const CRYPTO_NETWORKS = ["USDT (TRC20)", "USDT (ERC20)", "USDT (BEP20)", "BTC", "ETH (ERC20)"] as const;
+type WithdrawalWallet = {
+  id: string;
+  label: string;
+  network: string;
+  address: string;
+  isDefault: boolean;
+  createdAt: string;
+};
+
+const shortAddress = (address: string): string => (address.length > 6 ? `…${address.slice(-6)}` : address);
 
 export function InvestorLogoutButton({ locale }: { locale: Locale }) {
   const t = getStrings(locale);
@@ -260,12 +279,35 @@ export function InvestorWithdrawalForm({
   const fmt = createAdminFormatters(locale);
   const router = useRouter();
   const [amount, setAmount] = React.useState("");
-  const [network, setNetwork] = React.useState<string>(CRYPTO_NETWORKS[0]);
-  const [address, setAddress] = React.useState("");
+  const [wallets, setWallets] = React.useState<WithdrawalWallet[]>([]);
+  const [walletId, setWalletId] = React.useState("");
   const [note, setNote] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [submitted, setSubmitted] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadWallets() {
+      try {
+        const res = await fetch("/api/investor/wallets", { method: "GET" });
+        const body = (await res.json().catch(() => null)) as { ok?: boolean; data?: WithdrawalWallet[] } | null;
+        if (!cancelled && res.ok && body?.ok && Array.isArray(body.data)) {
+          setWallets(body.data);
+          const preferred = body.data.find((w) => w.isDefault) ?? body.data[0];
+          if (preferred) setWalletId(preferred.id);
+        }
+      } catch {
+        // Leave wallet list empty; the form shows the "add a wallet" guidance.
+      }
+    }
+
+    void loadWallets();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (locked) {
     return (
@@ -283,7 +325,7 @@ export function InvestorWithdrawalForm({
       <div className="rounded-[1.35rem] border border-emerald-400/25 bg-emerald-400/10 p-5">
         <p className="font-semibold text-emerald-200">{t.successTitle}</p>
         <p className="mt-2 text-sm leading-6 text-emerald-100/90">{t.successBody}</p>
-        <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => { setSubmitted(false); setAmount(""); setAddress(""); setNote(""); }}>
+        <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => { setSubmitted(false); setAmount(""); setNote(""); }}>
           {t.another}
         </Button>
       </div>
@@ -302,7 +344,7 @@ export function InvestorWithdrawalForm({
       setError(t.errExceeds);
       return;
     }
-    if (!address.trim()) {
+    if (!walletId) {
       setError(t.errAddress);
       return;
     }
@@ -314,9 +356,7 @@ export function InvestorWithdrawalForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: String(numericAmount),
-          currency: "USD",
-          method: network,
-          destinationMasked: address.trim(),
+          walletId,
           investorNote: note.trim() || undefined
         })
       });
@@ -348,21 +388,22 @@ export function InvestorWithdrawalForm({
           <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" placeholder="0" className={inputClass} />
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.networkLabel}</span>
-          <select value={network} onChange={(event) => setNetwork(event.target.value)} className={inputClass}>
-            {CRYPTO_NETWORKS.map((value) => (
-              <option key={value} value={value} className="bg-card dark:bg-graphite-900 text-foreground">
-                {value}
-              </option>
-            ))}
-          </select>
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.walletLabel}</span>
+          {wallets.length > 0 ? (
+            <select value={walletId} onChange={(event) => setWalletId(event.target.value)} className={inputClass}>
+              {wallets.map((wallet) => (
+                <option key={wallet.id} value={wallet.id} className="bg-card dark:bg-graphite-900 text-foreground">
+                  {`${wallet.label} · ${wallet.network} · ${shortAddress(wallet.address)}`}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="rounded-2xl border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-3 text-sm leading-6 text-amber-700 dark:text-gold-100">
+              {t.noWallets}
+            </p>
+          )}
         </label>
       </div>
-
-      <label className="mt-4 flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.addressLabel}</span>
-        <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t.addressPlaceholder} className={inputClass} />
-      </label>
 
       <label className="mt-4 flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.noteLabel}</span>
@@ -371,7 +412,7 @@ export function InvestorWithdrawalForm({
 
       {error ? <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p> : null}
 
-      <Button type="submit" className="mt-5 w-full sm:w-auto" disabled={isSubmitting}>
+      <Button type="submit" className="mt-5 w-full sm:w-auto" disabled={isSubmitting || wallets.length === 0}>
         {isSubmitting ? t.submitting : t.submit}
       </Button>
     </form>

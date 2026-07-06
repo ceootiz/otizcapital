@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { createWithdrawalRequest, getInvestorWithdrawalRequests, serializeInvestorWithdrawalRequest } from "@otiz/database";
+import {
+  createWithdrawalRequest,
+  getInvestorWalletById,
+  getInvestorWithdrawalRequests,
+  serializeInvestorWithdrawalRequest
+} from "@otiz/database";
 import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 
 export const dynamic = "force-dynamic";
@@ -22,12 +27,26 @@ export async function POST(request: Request) {
   const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!payload) return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 422 });
 
+  // Preferred path: the investor selects a saved wallet. We resolve it server-
+  // side (verifying ownership) and derive method + destination from it, so the
+  // client never dictates the masked destination. Legacy manual fields remain a
+  // fallback for older clients.
+  let method = sanitizeString(payload.method, 80) || null;
+  let destination = sanitizeString(payload.destinationMasked, 240) || null;
+  const walletId = sanitizeString(payload.walletId, 40);
+  if (walletId) {
+    const wallet = await getInvestorWalletById(auth.investor.id, walletId);
+    if (!wallet) return NextResponse.json({ ok: false, error: "Selected wallet not found." }, { status: 404 });
+    method = wallet.network;
+    destination = wallet.address; // createWithdrawalRequest masks this before storing.
+  }
+
   const result = await createWithdrawalRequest({
     investorId: auth.investor.id,
     amount: sanitizeString(payload.amount, 32),
     currency: sanitizeString(payload.currency || "USD", 8) || "USD",
-    method: sanitizeString(payload.method, 80) || null,
-    destinationMasked: sanitizeString(payload.destinationMasked, 240) || null,
+    method,
+    destinationMasked: destination,
     investorNote: sanitizeString(payload.investorNote, 1000) || null
   });
 

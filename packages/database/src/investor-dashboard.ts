@@ -134,6 +134,9 @@ export type InvestorDashboardSummary = {
   pendingPayouts: number;
   activeAllocationsCount: number;
   completedAllocationsCount: number;
+  // True once the investor has any allocations or withdrawal activity. When
+  // false, the UI renders zero money-metrics as "—" instead of "$0".
+  hasHistory: boolean;
   currentAverageRoi: number | null;
   nextExpectedPayoutDate: string | null;
   latestPublishedMonthlyReport: InvestorDashboardReportReference | null;
@@ -321,6 +324,7 @@ export function buildInvestorDashboardData(input: {
       pendingPayouts: pendingWithdrawals.reduce((sum, request) => sum + toNumber(request.amount), 0),
       activeAllocationsCount: activeAllocationRecords.length,
       completedAllocationsCount: completedAllocationRecords.length,
+      hasHistory: allocations.length > 0 || withdrawalRequests.length > 0,
       currentAverageRoi: completedCapital > 0 ? (realizedProfit / completedCapital) * 100 : null,
       nextExpectedPayoutDate: toIsoDate(futurePayoutDate),
       latestPublishedMonthlyReport,

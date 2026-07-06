@@ -61,7 +61,8 @@ export const apiInvestorApplicationSubmitter: InvestorApplicationSubmitter = {
         reinvestInterest: application.reinvestInterest,
         heardFrom: application.heardFrom,
         message: application.message,
-        consentAccepted: application.consent
+        consentAccepted: application.consent,
+        promoCode: application.promoCode
       })
     });
     const payload = (await response.json()) as ApiInvestorApplicationResponse;

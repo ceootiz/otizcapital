@@ -35,6 +35,9 @@ export type ApplyDictionary = {
     validationEmail: string;
     validationMinimum: string;
     validationConsent: string;
+    promoCode: string;
+    promoCodePlaceholder: string;
+    promoInvalid: string;
   };
   options: {
     contact: Record<string, string>;
@@ -95,7 +98,10 @@ const base: ApplyDictionary = {
     validationRequired: "Please complete all required fields.",
     validationEmail: "Please enter a valid email address.",
     validationMinimum: "Minimum planned allocation is $5,000.",
-    validationConsent: "Please confirm consent before submitting."
+    validationConsent: "Please confirm consent before submitting.",
+    promoCode: "Promo code (optional)",
+    promoCodePlaceholder: "Enter a promo code if you have one",
+    promoInvalid: "This promo code is invalid, expired, or fully used."
   },
   options: {
     contact: { telegram: "Telegram", email: "Email" },
@@ -162,7 +168,10 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       validationRequired: "Completa todos los campos requeridos.",
       validationEmail: "Introduce un email válido.",
       validationMinimum: "La asignación mínima prevista es $5,000.",
-      validationConsent: "Confirma el consentimiento antes de enviar."
+      validationConsent: "Confirma el consentimiento antes de enviar.",
+      promoCode: "Código promocional (opcional)",
+      promoCodePlaceholder: "Introduzca un código promocional si tiene uno",
+      promoInvalid: "Este código promocional no es válido, ha caducado o se ha agotado."
     },
     options: {
       contact: { telegram: "Telegram", email: "Correo" },
@@ -221,7 +230,10 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       validationRequired: "Bitte füllen Sie alle Pflichtfelder aus.",
       validationEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
       validationMinimum: "Die Mindestallokation beträgt $5,000.",
-      validationConsent: "Bitte bestätigen Sie die Zustimmung vor dem Absenden."
+      validationConsent: "Bitte bestätigen Sie die Zustimmung vor dem Absenden.",
+      promoCode: "Promo-Code (optional)",
+      promoCodePlaceholder: "Geben Sie ggf. einen Promo-Code ein",
+      promoInvalid: "Dieser Promo-Code ist ungültig, abgelaufen oder aufgebraucht."
     },
     options: {
       contact: { telegram: "Telegram", email: "E-Mail" },
@@ -281,7 +293,10 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       validationRequired: "Пожалуйста, заполните все обязательные поля.",
       validationEmail: "Введите корректный email.",
       validationMinimum: "Минимальная планируемая аллокация — $5,000.",
-      validationConsent: "Подтвердите согласие перед отправкой."
+      validationConsent: "Подтвердите согласие перед отправкой.",
+      promoCode: "Промокод (необязательно)",
+      promoCodePlaceholder: "Введите промокод, если он у вас есть",
+      promoInvalid: "Этот промокод недействителен, истёк или полностью использован."
     },
     options: {
       contact: { telegram: "Telegram", email: "Email" },
@@ -340,7 +355,10 @@ export const applyDictionaries: Record<Locale, ApplyDictionary> = {
       validationRequired: "请填写所有必填字段。",
       validationEmail: "请输入有效的邮箱地址。",
       validationMinimum: "最低计划配置为 $5,000。",
-      validationConsent: "提交前请确认同意。"
+      validationConsent: "提交前请确认同意。",
+      promoCode: "促销码（可选）",
+      promoCodePlaceholder: "如有促销码请输入",
+      promoInvalid: "该促销码无效、已过期或已用完。"
     },
     options: {
       contact: { telegram: "Telegram", email: "邮箱" },

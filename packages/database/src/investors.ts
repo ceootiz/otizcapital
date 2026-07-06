@@ -221,6 +221,23 @@ export async function createInvestorFromApprovedApplication(input: {
     // inline (no DB round-trip inside the tx); the @unique constraint backstops
     // the negligible collision risk on an 8-char/32-symbol code.
     const referralCode = generateReferralCode();
+    // Promo code: if the application carried a still-valid, unexhausted code,
+    // apply its yield-rate override to the new investor and consume one use.
+    // Done on the transaction client so the counter moves atomically with the
+    // investor creation (and only for genuinely new investors).
+    let yieldRateOverride: number | null = null;
+    if (!existingInvestor && application.promoCode) {
+      const promo = await transaction.promoCode.findUnique({ where: { code: application.promoCode } });
+      const valid =
+        !!promo &&
+        promo.isActive &&
+        (!promo.expiresAt || promo.expiresAt.getTime() >= Date.now()) &&
+        (promo.maxUses == null || promo.usedCount < promo.maxUses);
+      if (valid && promo) {
+        yieldRateOverride = Number(promo.yieldRateOverride);
+        await transaction.promoCode.update({ where: { id: promo.id }, data: { usedCount: { increment: 1 } } });
+      }
+    }
     const investor =
       existingInvestor ??
       (await transaction.investor.create({
@@ -239,7 +256,8 @@ export async function createInvestorFromApprovedApplication(input: {
           // Carry the referral attribution captured on the application through
           // to the investor so deposit-confirmation can accrue the commission.
           referredByArbitrageId: application.referredByArbitrageId,
-          referredByInvestorId: application.referredByInvestorId
+          referredByInvestorId: application.referredByInvestorId,
+          yieldRateOverride
         }
       }));
     const updatedApplication = await transaction.investorApplication.update({

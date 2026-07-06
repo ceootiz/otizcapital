@@ -12,6 +12,7 @@ export type AdminNavigationSection =
   | "checkpoint-health"
   | "deposit-addresses"
   | "referrals"
+  | "promo-codes"
   | "content"
   | "contact-settings";
 
@@ -26,6 +27,7 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
   { key: "checkpoint-health", href: (locale) => `/${locale}/admin/checkpoint-health` },
   { key: "deposit-addresses", href: (locale) => `/${locale}/admin/deposit-addresses` },
   { key: "referrals", href: (locale) => `/${locale}/admin/referrals` },
+  { key: "promo-codes", href: (locale) => `/${locale}/admin/promo-codes` },
   { key: "content", href: (locale) => `/${locale}/admin/content` },
   { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` }
 ];
@@ -42,6 +44,7 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     "checkpoint-health": "Checkpoint health",
     "deposit-addresses": "Deposits",
     referrals: "Referrals",
+    "promo-codes": "Promo codes",
     content: "Content",
     "contact-settings": "Contact"
   },
@@ -56,6 +59,7 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     "checkpoint-health": "Контроль состояния",
     "deposit-addresses": "Пополнение",
     referrals: "Рефералы",
+    "promo-codes": "Промокоды",
     content: "Контент",
     "contact-settings": "Контакты"
   }

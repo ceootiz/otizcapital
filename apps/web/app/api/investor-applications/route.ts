@@ -11,8 +11,10 @@ import {
   REINVEST_INTEREST_OPTIONS,
   createInvestorApplicationRecord,
   listInvestorApplicationRecords,
+  normalizePromoCode,
   resolveReferralCode,
   serializeInvestorApplication,
+  validatePromoCode,
   type ApplicationPriority,
   type ApplicationSlaFilter,
   type ApplicationStatus,
@@ -174,10 +176,24 @@ export async function POST(request: Request) {
       }
     }
 
+    // Promo code (optional): validate if provided. A bad code blocks submission
+    // with a field-specific error so the applicant can correct it; a valid code
+    // is stored (normalized) and consumed when the application is approved.
+    const promoInput = sanitizeString(payload?.promoCode, 40);
+    let promoCode: string | null = null;
+    if (promoInput) {
+      const promo = await validatePromoCode(promoInput);
+      if (!promo.ok) {
+        return NextResponse.json({ ok: false, errors: { promoCode: "PROMO_INVALID" } }, { status: 422 });
+      }
+      promoCode = normalizePromoCode(promoInput);
+    }
+
     const application = await createInvestorApplicationRecord({
       ...validated.data,
       referredByArbitrageId,
       referredByInvestorId,
+      promoCode,
       referralClientIp: clientIpFromRequest(request),
       referralUserAgent: (request.headers.get("user-agent") || "").slice(0, 400) || null
     });

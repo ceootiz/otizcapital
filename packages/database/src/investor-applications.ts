@@ -37,6 +37,8 @@ export type CreateInvestorApplicationInput = {
   // layer (at most one is set), plus the client fingerprint for the click row.
   referredByArbitrageId?: string | null;
   referredByInvestorId?: string | null;
+  // Optional promo code (validated at the API layer); consumed on approval.
+  promoCode?: string | null;
   referralClientIp?: string | null;
   referralUserAgent?: string | null;
 };
@@ -87,7 +89,8 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
         message: input.message || null,
         consentAccepted: input.consentAccepted,
         referredByArbitrageId: input.referredByArbitrageId ?? null,
-        referredByInvestorId: input.referredByInvestorId ?? null
+        referredByInvestorId: input.referredByInvestorId ?? null,
+        promoCode: input.promoCode ?? null
       }
     });
 

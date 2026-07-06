@@ -48,7 +48,8 @@ const initialForm: FormState = {
   reinvestInterest: "not_sure",
   heardFrom: "",
   message: "",
-  consent: false
+  consent: false,
+  promoCode: ""
 };
 
 export function ApplicationPage({
@@ -131,7 +132,8 @@ export function ApplicationPage({
         country: form.country.trim(),
         plannedAllocationAmount: form.plannedAllocationAmount.trim(),
         heardFrom: form.heardFrom.trim(),
-        message: form.message.trim()
+        message: form.message.trim(),
+        promoCode: (form.promoCode ?? "").trim() || undefined
       });
       const submittedEmail = application.email?.trim() || "";
       await investorApplicationSubmitter.submit(application);
@@ -141,7 +143,14 @@ export function ApplicationPage({
       const query = submittedEmail ? `?email=${encodeURIComponent(submittedEmail)}` : "";
       router.push(`/${locale}/apply/status${query}`);
     } catch (error) {
-      setErrors({ form: error instanceof Error && error.message ? error.message : dictionary.form.validationRequired });
+      // A rejected promo code surfaces as a field error rather than a generic
+      // form error, so the applicant can fix just the code.
+      const message = error instanceof Error && error.message ? error.message : dictionary.form.validationRequired;
+      if (message === "PROMO_INVALID") {
+        setErrors({ promoCode: dictionary.form.promoInvalid });
+      } else {
+        setErrors({ form: message });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -250,6 +259,13 @@ export function ApplicationPage({
                         <TextField label={dictionary.form.heardFrom} value={form.heardFrom} error={errors.heardFrom} onChange={(value) => updateField("heardFrom", value)} />
                       </div>
                       <TextAreaField label={dictionary.form.message} value={form.message} onChange={(value) => updateField("message", value)} />
+                      <TextField
+                        label={dictionary.form.promoCode}
+                        value={form.promoCode ?? ""}
+                        error={errors.promoCode}
+                        onChange={(value) => updateField("promoCode", value)}
+                        placeholder={dictionary.form.promoCodePlaceholder}
+                      />
                       <label className="flex gap-3 rounded-2xl border border-border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground dark:border-white/10 dark:bg-white/[0.035]">
                         <input
                           type="checkbox"

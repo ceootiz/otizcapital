@@ -63,6 +63,28 @@ const STRINGS = {
       title: "Account history",
       desc: "Download a PDF summary of your allocations, withdrawals, and published reports.",
       button: "Download account history (PDF)"
+    },
+    wallets: {
+      title: "Wallets for withdrawal",
+      desc: "Save up to 5 crypto wallets to use as withdrawal destinations. Each withdrawal request draws from the wallet you choose.",
+      loading: "Loading wallets...",
+      empty: "No withdrawal wallets yet. Add one below.",
+      defaultBadge: "Default",
+      setDefault: "Set default",
+      delete: "Delete",
+      deleteConfirm: "Remove this withdrawal wallet?",
+      addTitle: "Add a wallet",
+      labelField: "Label",
+      labelPlaceholder: "e.g. Main wallet",
+      networkField: "Network",
+      addressField: "Address",
+      addressPlaceholder: "Wallet address",
+      add: "Add wallet",
+      adding: "Adding...",
+      maxReached: "You have reached the maximum of 5 withdrawal wallets. Delete one to add another.",
+      errMissing: "Please fill in the label, network, and address.",
+      errLimit: "You have reached the maximum of 5 withdrawal wallets.",
+      errGeneric: "Something went wrong. Please try again."
     }
   },
   ru: {
@@ -117,6 +139,28 @@ const STRINGS = {
       title: "История аккаунта",
       desc: "Скачайте PDF-сводку по вашим аллокациям, выводам и опубликованным отчётам.",
       button: "Скачать историю аккаунта (PDF)"
+    },
+    wallets: {
+      title: "Кошельки для вывода",
+      desc: "Сохраните до 5 крипто-кошельков для вывода средств. Каждый запрос на вывод использует выбранный вами кошелёк.",
+      loading: "Загрузка кошельков...",
+      empty: "Кошельков для вывода пока нет. Добавьте один ниже.",
+      defaultBadge: "По умолчанию",
+      setDefault: "Сделать основным",
+      delete: "Удалить",
+      deleteConfirm: "Удалить этот кошелёк для вывода?",
+      addTitle: "Добавить кошелёк",
+      labelField: "Название",
+      labelPlaceholder: "напр. Основной кошелёк",
+      networkField: "Сеть",
+      addressField: "Адрес",
+      addressPlaceholder: "Адрес кошелька",
+      add: "Добавить кошелёк",
+      adding: "Добавление...",
+      maxReached: "Вы достигли максимума в 5 кошельков для вывода. Удалите один, чтобы добавить другой.",
+      errMissing: "Заполните название, сеть и адрес.",
+      errLimit: "Вы достигли максимума в 5 кошельков для вывода.",
+      errGeneric: "Что-то пошло не так. Попробуйте ещё раз."
     }
   },
   es: {
@@ -171,6 +215,28 @@ const STRINGS = {
       title: "Historial de la cuenta",
       desc: "Descargue un resumen en PDF de sus asignaciones, retiros e informes publicados.",
       button: "Descargar historial de la cuenta (PDF)"
+    },
+    wallets: {
+      title: "Carteras para retiros",
+      desc: "Guarde hasta 5 carteras de criptomonedas para usarlas como destino de retiros. Cada solicitud de retiro utiliza la cartera que elija.",
+      loading: "Cargando carteras...",
+      empty: "Aún no hay carteras de retiro. Agregue una a continuación.",
+      defaultBadge: "Predeterminada",
+      setDefault: "Establecer como predeterminada",
+      delete: "Eliminar",
+      deleteConfirm: "¿Eliminar esta cartera de retiro?",
+      addTitle: "Agregar una cartera",
+      labelField: "Etiqueta",
+      labelPlaceholder: "p. ej. Cartera principal",
+      networkField: "Red",
+      addressField: "Dirección",
+      addressPlaceholder: "Dirección de la cartera",
+      add: "Agregar cartera",
+      adding: "Agregando...",
+      maxReached: "Ha alcanzado el máximo de 5 carteras de retiro. Elimine una para agregar otra.",
+      errMissing: "Complete la etiqueta, la red y la dirección.",
+      errLimit: "Ha alcanzado el máximo de 5 carteras de retiro.",
+      errGeneric: "Algo salió mal. Vuelva a intentarlo."
     }
   },
   de: {
@@ -225,6 +291,28 @@ const STRINGS = {
       title: "Kontoverlauf",
       desc: "Laden Sie eine PDF-Zusammenfassung Ihrer Allokationen, Auszahlungen und veröffentlichten Berichte herunter.",
       button: "Kontoverlauf herunterladen (PDF)"
+    },
+    wallets: {
+      title: "Wallets für Auszahlungen",
+      desc: "Speichern Sie bis zu 5 Krypto-Wallets als Auszahlungsziele. Jeder Auszahlungsantrag verwendet die von Ihnen gewählte Wallet.",
+      loading: "Wallets werden geladen...",
+      empty: "Noch keine Auszahlungs-Wallets. Fügen Sie unten eine hinzu.",
+      defaultBadge: "Standard",
+      setDefault: "Als Standard festlegen",
+      delete: "Löschen",
+      deleteConfirm: "Diese Auszahlungs-Wallet entfernen?",
+      addTitle: "Wallet hinzufügen",
+      labelField: "Bezeichnung",
+      labelPlaceholder: "z. B. Haupt-Wallet",
+      networkField: "Netzwerk",
+      addressField: "Adresse",
+      addressPlaceholder: "Wallet-Adresse",
+      add: "Wallet hinzufügen",
+      adding: "Wird hinzugefügt...",
+      maxReached: "Sie haben das Maximum von 5 Auszahlungs-Wallets erreicht. Löschen Sie eine, um eine weitere hinzuzufügen.",
+      errMissing: "Bitte füllen Sie Bezeichnung, Netzwerk und Adresse aus.",
+      errLimit: "Sie haben das Maximum von 5 Auszahlungs-Wallets erreicht.",
+      errGeneric: "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
     }
   },
   zh: {
@@ -279,6 +367,28 @@ const STRINGS = {
       title: "账户历史",
       desc: "下载您的资金配置、提现和已发布报告的 PDF 摘要。",
       button: "下载账户历史（PDF）"
+    },
+    wallets: {
+      title: "提现钱包",
+      desc: "最多可保存 5 个加密钱包作为提现地址。每次提现申请将使用您选择的钱包。",
+      loading: "正在加载钱包……",
+      empty: "尚无提现钱包。请在下方添加。",
+      defaultBadge: "默认",
+      setDefault: "设为默认",
+      delete: "删除",
+      deleteConfirm: "移除此提现钱包？",
+      addTitle: "添加钱包",
+      labelField: "名称",
+      labelPlaceholder: "例如：主钱包",
+      networkField: "网络",
+      addressField: "地址",
+      addressPlaceholder: "钱包地址",
+      add: "添加钱包",
+      adding: "正在添加……",
+      maxReached: "您已达到 5 个提现钱包的上限。请删除一个后再添加。",
+      errMissing: "请填写名称、网络和地址。",
+      errLimit: "您已达到 5 个提现钱包的上限。",
+      errGeneric: "出现问题。请重试。"
     }
   }
 } as const;
@@ -300,6 +410,18 @@ type SessionRow = {
   expiresAt: string;
   isCurrent: boolean;
 };
+
+type WalletRow = {
+  id: string;
+  label: string;
+  network: string;
+  address: string;
+  isDefault: boolean;
+  createdAt: string;
+};
+
+const WITHDRAWAL_NETWORKS = ["BTC", "ETH", "USDT TRC20", "USDT ERC20", "USDT BEP20"] as const;
+const MAX_WALLETS = 5;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -363,6 +485,15 @@ export function InvestorSettingsPage({
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [terminating, setTerminating] = useState(false);
 
+  // --- Wallets state ---
+  const [wallets, setWallets] = useState<WalletRow[]>([]);
+  const [walletsLoading, setWalletsLoading] = useState(true);
+  const [walletLabel, setWalletLabel] = useState("");
+  const [walletNetwork, setWalletNetwork] = useState<string>(WITHDRAWAL_NETWORKS[0]);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [walletBusy, setWalletBusy] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -388,6 +519,130 @@ export function InvestorSettingsPage({
       cancelled = true;
     };
   }, []);
+
+  // --- Load wallets on mount ---
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWallets() {
+      setWalletsLoading(true);
+      try {
+        const res = await fetch("/api/investor/wallets", { method: "GET" });
+        const body = (await res.json().catch(() => null)) as { ok?: boolean; data?: WalletRow[] } | null;
+        if (!cancelled && res.ok && body?.ok && Array.isArray(body.data)) {
+          setWallets(body.data);
+        } else if (!cancelled) {
+          setWallets([]);
+        }
+      } catch {
+        if (!cancelled) setWallets([]);
+      } finally {
+        if (!cancelled) setWalletsLoading(false);
+      }
+    }
+
+    void loadWallets();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refreshWallets = useCallback(async () => {
+    try {
+      const res = await fetch("/api/investor/wallets", { method: "GET" });
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; data?: WalletRow[] } | null;
+      if (res.ok && body?.ok && Array.isArray(body.data)) setWallets(body.data);
+    } catch {
+      // Leave existing list in place on failure.
+    }
+  }, []);
+
+  const handleAddWallet = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setWalletError(null);
+
+      if (!walletLabel.trim() || !walletNetwork || !walletAddress.trim()) {
+        setWalletError(t.wallets.errMissing);
+        return;
+      }
+
+      setWalletBusy(true);
+      try {
+        const res = await fetch("/api/investor/wallets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            label: walletLabel.trim(),
+            network: walletNetwork,
+            address: walletAddress.trim()
+          })
+        });
+        const body = (await res.json().catch(() => null)) as { ok?: boolean; data?: WalletRow; error?: string } | null;
+
+        if (res.ok && body?.ok && body.data) {
+          setWallets((current) => [body.data as WalletRow, ...current]);
+          setWalletLabel("");
+          setWalletNetwork(WITHDRAWAL_NETWORKS[0]);
+          setWalletAddress("");
+          return;
+        }
+
+        switch (body?.error) {
+          case "WALLET_LIMIT_REACHED":
+            setWalletError(t.wallets.errLimit);
+            break;
+          case "MISSING_FIELDS":
+            setWalletError(t.wallets.errMissing);
+            break;
+          default:
+            setWalletError(t.wallets.errGeneric);
+        }
+      } catch {
+        setWalletError(t.wallets.errGeneric);
+      } finally {
+        setWalletBusy(false);
+      }
+    },
+    [walletLabel, walletNetwork, walletAddress, t.wallets]
+  );
+
+  const handleSetDefaultWallet = useCallback(
+    async (id: string) => {
+      setWalletError(null);
+      try {
+        const res = await fetch(`/api/investor/wallets/${id}/default`, { method: "PATCH" });
+        const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+        if (res.ok && body?.ok) {
+          setWallets((current) => current.map((w) => ({ ...w, isDefault: w.id === id })));
+        } else {
+          await refreshWallets();
+        }
+      } catch {
+        setWalletError(t.wallets.errGeneric);
+      }
+    },
+    [refreshWallets, t.wallets.errGeneric]
+  );
+
+  const handleDeleteWallet = useCallback(
+    async (id: string) => {
+      if (typeof window !== "undefined" && !window.confirm(t.wallets.deleteConfirm)) return;
+      setWalletError(null);
+      try {
+        const res = await fetch(`/api/investor/wallets/${id}`, { method: "DELETE" });
+        const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+        if (res.ok && body?.ok) {
+          setWallets((current) => current.filter((w) => w.id !== id));
+        } else {
+          await refreshWallets();
+        }
+      } catch {
+        setWalletError(t.wallets.errGeneric);
+      }
+    },
+    [refreshWallets, t.wallets.deleteConfirm, t.wallets.errGeneric]
+  );
 
   // --- Password submit ---
   const handlePasswordSubmit = useCallback(
@@ -646,6 +901,120 @@ export function InvestorSettingsPage({
             />
           </button>
         </div>
+      </section>
+
+      {/* 3.5) WALLETS — Withdrawal wallets */}
+      <section className={cardClass}>
+        <div className="mb-5">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.02em] text-foreground">{t.wallets.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.wallets.desc}</p>
+        </div>
+
+        {walletsLoading ? (
+          <p className="text-sm text-muted-foreground">{t.wallets.loading}</p>
+        ) : wallets.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t.wallets.empty}</p>
+        ) : (
+          <ul className="grid">
+            {wallets.map((wallet, index) => (
+              <li
+                key={wallet.id}
+                className={`flex flex-wrap items-start justify-between gap-3 py-3.5 ${
+                  index === 0 ? "" : "border-t border-border dark:border-white/[0.06]"
+                }`}
+              >
+                <div className="min-w-0 grid gap-1">
+                  <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
+                    {wallet.label}
+                    {wallet.isDefault ? (
+                      <span className="rounded-full bg-gold-200 px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-graphite-950">
+                        {t.wallets.defaultBadge}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{wallet.network}</p>
+                  <p className="break-all font-mono text-xs leading-5 text-muted-foreground">{wallet.address}</p>
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {!wallet.isDefault ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleSetDefaultWallet(wallet.id)}
+                      className="inline-flex h-9 items-center justify-center rounded-xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-3.5 text-xs font-semibold text-foreground transition-colors hover:border-gold-200/45"
+                    >
+                      {t.wallets.setDefault}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => void handleDeleteWallet(wallet.id)}
+                    className="inline-flex h-9 items-center justify-center rounded-xl border border-red-400/30 bg-red-400/10 px-3.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-400/20"
+                  >
+                    {t.wallets.delete}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!walletsLoading && wallets.length >= MAX_WALLETS ? (
+          <p className="mt-5 rounded-2xl border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 p-3 text-sm text-amber-700 dark:text-gold-100">
+            {t.wallets.maxReached}
+          </p>
+        ) : (
+          <form className="mt-6 grid gap-4 border-t border-border dark:border-white/[0.06] pt-6" onSubmit={handleAddWallet} noValidate>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.wallets.addTitle}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className={labelClass}>{t.wallets.labelField}</span>
+                <input
+                  type="text"
+                  className={inputClass}
+                  value={walletLabel}
+                  placeholder={t.wallets.labelPlaceholder}
+                  onChange={(event) => setWalletLabel(event.target.value)}
+                />
+              </label>
+              <label className="grid gap-2">
+                <span className={labelClass}>{t.wallets.networkField}</span>
+                <select className={inputClass} value={walletNetwork} onChange={(event) => setWalletNetwork(event.target.value)}>
+                  {WITHDRAWAL_NETWORKS.map((value) => (
+                    <option key={value} value={value} className="bg-card dark:bg-graphite-900 text-foreground">
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="grid gap-2">
+              <span className={labelClass}>{t.wallets.addressField}</span>
+              <input
+                type="text"
+                className={inputClass}
+                value={walletAddress}
+                placeholder={t.wallets.addressPlaceholder}
+                onChange={(event) => setWalletAddress(event.target.value)}
+              />
+            </label>
+
+            {walletError ? <p className="text-sm text-red-400">{walletError}</p> : null}
+
+            <div>
+              <button
+                type="submit"
+                disabled={walletBusy}
+                className="inline-flex h-[3rem] items-center justify-center rounded-2xl bg-gold-200 px-6 text-sm font-semibold text-graphite-950 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {walletBusy ? t.wallets.adding : t.wallets.add}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {!walletsLoading && wallets.length >= MAX_WALLETS && walletError ? (
+          <p className="mt-4 text-sm text-red-400">{walletError}</p>
+        ) : null}
       </section>
 
       {/* 4) SECURITY — Session history */}
