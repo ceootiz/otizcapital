@@ -32,3 +32,4 @@ export * from "./referral-notifications";
 export * from "./investor-wallets";
 export * from "./promo-codes";
 export * from "./investor-ledger";
+export * from "./kyc";

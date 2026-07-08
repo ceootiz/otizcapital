@@ -143,12 +143,39 @@ model Investor {
   referralClicksMade          ReferralClick[]        @relation("InvestorReferralClicks")
   referralCommissionsEarned   ReferralCommission[]   @relation("InvestorReferralCommissions")
   referralCommissionsReceived ReferralCommission[]   @relation("ReferredInvestorCommissions")
+  kyc                         KycVerification?
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
   @@index([referredByArbitrageId])
   @@index([referredByInvestorId])
+}
+
+// KYC verification state for an investor. This is a FOUNDATION model: it holds
+// status + provider slots so a real identity provider (Sumsub/Onfido/etc.) can
+// be wired in later without a schema change. No existing flow (deposits,
+// withdrawals) reads this — it is intentionally non-blocking for now.
+// One row per investor (investorId is unique).
+model KycVerification {
+  id          String    @id @default(cuid())
+  investorId  String    @unique
+  investor    Investor  @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  // NOT_STARTED | PENDING | VERIFIED | REJECTED (see KYC_STATUS in kyc.ts).
+  status      String    @default("NOT_STARTED")
+  // Future provider integration slots. provider names the vendor once chosen;
+  // externalId is the vendor-side applicant/verification id used for webhooks.
+  provider    String?
+  externalId  String?
+  // Free-text review context, e.g. a rejection reason.
+  reviewNote  String?
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([provider, externalId])
 }
 
 // Single-use, 1-hour password reset tokens for the investor "forgot password"
