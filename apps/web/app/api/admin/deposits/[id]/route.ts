@@ -103,18 +103,21 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   // Referral commission (Block 2): accrue only on a real PENDING→CONFIRMED
   // transition (the `updated` guard above already enforced that). Best-effort —
   // a commission failure must not fail the confirmation the manager just made.
+  // A confirmation may accrue up to two commissions (direct + second level);
+  // each records its own admin-facing event.
   if (action === "confirm") {
     try {
       const accrual = await accrueReferralCommission({
         investorId: record.investorId,
         depositAmount: Number(record.amount)
       });
-      if (accrual.created) {
+      for (const entry of accrual.commissions) {
         await recordCommissionAccruedEvent({
-          commissionId: accrual.commission.id,
-          referrerName: accrual.referrerName,
-          referrerType: accrual.referrerType,
-          commissionAmount: Number(accrual.commission.commissionAmount)
+          commissionId: entry.commission.id,
+          referrerName: entry.referrerName,
+          referrerType: entry.referrerType,
+          commissionAmount: Number(entry.commission.commissionAmount),
+          level: entry.level
         });
       }
     } catch (error) {

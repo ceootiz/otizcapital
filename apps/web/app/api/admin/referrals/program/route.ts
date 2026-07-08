@@ -26,12 +26,18 @@ export async function PATCH(request: Request) {
 
   const arbitrageurRate = parseRate(payload.arbitrageurRate);
   const investorReferrerRate = parseRate(payload.investorReferrerRate);
+  const secondLevelRate = parseRate(payload.secondLevelRate);
   const minDepositForCommission = parseMin(payload.minDepositForCommission);
 
-  if (arbitrageurRate === undefined && investorReferrerRate === undefined && minDepositForCommission === undefined) {
+  if (
+    arbitrageurRate === undefined &&
+    investorReferrerRate === undefined &&
+    secondLevelRate === undefined &&
+    minDepositForCommission === undefined
+  ) {
     return NextResponse.json({ ok: false, error: "Nothing valid to update. Rates must be between 0 and 1." }, { status: 422 });
   }
 
-  const program = await updateReferralProgram({ arbitrageurRate, investorReferrerRate, minDepositForCommission });
+  const program = await updateReferralProgram({ arbitrageurRate, investorReferrerRate, secondLevelRate, minDepositForCommission });
   return NextResponse.json({ ok: true, data: serializeReferralProgram(program) });
 }

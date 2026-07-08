@@ -55,12 +55,15 @@ const STRINGS = {
     commPendingStatus: "Pending",
     typeArb: "Arbitrageur",
     typeInv: "Investor",
+    level1: "Direct",
+    level2: "2nd level",
     // settings
     settingsTitle: "Program settings",
     arbRate: "Arbitrageur rate",
     invRate: "Investor referrer rate",
+    secondLevelRate: "Second-level rate",
     minDeposit: "Minimum deposit for commission",
-    rateHint: "As a fraction (0.10 = 10%).",
+    rateHint: "As a fraction (0.10 = 10%). Second-level pays the referrer's referrer (investor chains only).",
     save: "Save settings",
     saving: "Saving...",
     saved: "Saved.",
@@ -103,11 +106,14 @@ const STRINGS = {
     commPendingStatus: "Ожидает",
     typeArb: "Арбитражник",
     typeInv: "Инвестор",
+    level1: "Прямой",
+    level2: "2-й уровень",
     settingsTitle: "Настройки программы",
     arbRate: "Ставка арбитражника",
     invRate: "Ставка инвестора-реферера",
+    secondLevelRate: "Ставка 2-го уровня",
     minDeposit: "Минимальный депозит для комиссии",
-    rateHint: "Дробью (0.10 = 10%).",
+    rateHint: "Дробью (0.10 = 10%). 2-й уровень — комиссия рефереру реферера (только цепочки инвесторов).",
     save: "Сохранить настройки",
     saving: "Сохраняем...",
     saved: "Сохранено.",
@@ -311,8 +317,11 @@ export function AdminReferralsPage({
                       <tr key={row.id} className="border-t border-border dark:border-white/10 align-top">
                         <td className="py-3 pr-4 text-muted-foreground">{fmt.date(new Date(row.createdAt))}</td>
                         <td className="py-3 pr-4">
-                          <p className="text-foreground">{row.referrerName}</p>
-                          <p className="text-xs text-muted-foreground">{row.referrerType === "arbitrageur" ? t.typeArb : t.typeInv}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-foreground">{row.referrerName}</p>
+                            {row.level >= 2 ? <Badge variant="secondary">{t.level2}</Badge> : null}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{row.referrerType === "arbitrageur" ? t.typeArb : t.typeInv} · {row.level >= 2 ? t.level2 : t.level1}</p>
                         </td>
                         <td className="py-3 pr-4 text-foreground">{row.referredInvestorMasked}</td>
                         <td className="py-3 pr-4 text-foreground">{fmt.currency(row.depositAmount)}</td>
@@ -358,6 +367,7 @@ function SettingsTab({ locale, program }: { locale: Locale; program: SerializedR
   const router = useRouter();
   const [arbRate, setArbRate] = React.useState(String(program.arbitrageurRate));
   const [invRate, setInvRate] = React.useState(String(program.investorReferrerRate));
+  const [secondLevelRate, setSecondLevelRate] = React.useState(String(program.secondLevelRate));
   const [minDeposit, setMinDeposit] = React.useState(String(program.minDepositForCommission));
   const [status, setStatus] = React.useState<"idle" | "saving" | "saved">("idle");
   const [error, setError] = React.useState<string | null>(null);
@@ -374,6 +384,7 @@ function SettingsTab({ locale, program }: { locale: Locale; program: SerializedR
         body: JSON.stringify({
           arbitrageurRate: Number(arbRate),
           investorReferrerRate: Number(invRate),
+          secondLevelRate: Number(secondLevelRate),
           minDepositForCommission: Number(minDeposit)
         })
       });
@@ -412,7 +423,7 @@ function SettingsTab({ locale, program }: { locale: Locale; program: SerializedR
           <CardDescription>{t.rateHint}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2">
               <span className={labelClass}>{t.arbRate}</span>
               <input className={inputClass} value={arbRate} onChange={(event) => setArbRate(event.target.value)} />
@@ -420,6 +431,10 @@ function SettingsTab({ locale, program }: { locale: Locale; program: SerializedR
             <label className="grid gap-2">
               <span className={labelClass}>{t.invRate}</span>
               <input className={inputClass} value={invRate} onChange={(event) => setInvRate(event.target.value)} />
+            </label>
+            <label className="grid gap-2">
+              <span className={labelClass}>{t.secondLevelRate}</span>
+              <input className={inputClass} value={secondLevelRate} onChange={(event) => setSecondLevelRate(event.target.value)} />
             </label>
             <label className="grid gap-2">
               <span className={labelClass}>{t.minDeposit}</span>

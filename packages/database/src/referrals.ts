@@ -64,6 +64,7 @@ export function maskInvestorName(fullName: string): string {
 export type SerializedReferralProgram = {
   arbitrageurRate: number;
   investorReferrerRate: number;
+  secondLevelRate: number;
   minDepositForCommission: number;
   updatedAt: string;
 };
@@ -72,6 +73,7 @@ export function serializeReferralProgram(program: ReferralProgram): SerializedRe
   return {
     arbitrageurRate: Number(program.arbitrageurRate),
     investorReferrerRate: Number(program.investorReferrerRate),
+    secondLevelRate: Number(program.secondLevelRate),
     minDepositForCommission: Number(program.minDepositForCommission),
     updatedAt: program.updatedAt.toISOString()
   };
@@ -86,11 +88,13 @@ export async function getReferralProgram(): Promise<ReferralProgram> {
 export async function updateReferralProgram(input: {
   arbitrageurRate?: number;
   investorReferrerRate?: number;
+  secondLevelRate?: number;
   minDepositForCommission?: number;
 }): Promise<ReferralProgram> {
   const data: Prisma.ReferralProgramUpdateInput = {};
   if (input.arbitrageurRate !== undefined) data.arbitrageurRate = new Prisma.Decimal(input.arbitrageurRate);
   if (input.investorReferrerRate !== undefined) data.investorReferrerRate = new Prisma.Decimal(input.investorReferrerRate);
+  if (input.secondLevelRate !== undefined) data.secondLevelRate = new Prisma.Decimal(input.secondLevelRate);
   if (input.minDepositForCommission !== undefined) data.minDepositForCommission = new Prisma.Decimal(input.minDepositForCommission);
 
   await getReferralProgram(); // ensure the row exists
@@ -155,73 +159,234 @@ export async function createReferralClick(input: {
 
 // ---------------------------------------------------------------------------
 // Commission accrual (Block 2) — called from the deposit-confirm route
+//
+// Two-level program: the direct referrer earns a level-1 commission, and — for
+// investor→investor chains only — the referrer's own referrer earns a smaller
+// level-2 commission. Depth is capped at exactly two by an explicit bounded
+// walk (no recursion), and a visited-set guards against cyclic referral data.
+// The single computation lives in the pure `computeReferralCommissions` engine
+// so level-1 and level-2 share one code path (no duplicated math).
 // ---------------------------------------------------------------------------
 
-export type CommissionAccrualResult =
-  | { created: false; reason: "no-referrer" | "below-minimum" | "investor-not-found" | "referrer-missing" | "suspicious" }
-  | { created: true; commission: ReferralCommission; referrerName: string; referrerType: "arbitrageur" | "investor" };
+// Hard cap on referral depth. The chain walk below never exceeds this, so a
+// "referral of a referral of a referral" can never accrue — enforced in code,
+// not by assumption.
+export const REFERRAL_MAX_DEPTH = 2;
 
-// Creates a PENDING commission for a confirmed deposit when the investor has a
-// referrer and the amount clears the program minimum. Idempotency against
-// double-confirmation is handled upstream by reviewDepositNotification's
-// PENDING→CONFIRMED guard, so this only fires on a real confirmation.
+// Minimal referral-graph shape the engine needs for one investor.
+export type ReferralGraphNode = {
+  investorId: string;
+  referredByInvestorId: string | null;
+  referredByArbitrageId: string | null;
+};
+
+export type CommissionRates = {
+  arbitrageurRate: number; // program default for arbitrageur referrers (level 1)
+  investorReferrerRate: number; // level-1 rate for investor referrers
+  secondLevelRate: number; // level-2 rate (investor grandparents only)
+  minDeposit: number; // deposit must clear this for ANY commission to accrue
+};
+
+export type CommissionBeneficiary =
+  | { type: "arbitrageur"; arbitrageurId: string; customRate: number | null }
+  | { type: "investor"; investorId: string };
+
+export type CommissionSpec = {
+  level: 1 | 2;
+  beneficiary: CommissionBeneficiary;
+  rate: number;
+  commissionAmount: number;
+};
+
+function round2(value: number): number {
+  return Number(value.toFixed(2));
+}
+
+// Pure engine: given a deposit and the relevant slice of the referral graph,
+// returns the commission specs to accrue (0, 1, or 2 rows). No I/O, so it is
+// unit-tested directly with an in-memory graph.
+//
+// Rules encoded here:
+//  - Nothing accrues below the program minimum.
+//  - Level 1: the depositor's direct referrer (arbitrageur OR investor).
+//  - Level 2: ONLY when level 1 is an investor and THAT investor was in turn
+//    referred by another investor (arbitrageur grandparents are out of scope).
+//  - Cycle/self protection: a `visited` set (seeded with the depositor) means an
+//    id already in the chain is never paid again, so A→B→A pays no level 2 and a
+//    self-referral pays nothing.
+export function computeReferralCommissions(input: {
+  depositorId: string;
+  depositAmount: number;
+  rates: CommissionRates;
+  investors: Map<string, ReferralGraphNode>;
+  arbitrageurCustomRates?: Map<string, number | null>;
+}): CommissionSpec[] {
+  const specs: CommissionSpec[] = [];
+  if (input.depositAmount < input.rates.minDeposit) return specs;
+
+  const visited = new Set<string>([input.depositorId]);
+  let currentId = input.depositorId;
+
+  for (let level = 1; level <= REFERRAL_MAX_DEPTH; level += 1) {
+    const node = input.investors.get(currentId);
+    if (!node) break;
+
+    // An arbitrageur referrer only pays at level 1 — arbitrageurs have no
+    // upstream referrer, and arbitrageur grandparents are excluded at level 2.
+    if (node.referredByArbitrageId) {
+      if (level === 1) {
+        const customRate = input.arbitrageurCustomRates?.get(node.referredByArbitrageId) ?? null;
+        const rate = customRate != null ? customRate : input.rates.arbitrageurRate;
+        specs.push({
+          level: 1,
+          beneficiary: { type: "arbitrageur", arbitrageurId: node.referredByArbitrageId, customRate },
+          rate,
+          commissionAmount: round2(input.depositAmount * rate)
+        });
+      }
+      break;
+    }
+
+    const referrerId = node.referredByInvestorId;
+    if (!referrerId || visited.has(referrerId)) break; // no referrer, or a cycle
+
+    const rate = level === 1 ? input.rates.investorReferrerRate : input.rates.secondLevelRate;
+    specs.push({
+      level: level as 1 | 2,
+      beneficiary: { type: "investor", investorId: referrerId },
+      rate,
+      commissionAmount: round2(input.depositAmount * rate)
+    });
+    visited.add(referrerId);
+    currentId = referrerId; // walk one hop up for the next level
+  }
+
+  return specs;
+}
+
+export type AccruedCommission = {
+  commission: ReferralCommission;
+  referrerName: string;
+  referrerType: "arbitrageur" | "investor";
+  level: number;
+};
+
+// Creates PENDING commissions for a confirmed deposit: a level-1 row for the
+// direct referrer and, for investor chains, a level-2 row for the grandparent.
+// Idempotency against double-confirmation is handled upstream by
+// reviewDepositNotification's PENDING→CONFIRMED guard, so this only fires once
+// per real confirmation.
 export async function accrueReferralCommission(input: {
   investorId: string;
   depositAmount: number;
-}): Promise<CommissionAccrualResult> {
-  const investor = await prisma.investor.findUnique({
+}): Promise<{ commissions: AccruedCommission[] }> {
+  const depositor = await prisma.investor.findUnique({
     where: { id: input.investorId },
     select: { id: true, referredByArbitrageId: true, referredByInvestorId: true }
   });
-  if (!investor) return { created: false, reason: "investor-not-found" };
-  if (!investor.referredByArbitrageId && !investor.referredByInvestorId) return { created: false, reason: "no-referrer" };
+  if (!depositor) return { commissions: [] };
 
   const program = await getReferralProgram();
-  if (input.depositAmount < Number(program.minDepositForCommission)) return { created: false, reason: "below-minimum" };
 
-  let rate: number;
-  let referrerName: string;
-  let referrerType: "arbitrageur" | "investor";
-  let arbitrageurId: string | null = null;
-  let investorReferrerId: string | null = null;
-
-  if (investor.referredByArbitrageId) {
-    const arbitrageur = await prisma.arbitrageur.findUnique({ where: { id: investor.referredByArbitrageId } });
-    if (!arbitrageur) return { created: false, reason: "referrer-missing" };
-    arbitrageurId = arbitrageur.id;
-    rate = arbitrageur.customRate != null ? Number(arbitrageur.customRate) : Number(program.arbitrageurRate);
-    referrerName = arbitrageur.name;
-    referrerType = "arbitrageur";
-  } else {
-    const referrer = await prisma.investor.findUnique({ where: { id: investor.referredByInvestorId as string } });
-    if (!referrer) return { created: false, reason: "referrer-missing" };
-    investorReferrerId = referrer.id;
-    rate = Number(program.investorReferrerRate);
-    referrerName = referrer.fullName;
-    referrerType = "investor";
-  }
-
-  const commissionAmount = Number((input.depositAmount * rate).toFixed(2));
-  const commission = await prisma.referralCommission.create({
-    data: {
-      arbitrageurId,
-      investorReferrerId,
-      referredInvestorId: investor.id,
-      depositAmount: new Prisma.Decimal(input.depositAmount),
-      commissionRate: new Prisma.Decimal(rate),
-      commissionAmount: new Prisma.Decimal(commissionAmount),
-      status: "PENDING"
-    }
+  // Build only the graph slice the engine needs: the depositor, plus — when the
+  // direct referrer is an investor — that investor's node, so a grandparent can
+  // be reached. At most two investor reads regardless of chain length.
+  const investors = new Map<string, ReferralGraphNode>();
+  investors.set(depositor.id, {
+    investorId: depositor.id,
+    referredByInvestorId: depositor.referredByInvestorId,
+    referredByArbitrageId: depositor.referredByArbitrageId
   });
 
-  if (arbitrageurId) {
-    await prisma.arbitrageur.update({
-      where: { id: arbitrageurId },
-      data: { totalEarned: { increment: new Prisma.Decimal(commissionAmount) } }
+  if (depositor.referredByInvestorId) {
+    const l1 = await prisma.investor.findUnique({
+      where: { id: depositor.referredByInvestorId },
+      select: { id: true, referredByInvestorId: true, referredByArbitrageId: true }
     });
+    if (l1) {
+      investors.set(l1.id, {
+        investorId: l1.id,
+        referredByInvestorId: l1.referredByInvestorId,
+        referredByArbitrageId: l1.referredByArbitrageId
+      });
+    }
   }
 
-  return { created: true, commission, referrerName, referrerType };
+  const arbitrageurCustomRates = new Map<string, number | null>();
+  if (depositor.referredByArbitrageId) {
+    const arbitrageur = await prisma.arbitrageur.findUnique({
+      where: { id: depositor.referredByArbitrageId },
+      select: { customRate: true }
+    });
+    arbitrageurCustomRates.set(
+      depositor.referredByArbitrageId,
+      arbitrageur?.customRate != null ? Number(arbitrageur.customRate) : null
+    );
+  }
+
+  const specs = computeReferralCommissions({
+    depositorId: depositor.id,
+    depositAmount: input.depositAmount,
+    rates: {
+      arbitrageurRate: Number(program.arbitrageurRate),
+      investorReferrerRate: Number(program.investorReferrerRate),
+      secondLevelRate: Number(program.secondLevelRate),
+      minDeposit: Number(program.minDepositForCommission)
+    },
+    investors,
+    arbitrageurCustomRates
+  });
+
+  // Resolve each beneficiary's name up front (reads) and confirm it still
+  // exists — referredBy* are plain scalars, not FKs, so a dangling id is
+  // possible after data edits. A vanished beneficiary is silently skipped.
+  const resolved: Array<{ spec: CommissionSpec; referrerName: string }> = [];
+  for (const spec of specs) {
+    if (spec.beneficiary.type === "arbitrageur") {
+      const arbitrageur = await prisma.arbitrageur.findUnique({ where: { id: spec.beneficiary.arbitrageurId }, select: { name: true } });
+      if (!arbitrageur) continue;
+      resolved.push({ spec, referrerName: arbitrageur.name });
+    } else {
+      const referrer = await prisma.investor.findUnique({ where: { id: spec.beneficiary.investorId }, select: { fullName: true } });
+      if (!referrer) continue;
+      resolved.push({ spec, referrerName: referrer.fullName });
+    }
+  }
+
+  if (resolved.length === 0) return { commissions: [] };
+
+  // Persist both levels atomically: a confirmation must never leave a level-1
+  // row without its level-2 sibling (or an arbitrageur's totalEarned bumped
+  // without the backing commission row).
+  const created = await prisma.$transaction(async (tx) => {
+    const rows: AccruedCommission[] = [];
+    for (const { spec, referrerName } of resolved) {
+      const commission = await tx.referralCommission.create({
+        data: {
+          arbitrageurId: spec.beneficiary.type === "arbitrageur" ? spec.beneficiary.arbitrageurId : null,
+          investorReferrerId: spec.beneficiary.type === "investor" ? spec.beneficiary.investorId : null,
+          referredInvestorId: depositor.id,
+          level: spec.level,
+          depositAmount: new Prisma.Decimal(input.depositAmount),
+          commissionRate: new Prisma.Decimal(spec.rate),
+          commissionAmount: new Prisma.Decimal(spec.commissionAmount),
+          status: "PENDING"
+        }
+      });
+
+      if (spec.beneficiary.type === "arbitrageur") {
+        await tx.arbitrageur.update({
+          where: { id: spec.beneficiary.arbitrageurId },
+          data: { totalEarned: { increment: new Prisma.Decimal(spec.commissionAmount) } }
+        });
+      }
+
+      rows.push({ commission, referrerName, referrerType: spec.beneficiary.type, level: spec.level });
+    }
+    return rows;
+  });
+
+  return { commissions: created };
 }
 
 // ---------------------------------------------------------------------------
@@ -411,6 +576,7 @@ export type AdminCommissionRow = {
   id: string;
   referrerName: string;
   referrerType: "arbitrageur" | "investor";
+  level: number;
   referredInvestorMasked: string;
   depositAmount: number;
   commissionRate: number;
@@ -437,6 +603,7 @@ export async function listReferralCommissionsForAdmin(options: { status?: Referr
     id: row.id,
     referrerName: row.arbitrageur?.name ?? row.investorReferrer?.fullName ?? "—",
     referrerType: row.arbitrageurId ? "arbitrageur" : "investor",
+    level: row.level,
     referredInvestorMasked: maskInvestorName(row.referredInvestor.fullName),
     depositAmount: Number(row.depositAmount),
     commissionRate: Number(row.commissionRate),
@@ -483,17 +650,20 @@ export type InvestorReferralData = {
 };
 
 export async function getInvestorReferralData(investorId: string): Promise<InvestorReferralData> {
+  // Investors only ever see their DIRECT (level 1) commissions. Second-level
+  // bonuses are admin-only, so they are excluded from every aggregate here — an
+  // investor must not learn they have a "referral of a referral".
   const [investor, referredCount, commissions, accrued, paid] = await Promise.all([
     prisma.investor.findUnique({ where: { id: investorId }, select: { referralCode: true } }),
     prisma.investor.count({ where: { referredByInvestorId: investorId } }),
     prisma.referralCommission.findMany({
-      where: { investorReferrerId: investorId },
+      where: { investorReferrerId: investorId, level: 1 },
       include: { referredInvestor: { select: { fullName: true } } },
       orderBy: { createdAt: "desc" },
       take: 100
     }),
-    prisma.referralCommission.aggregate({ where: { investorReferrerId: investorId }, _sum: { commissionAmount: true } }),
-    prisma.referralCommission.aggregate({ where: { investorReferrerId: investorId, status: "PAID" }, _sum: { commissionAmount: true } })
+    prisma.referralCommission.aggregate({ where: { investorReferrerId: investorId, level: 1 }, _sum: { commissionAmount: true } }),
+    prisma.referralCommission.aggregate({ where: { investorReferrerId: investorId, level: 1, status: "PAID" }, _sum: { commissionAmount: true } })
   ]);
 
   const totalBonus = Number(accrued._sum.commissionAmount ?? 0);

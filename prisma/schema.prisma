@@ -577,6 +577,9 @@ model ReferralProgram {
   id                      String   @id @default("default")
   arbitrageurRate         Decimal  @default(0.10)
   investorReferrerRate    Decimal  @default(0.10)
+  // Second-level (referral-of-a-referral) rate for investor chains. Separate
+  // from the first-level rate and independently configurable in the admin.
+  secondLevelRate         Decimal  @default(0.05)
   minDepositForCommission Decimal  @default(5000)
   updatedAt               DateTime @updatedAt
 }
@@ -630,6 +633,10 @@ model ReferralCommission {
   arbitrageurId      String?
   investorReferrerId String?
   referredInvestorId String
+  // Referral depth this commission was earned at: 1 = direct referrer,
+  // 2 = referrer-of-the-referrer. Second-level rows are admin-only; the
+  // investor cabinet only ever surfaces level 1.
+  level              Int          @default(1)
   depositAmount      Decimal
   commissionRate     Decimal
   commissionAmount   Decimal
@@ -644,6 +651,7 @@ model ReferralCommission {
   @@index([arbitrageurId])
   @@index([investorReferrerId])
   @@index([referredInvestorId])
+  @@index([level])
   @@index([status])
   @@index([createdAt])
 }

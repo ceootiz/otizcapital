@@ -45,6 +45,7 @@ export async function recordCommissionAccruedEvent(input: {
   referrerName: string;
   referrerType: "arbitrageur" | "investor";
   commissionAmount: number;
+  level?: number;
 }) {
   try {
     await createNotificationEventRecord({
@@ -56,6 +57,7 @@ export async function recordCommissionAccruedEvent(input: {
       payload: {
         referrerName: input.referrerName,
         referrerType: input.referrerType,
+        level: input.level ?? 1,
         commissionAmount: `$${input.commissionAmount.toLocaleString("en-US")}`
       },
       status: "PENDING"
