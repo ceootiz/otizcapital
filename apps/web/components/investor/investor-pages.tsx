@@ -30,7 +30,7 @@ const YIELD_RATE_PERSONAL_TAG: Record<string, string> = {
   zh: "专属费率"
 };
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
-import type { SerializedDepositAddress } from "@otiz/database";
+import { INVESTOR_LEDGER_ENTRY_TYPES, type InvestorLedgerEntry, type InvestorLedgerEntryType, type InvestorLedgerPage, type SerializedDepositAddress } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdrawal } from "@/lib/investor-dashboard-data";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -171,6 +171,21 @@ const INVESTOR_STRINGS = {
       emptyTitle: "Payment history will appear after your manager uploads reports.",
       emptyDesc: "Each uploaded monthly report file adds its figures here automatically."
     },
+    ledger: {
+      eyebrow: "All account activity",
+      title: "Transaction history",
+      description: "Every operation on your account — deposits, allocations, yield, reinvestments, withdrawals and referral bonuses — in one chronological feed.",
+      filterType: "Operation type", filterFrom: "From", filterTo: "To", filterAll: "All operations", apply: "Apply", reset: "Reset",
+      colDate: "Date", colType: "Operation", colDetail: "Details", colAmount: "Amount", colStatus: "Status",
+      emptyTitle: "No operations yet.",
+      emptyDesc: "Your deposits, allocations, yield, withdrawals and referral bonuses will appear here as a single timeline.",
+      emptyFilteredTitle: "No operations match these filters.",
+      emptyFilteredDesc: "Try a different operation type or date range.",
+      prev: "Previous", next: "Next",
+      pageInfo: (page: number, count: number) => `Page ${page} of ${count}`,
+      types: { DEPOSIT: "Deposit", ALLOCATION: "Allocation", YIELD: "Yield", REINVEST: "Reinvest", WITHDRAWAL: "Withdrawal", REFERRAL: "Referral bonus" },
+      referralStatus: { PENDING: "Pending", PAID: "Paid" }
+    },
     common: { notScheduled: "Not scheduled", notAvailable: "Not available" }
   },
   ru: {
@@ -268,6 +283,21 @@ const INVESTOR_STRINGS = {
       colMonth: "Месяц", colProfit: "Прибыль", colPayout: "Выплата", colReinvested: "Реинвестировано", colRoi: "ROI %",
       emptyTitle: "История платежей появится после загрузки отчётов менеджером.",
       emptyDesc: "Каждый загруженный файл ежемесячного отчёта автоматически добавляет сюда свои показатели."
+    },
+    ledger: {
+      eyebrow: "Все операции по счёту",
+      title: "История операций",
+      description: "Все операции по вашему счёту — пополнения, аллокации, доходность, реинвесты, выводы и реферальные начисления — в единой хронологической ленте.",
+      filterType: "Тип операции", filterFrom: "С", filterTo: "По", filterAll: "Все операции", apply: "Применить", reset: "Сбросить",
+      colDate: "Дата", colType: "Операция", colDetail: "Детали", colAmount: "Сумма", colStatus: "Статус",
+      emptyTitle: "Операций пока нет.",
+      emptyDesc: "Ваши пополнения, аллокации, доходность, выводы и реферальные начисления появятся здесь единой лентой.",
+      emptyFilteredTitle: "Нет операций по выбранным фильтрам.",
+      emptyFilteredDesc: "Попробуйте другой тип операции или период.",
+      prev: "Назад", next: "Вперёд",
+      pageInfo: (page: number, count: number) => `Страница ${page} из ${count}`,
+      types: { DEPOSIT: "Пополнение", ALLOCATION: "Аллокация", YIELD: "Доходность", REINVEST: "Реинвест", WITHDRAWAL: "Вывод", REFERRAL: "Реферальный бонус" },
+      referralStatus: { PENDING: "Ожидается", PAID: "Выплачено" }
     },
     common: { notScheduled: "Не запланировано", notAvailable: "Недоступно" }
   }
@@ -713,22 +743,46 @@ export function InvestorWithdrawalsPage({
   );
 }
 
-// Task 2: structured payment history extracted from uploaded XLSX reports.
+// Feature 1: unified investor transaction ledger — every account operation
+// (deposits, allocations, yield, reinvests, withdrawals, direct referral
+// bonuses) in one chronological, filterable, paginated feed. The three totals
+// KPIs (from the extracted monthly payment rows) are retained as context.
+// Filters + pagination are driven by URL query params (SSR, no client JS).
 export function InvestorHistoryPage({
   locale,
-  payments,
-  totals
+  ledger,
+  totals,
+  filters
 }: {
   locale: Locale;
-  payments: InvestorPaymentView[];
+  ledger: InvestorLedgerPage;
   totals: { profit: number; payout: number; reinvested: number };
+  filters: { type: string; from: string; to: string };
 }) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
+  const L = t.ledger;
+  const hasFilters = Boolean(filters.type || filters.from || filters.to);
+  const basePath = `/${locale}/investor/history`;
 
-  if (payments.length === 0) {
-    return <InvestorEmptyState title={t.history.emptyTitle} description={t.history.emptyDesc} />;
+  function pageHref(target: number) {
+    const params = new URLSearchParams();
+    if (filters.type) params.set("type", filters.type);
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+    if (target > 1) params.set("page", String(target));
+    const qs = params.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
   }
+
+  function statusLabel(entry: InvestorLedgerEntry) {
+    if (entry.type === "WITHDRAWAL" && entry.status) return enumLabel("withdrawalStatus", entry.status, locale);
+    if (entry.type === "REFERRAL" && entry.status) return L.referralStatus[entry.status as keyof typeof L.referralStatus] ?? entry.status;
+    return "—";
+  }
+
+  const inputClass = "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground dark:border-white/10 dark:bg-black/20";
+  const labelClass = "text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground";
 
   return (
     <div className="grid gap-6">
@@ -740,33 +794,81 @@ export function InvestorHistoryPage({
 
       <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
         <CardContent className="p-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  <th className="pb-3 pr-4">{t.history.colMonth}</th>
-                  <th className="pb-3 pr-4 text-right">{t.history.colProfit}</th>
-                  <th className="pb-3 pr-4 text-right">{t.history.colPayout}</th>
-                  <th className="pb-3 pr-4 text-right">{t.history.colReinvested}</th>
-                  <th className="pb-3 text-right">{t.history.colRoi}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="border-t border-border dark:border-white/10">
-                    <td className="py-3 pr-4">
-                      <span className="font-medium text-foreground">{payment.month}</span>
-                      {payment.period ? <span className="ml-2 text-xs text-muted-foreground">{payment.period}</span> : null}
-                    </td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.profit)}</td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.payout)}</td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.reinvested)}</td>
-                    <td className="py-3 text-right text-muted-foreground">{payment.roiPercent === null ? "—" : f.percent(payment.roiPercent)}</td>
-                  </tr>
+          <form method="get" className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
+            <label className="block">
+              <span className={labelClass}>{L.filterType}</span>
+              <select name="type" defaultValue={filters.type} className={inputClass}>
+                <option value="">{L.filterAll}</option>
+                {INVESTOR_LEDGER_ENTRY_TYPES.map((entryType) => (
+                  <option key={entryType} value={entryType}>{L.types[entryType as InvestorLedgerEntryType]}</option>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </select>
+            </label>
+            <label className="block">
+              <span className={labelClass}>{L.filterFrom}</span>
+              <input type="date" name="from" defaultValue={filters.from} className={inputClass} />
+            </label>
+            <label className="block">
+              <span className={labelClass}>{L.filterTo}</span>
+              <input type="date" name="to" defaultValue={filters.to} className={inputClass} />
+            </label>
+            <div className="flex gap-2">
+              <button type="submit" className="inline-flex items-center justify-center rounded-full border border-gold-200/40 bg-gold-300/20 px-4 py-2 text-sm font-semibold text-amber-800 dark:bg-gold-200/10 dark:text-gold-100">{L.apply}</button>
+              {hasFilters ? (
+                <Link href={basePath} className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground dark:border-white/10">{L.reset}</Link>
+              ) : null}
+            </div>
+          </form>
+
+          <Separator className="my-5" />
+
+          {ledger.entries.length === 0 ? (
+            <InvestorEmptyState
+              title={hasFilters ? L.emptyFilteredTitle : L.emptyTitle}
+              description={hasFilters ? L.emptyFilteredDesc : L.emptyDesc}
+            />
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <th className="pb-3 pr-4">{L.colDate}</th>
+                      <th className="pb-3 pr-4">{L.colType}</th>
+                      <th className="pb-3 pr-4">{L.colDetail}</th>
+                      <th className="pb-3 pr-4 text-right">{L.colAmount}</th>
+                      <th className="pb-3 text-right">{L.colStatus}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ledger.entries.map((entry) => (
+                      <tr key={entry.id} className="border-t border-border dark:border-white/10">
+                        <td className="py-3 pr-4 text-muted-foreground">{f.date(entry.occurredAt)}</td>
+                        <td className="py-3 pr-4"><Badge variant="secondary">{L.types[entry.type]}</Badge></td>
+                        <td className="py-3 pr-4 text-foreground">{entry.detail ?? "—"}</td>
+                        <td className={`py-3 pr-4 text-right font-medium ${entry.direction === "IN" ? "text-emerald-600 dark:text-emerald-400" : entry.direction === "OUT" ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                          {entry.direction === "IN" ? "+" : entry.direction === "OUT" ? "−" : ""}{f.money(entry.amount)}
+                        </td>
+                        <td className="py-3 text-right text-muted-foreground">{statusLabel(entry)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {ledger.pageCount > 1 ? (
+                <div className="mt-5 flex items-center justify-between gap-3 text-sm">
+                  {ledger.page > 1 ? (
+                    <Link href={pageHref(ledger.page - 1)} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 font-medium text-foreground dark:border-white/10"><ArrowLeft className="size-4" />{L.prev}</Link>
+                  ) : <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 font-medium text-muted-foreground/40 dark:border-white/10"><ArrowLeft className="size-4" />{L.prev}</span>}
+                  <span className="text-muted-foreground">{L.pageInfo(ledger.page, ledger.pageCount)}</span>
+                  {ledger.page < ledger.pageCount ? (
+                    <Link href={pageHref(ledger.page + 1)} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 font-medium text-foreground dark:border-white/10">{L.next}<ArrowRight className="size-4" /></Link>
+                  ) : <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 font-medium text-muted-foreground/40 dark:border-white/10">{L.next}<ArrowRight className="size-4" /></span>}
+                </div>
+              ) : null}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
