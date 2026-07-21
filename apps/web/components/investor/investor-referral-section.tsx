@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Copy } from "lucide-react";
+import { Copy, Download, Share2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import type { InvestorReferralData } from "@otiz/database";
 import { createAdminFormatters, type Locale } from "@otiz/lib";
 
@@ -12,6 +13,10 @@ const STRINGS = {
     link: "Your referral link",
     copy: "Copy",
     copied: "Copied",
+    qrTitle: "Share your link",
+    qrDesc: "Show this QR code or send the link directly.",
+    share: "Share",
+    download: "Download QR",
     referred: "Investors referred",
     totalBonus: "Total bonus",
     pendingBonus: "To be paid",
@@ -30,6 +35,10 @@ const STRINGS = {
     link: "Ваша реферальная ссылка",
     copy: "Копировать",
     copied: "Скопировано",
+    qrTitle: "Поделиться ссылкой",
+    qrDesc: "Покажите QR-код или отправьте ссылку напрямую.",
+    share: "Отправить",
+    download: "Скачать QR",
     referred: "Приведено инвесторов",
     totalBonus: "Всего бонусов",
     pendingBonus: "К выплате",
@@ -48,6 +57,10 @@ const STRINGS = {
     link: "Su enlace de referido",
     copy: "Copiar",
     copied: "Copiado",
+    qrTitle: "Comparta su enlace",
+    qrDesc: "Muestre este código QR o envíe el enlace directamente.",
+    share: "Compartir",
+    download: "Descargar QR",
     referred: "Inversores referidos",
     totalBonus: "Bonificación total",
     pendingBonus: "Por pagar",
@@ -66,6 +79,10 @@ const STRINGS = {
     link: "Ihr Empfehlungslink",
     copy: "Kopieren",
     copied: "Kopiert",
+    qrTitle: "Link teilen",
+    qrDesc: "Zeigen Sie diesen QR-Code oder senden Sie den Link direkt.",
+    share: "Teilen",
+    download: "QR herunterladen",
     referred: "Geworbene Investoren",
     totalBonus: "Bonus gesamt",
     pendingBonus: "Noch auszuzahlen",
@@ -84,6 +101,10 @@ const STRINGS = {
     link: "您的推荐链接",
     copy: "复制",
     copied: "已复制",
+    qrTitle: "分享您的链接",
+    qrDesc: "出示此二维码或直接发送链接。",
+    share: "分享",
+    download: "下载二维码",
     referred: "已推荐投资者",
     totalBonus: "奖励总额",
     pendingBonus: "待支付",
@@ -107,14 +128,15 @@ const labelClass = "text-[0.68rem] font-semibold uppercase tracking-[0.16em] tex
 export function InvestorReferralSection({ locale }: { locale: Locale }) {
   const t = getStrings(locale);
   const fmt = React.useMemo(() => createAdminFormatters(locale), [locale]);
-  const [data, setData] = React.useState<InvestorReferralData | null>(null);
+  const [data, setData] = React.useState<(InvestorReferralData & { shareEnabled?: boolean }) | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const qrRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     let active = true;
     fetch("/api/investor/referrals", { cache: "no-store" })
       .then((response) => response.json())
-      .then((payload: { ok: boolean; data?: InvestorReferralData }) => {
+      .then((payload: { ok: boolean; data?: InvestorReferralData & { shareEnabled?: boolean } }) => {
         if (active && payload.ok && payload.data) setData(payload.data);
       })
       .catch(() => {
@@ -142,6 +164,34 @@ export function InvestorReferralSection({ locale }: { locale: Locale }) {
     }
   }
 
+  async function shareLink() {
+    if (!referralLink) return;
+    if (typeof navigator.share !== "function") {
+      await copyLink();
+      return;
+    }
+
+    try {
+      await navigator.share({ title: t.title, text: t.desc, url: referralLink });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+  }
+
+  function downloadQr() {
+    const svg = qrRef.current?.querySelector("svg");
+    if (!svg || !data?.referralCode) return;
+
+    const source = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `otiz-referral-${data.referralCode}.svg`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!data) return null;
 
   return (
@@ -165,6 +215,36 @@ export function InvestorReferralSection({ locale }: { locale: Locale }) {
           </button>
         </div>
       </div>
+
+      {data.shareEnabled ? (
+        <div className="mt-4 grid gap-4 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
+          <div ref={qrRef} className="w-fit rounded-2xl border border-border bg-white p-3 dark:border-white/10">
+            <QRCodeSVG value={referralLink} size={148} bgColor="#ffffff" fgColor="#15130f" level="M" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">{t.qrTitle}</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t.qrDesc}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={shareLink}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-85"
+              >
+                <Share2 className="size-4" />
+                {t.share}
+              </button>
+              <button
+                type="button"
+                onClick={downloadQr}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/60 dark:border-white/15"
+              >
+                <Download className="size-4" />
+                {t.download}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className={insetClass}>
