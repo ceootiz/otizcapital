@@ -773,12 +773,12 @@ export function InvestorHistoryPage({
   );
 }
 
-export function InvestorReinvestPage({ locale, enabled }: { locale: Locale; enabled: boolean }) {
+export function InvestorReinvestPage({ locale, enabled, persistenceEnabled }: { locale: Locale; enabled: boolean; persistenceEnabled: boolean }) {
   const t = getInvestorStrings(locale);
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-      <ReinvestPreferenceControl locale={locale} initialEnabled={enabled} />
+      <ReinvestPreferenceControl locale={locale} initialEnabled={enabled} persistenceEnabled={persistenceEnabled} />
       <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
         <CardHeader>
           <CardTitle>{t.reinvest.approachTitle}</CardTitle>

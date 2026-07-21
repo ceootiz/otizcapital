@@ -17,9 +17,13 @@ const STRINGS = {
     currentPreference: "Current preference",
     reinvestEnabled: "Reinvest enabled",
     reinvestDisabled: "Reinvest disabled",
-    reinvestNote: "This MVP stores the preference locally in the interface only. A manager review step should confirm any permanent instruction.",
+    reinvestNote: "Your preference is saved to your account and remains visible to the OTIZ team.",
     enableReinvest: "Enable reinvest",
     disableReinvest: "Disable reinvest",
+    reinvestSaving: "Saving...",
+    reinvestSaved: "Preference saved.",
+    reinvestError: "Unable to save your preference.",
+    reinvestUnavailable: "Saving is temporarily unavailable. Your current account preference is shown below.",
     requestTitle: "Request withdrawal",
     requestSubtitle: "Submit a manager-reviewed withdrawal request. Requests are reviewed before any payout is scheduled.",
     available: "Available for withdrawal",
@@ -50,9 +54,13 @@ const STRINGS = {
     currentPreference: "Текущее предпочтение",
     reinvestEnabled: "Реинвест включён",
     reinvestDisabled: "Реинвест выключен",
-    reinvestNote: "В этой MVP-версии предпочтение сохраняется только локально в интерфейсе. Постоянное изменение инструкции должно подтверждаться менеджером.",
+    reinvestNote: "Ваш выбор сохраняется в аккаунте и остаётся виден команде OTIZ.",
     enableReinvest: "Включить реинвест",
     disableReinvest: "Выключить реинвест",
+    reinvestSaving: "Сохраняем...",
+    reinvestSaved: "Настройка сохранена.",
+    reinvestError: "Не удалось сохранить настройку.",
+    reinvestUnavailable: "Сохранение временно недоступно. Ниже показана текущая настройка аккаунта.",
     requestTitle: "Запросить вывод",
     requestSubtitle: "Отправьте запрос на вывод для проверки менеджером. Запросы рассматриваются до планирования выплаты.",
     available: "Доступно для вывода",
@@ -83,9 +91,13 @@ const STRINGS = {
     currentPreference: "Preferencia actual",
     reinvestEnabled: "Reinversión activada",
     reinvestDisabled: "Reinversión desactivada",
-    reinvestNote: "Esta versión MVP almacena la preferencia únicamente de forma local en la interfaz. Una revisión por parte de un gestor debe confirmar cualquier instrucción permanente.",
+    reinvestNote: "Su preferencia se guarda en su cuenta y permanece visible para el equipo de OTIZ.",
     enableReinvest: "Activar reinversión",
     disableReinvest: "Desactivar reinversión",
+    reinvestSaving: "Guardando...",
+    reinvestSaved: "Preferencia guardada.",
+    reinvestError: "No se pudo guardar la preferencia.",
+    reinvestUnavailable: "El guardado no está disponible temporalmente. A continuación se muestra la preferencia actual de su cuenta.",
     requestTitle: "Solicitar retiro",
     requestSubtitle: "Envíe una solicitud de retiro revisada por un gestor. Las solicitudes se revisan antes de programar cualquier pago.",
     available: "Disponible para retiro",
@@ -116,9 +128,13 @@ const STRINGS = {
     currentPreference: "Aktuelle Einstellung",
     reinvestEnabled: "Wiederanlage aktiviert",
     reinvestDisabled: "Wiederanlage deaktiviert",
-    reinvestNote: "Diese MVP-Version speichert die Einstellung nur lokal in der Oberfläche. Eine Prüfung durch einen Manager sollte jede dauerhafte Anweisung bestätigen.",
+    reinvestNote: "Ihre Einstellung wird in Ihrem Konto gespeichert und bleibt für das OTIZ-Team sichtbar.",
     enableReinvest: "Wiederanlage aktivieren",
     disableReinvest: "Wiederanlage deaktivieren",
+    reinvestSaving: "Speichern...",
+    reinvestSaved: "Einstellung gespeichert.",
+    reinvestError: "Einstellung konnte nicht gespeichert werden.",
+    reinvestUnavailable: "Das Speichern ist vorübergehend nicht verfügbar. Ihre aktuelle Kontoeinstellung wird unten angezeigt.",
     requestTitle: "Auszahlung anfordern",
     requestSubtitle: "Reichen Sie einen von einem Manager geprüften Auszahlungsantrag ein. Anträge werden vor jeder geplanten Auszahlung geprüft.",
     available: "Verfügbar zur Auszahlung",
@@ -149,9 +165,13 @@ const STRINGS = {
     currentPreference: "当前偏好",
     reinvestEnabled: "已启用复投",
     reinvestDisabled: "已停用复投",
-    reinvestNote: "此 MVP 版本仅在界面本地保存该偏好。任何永久性指令均应经由经理审核确认。",
+    reinvestNote: "您的偏好会保存到账户中，并对 OTIZ 团队可见。",
     enableReinvest: "启用复投",
     disableReinvest: "停用复投",
+    reinvestSaving: "保存中……",
+    reinvestSaved: "偏好已保存。",
+    reinvestError: "无法保存偏好。",
+    reinvestUnavailable: "保存功能暂时不可用。下方显示的是您账户当前的偏好。",
     requestTitle: "申请提现",
     requestSubtitle: "提交由经理审核的提现申请。所有申请在安排付款前均会经过审核。",
     available: "可提现金额",
@@ -241,21 +261,48 @@ export function InvestorLocaleSwitcher({ locale }: { locale: Locale }) {
   );
 }
 
-export function ReinvestPreferenceControl({ locale, initialEnabled }: { locale: Locale; initialEnabled: boolean }) {
+export function ReinvestPreferenceControl({ locale, initialEnabled, persistenceEnabled }: { locale: Locale; initialEnabled: boolean; persistenceEnabled: boolean }) {
   const t = getStrings(locale);
   const [enabled, setEnabled] = React.useState(initialEnabled);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [notice, setNotice] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function save(nextEnabled: boolean) {
+    setIsSaving(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch("/api/investor/settings/reinvest", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: nextEnabled })
+      });
+      const payload = (await response.json()) as { ok: boolean; enabled?: boolean; error?: string };
+      if (!response.ok || !payload.ok || typeof payload.enabled !== "boolean") throw new Error(payload.error || t.reinvestError);
+      setEnabled(payload.enabled);
+      setNotice(t.reinvestSaved);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : t.reinvestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.currentPreference}</p>
       <p className="mt-2 text-2xl font-semibold text-foreground">{enabled ? t.reinvestEnabled : t.reinvestDisabled}</p>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{t.reinvestNote}</p>
+      {!persistenceEnabled ? <p className="mt-3 rounded-2xl border border-border bg-background/50 p-3 text-sm text-muted-foreground dark:border-white/10">{t.reinvestUnavailable}</p> : null}
+      {notice ? <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-200" role="status">{notice}</p> : null}
+      {error ? <p className="mt-3 text-sm text-red-700 dark:text-red-200" role="alert">{error}</p> : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button type="button" size="sm" disabled={enabled} onClick={() => setEnabled(true)}>
-          {t.enableReinvest}
+        <Button type="button" size="sm" disabled={!persistenceEnabled || enabled || isSaving} onClick={() => void save(true)}>
+          {isSaving ? t.reinvestSaving : t.enableReinvest}
         </Button>
-        <Button type="button" variant="outline" size="sm" disabled={!enabled} onClick={() => setEnabled(false)}>
-          {t.disableReinvest}
+        <Button type="button" variant="outline" size="sm" disabled={!persistenceEnabled || !enabled || isSaving} onClick={() => void save(false)}>
+          {isSaving ? t.reinvestSaving : t.disableReinvest}
         </Button>
       </div>
     </div>

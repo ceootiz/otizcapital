@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
+import { isProductFeatureEnabled } from "@otiz/database";
 import { InvestorReinvestPage, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
@@ -19,12 +20,15 @@ export default async function InvestorReinvestRoute({ params }: { params: { loca
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const data = await getInvestorDashboardData(investor);
+  const [data, persistenceEnabled] = await Promise.all([
+    getInvestorDashboardData(investor),
+    isProductFeatureEnabled("reinvest-preference")
+  ]);
   const page = getInvestorStrings(params.locale).pages.reinvest;
 
   return (
     <InvestorShell locale={params.locale} investor={investor} active="reinvest" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorReinvestPage locale={params.locale} enabled={data.summary.reinvestEnabled} />
+      <InvestorReinvestPage locale={params.locale} enabled={data.summary.reinvestEnabled} persistenceEnabled={persistenceEnabled} />
     </InvestorShell>
   );
 }
