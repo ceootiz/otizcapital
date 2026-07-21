@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, BriefcaseBusiness, CircleDollarSign, Gift, RefreshCw } from "lucide-react";
-import { INVESTOR_LEDGER_ENTRY_TYPES, type InvestorLedgerEntryType, type InvestorLedgerPage } from "@otiz/database";
+import { INVESTOR_LEDGER_ENTRY_TYPES, type InvestorLedgerEntry, type InvestorLedgerEntryType, type InvestorLedgerPage } from "@otiz/database";
 import type { Locale } from "@otiz/lib";
 import { Badge, Card, CardContent } from "@otiz/ui";
+import { InvestorCapitalChart } from "@/components/investor/investor-capital-chart";
 
 const COPY: Record<Locale, {
   filter: string; all: string; from: string; to: string; apply: string; reset: string; empty: string; emptyFiltered: string;
@@ -27,7 +28,7 @@ function money(value: number, currency: string, locale: Locale) {
   return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : locale, { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
 }
 
-export function InvestorMoneyMovementPage({ locale, ledger, totals, filters, statementsEnabled }: { locale: Locale; ledger: InvestorLedgerPage; totals: { profit: number; payout: number; reinvested: number }; filters: { type: string; from: string; to: string }; statementsEnabled: boolean }) {
+export function InvestorMoneyMovementPage({ locale, ledger, totals, filters, statementsEnabled, performanceEnabled, performanceEntries }: { locale: Locale; ledger: InvestorLedgerPage; totals: { profit: number; payout: number; reinvested: number }; filters: { type: string; from: string; to: string }; statementsEnabled: boolean; performanceEnabled: boolean; performanceEntries: InvestorLedgerEntry[] }) {
   const t = COPY[locale];
   const base = `/${locale}/investor/history`;
   const hasFilters = Boolean(filters.type || filters.from || filters.to);
@@ -51,6 +52,7 @@ export function InvestorMoneyMovementPage({ locale, ledger, totals, filters, sta
     <div className="grid gap-4 sm:grid-cols-3">
       {[[t.totalProfit, totals.profit], [t.totalPaid, totals.payout], [t.totalReinvested, totals.reinvested]].map(([label, value]) => <Card key={String(label)}><CardContent className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-semibold text-foreground">{money(Number(value), "USD", locale)}</p></CardContent></Card>)}
     </div>
+    {performanceEnabled ? <InvestorCapitalChart locale={locale} entries={performanceEntries} /> : null}
     <Card><CardContent className="space-y-5 p-5 sm:p-6">
       {statementsEnabled ? <div className="flex flex-col gap-3 rounded-2xl bg-muted/30 p-4 dark:bg-black/20 sm:flex-row sm:items-center sm:justify-between"><p className="text-sm font-semibold text-foreground">{t.statement}</p><div className="flex gap-2"><Link href={statementHref("pdf")} className="rounded-full border border-border px-4 py-2 text-sm font-semibold dark:border-white/10">{t.pdf}</Link><Link href={statementHref("xlsx")} className="rounded-full border border-border px-4 py-2 text-sm font-semibold dark:border-white/10">{t.xlsx}</Link></div></div> : null}
       <form method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_auto] lg:items-end">

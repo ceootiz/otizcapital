@@ -24,9 +24,10 @@ export default async function InvestorHistoryRoute({ params, searchParams }: { p
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const [enabled, statementsEnabled] = await Promise.all([
+  const [enabled, statementsEnabled, performanceEnabled] = await Promise.all([
     isProductFeatureEnabled("money-movement"),
-    isProductFeatureEnabled("account-statements")
+    isProductFeatureEnabled("account-statements"),
+    isProductFeatureEnabled("performance-charts")
   ]);
   const [payments, totals] = await Promise.all([
     listInvestorPayments(investor.id),
@@ -38,15 +39,18 @@ export default async function InvestorHistoryRoute({ params, searchParams }: { p
     const type = first(searchParams.type);
     const from = first(searchParams.from);
     const to = first(searchParams.to);
-    const ledger = await getInvestorLedger(investor.id, {
-      type,
-      from,
-      to: to ? `${to}T23:59:59.999Z` : null,
-      page: first(searchParams.page)
-    });
+    const [ledger, performanceLedger] = await Promise.all([
+      getInvestorLedger(investor.id, {
+        type,
+        from,
+        to: to ? `${to}T23:59:59.999Z` : null,
+        page: first(searchParams.page)
+      }),
+      performanceEnabled ? getInvestorLedger(investor.id, { pageSize: 10000 }) : Promise.resolve(null)
+    ]);
 
     return <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} />
+      <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} performanceEnabled={performanceEnabled} performanceEntries={performanceLedger?.entries ?? []} />
     </InvestorShell>;
   }
 
