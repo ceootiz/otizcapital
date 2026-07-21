@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
@@ -556,6 +557,7 @@ type InvestorNotificationItem = {
   isRead: boolean;
   linkHref: string | null;
   createdAt: string;
+  isFavorite?: boolean;
 };
 
 const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
@@ -607,12 +609,14 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
 };
 
 const BELL_STRINGS = {
-  en: { title: "Notifications", empty: "No notifications yet.", ariaOpen: "Open notifications" },
-  ru: { title: "Уведомления", empty: "Пока нет уведомлений.", ariaOpen: "Открыть уведомления" },
-  es: { title: "Notificaciones", empty: "Aún no hay notificaciones.", ariaOpen: "Abrir notificaciones" },
-  de: { title: "Benachrichtigungen", empty: "Noch keine Benachrichtigungen.", ariaOpen: "Benachrichtigungen öffnen" },
-  zh: { title: "通知", empty: "暂无通知。", ariaOpen: "打开通知" }
+  en: { title: "Notifications", empty: "No notifications yet.", noMatches: "No notifications match these filters.", ariaOpen: "Open notifications", search: "Search notifications", allTypes: "All types", allStatus: "All statuses", unread: "Unread", read: "Read", allDates: "Any date", last7: "Last 7 days", last30: "Last 30 days", favorites: "Favorites", markAll: "Mark all read", previous: "Previous", next: "Next", favoriteAria: "Add to favorites", unfavoriteAria: "Remove from favorites" },
+  ru: { title: "Уведомления", empty: "Пока нет уведомлений.", noMatches: "По этим фильтрам уведомлений нет.", ariaOpen: "Открыть уведомления", search: "Поиск уведомлений", allTypes: "Все типы", allStatus: "Все статусы", unread: "Непрочитанные", read: "Прочитанные", allDates: "За всё время", last7: "Последние 7 дней", last30: "Последние 30 дней", favorites: "Избранное", markAll: "Прочитать все", previous: "Назад", next: "Далее", favoriteAria: "Добавить в избранное", unfavoriteAria: "Убрать из избранного" },
+  es: { title: "Notificaciones", empty: "Aún no hay notificaciones.", noMatches: "Ninguna notificación coincide con estos filtros.", ariaOpen: "Abrir notificaciones", search: "Buscar notificaciones", allTypes: "Todos los tipos", allStatus: "Todos los estados", unread: "No leídas", read: "Leídas", allDates: "Cualquier fecha", last7: "Últimos 7 días", last30: "Últimos 30 días", favorites: "Favoritas", markAll: "Marcar todo como leído", previous: "Anterior", next: "Siguiente", favoriteAria: "Añadir a favoritas", unfavoriteAria: "Quitar de favoritas" },
+  de: { title: "Benachrichtigungen", empty: "Noch keine Benachrichtigungen.", noMatches: "Keine Benachrichtigungen entsprechen diesen Filtern.", ariaOpen: "Benachrichtigungen öffnen", search: "Benachrichtigungen suchen", allTypes: "Alle Typen", allStatus: "Alle Status", unread: "Ungelesen", read: "Gelesen", allDates: "Jeder Zeitraum", last7: "Letzte 7 Tage", last30: "Letzte 30 Tage", favorites: "Favoriten", markAll: "Alle als gelesen markieren", previous: "Zurück", next: "Weiter", favoriteAria: "Zu Favoriten hinzufügen", unfavoriteAria: "Aus Favoriten entfernen" },
+  zh: { title: "通知", empty: "暂无通知。", noMatches: "没有符合这些筛选条件的通知。", ariaOpen: "打开通知", search: "搜索通知", allTypes: "所有类型", allStatus: "所有状态", unread: "未读", read: "已读", allDates: "任何日期", last7: "最近 7 天", last30: "最近 30 天", favorites: "收藏", markAll: "全部标为已读", previous: "上一页", next: "下一页", favoriteAria: "添加到收藏", unfavoriteAria: "取消收藏" }
 } as const;
+
+const NOTIFICATION_FAVORITES_KEY = "otiz:investor-notification-favorites";
 
 export function InvestorNotificationBell({ locale }: { locale: Locale }) {
   const s = (BELL_STRINGS as unknown as Record<string, (typeof BELL_STRINGS)["en"]>)[locale] ?? BELL_STRINGS.en;
@@ -621,20 +625,55 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
   const [open, setOpen] = React.useState(false);
   const [items, setItems] = React.useState<InvestorNotificationItem[]>([]);
   const [unread, setUnread] = React.useState(0);
+  const [centerEnabled, setCenterEnabled] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+  const deferredQuery = React.useDeferredValue(query);
+  const [typeFilter, setTypeFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("");
+  const [daysFilter, setDaysFilter] = React.useState("");
+  const [favoritesOnly, setFavoritesOnly] = React.useState(false);
+  const [favoriteIds, setFavoriteIds] = React.useState<Set<string>>(new Set());
+  const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [loading, setLoading] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const load = React.useCallback(async () => {
+  React.useEffect(() => {
     try {
-      const res = await fetch("/api/investor/notifications", { cache: "no-store" });
+      const stored = JSON.parse(window.localStorage.getItem(NOTIFICATION_FAVORITES_KEY) ?? "[]") as unknown;
+      if (Array.isArray(stored)) setFavoriteIds(new Set(stored.filter((id): id is string => typeof id === "string")));
+    } catch {
+      setFavoriteIds(new Set());
+    }
+  }, []);
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (centerEnabled) {
+        if (deferredQuery.trim()) params.set("query", deferredQuery.trim());
+        if (typeFilter) params.set("type", typeFilter);
+        if (statusFilter) params.set("status", statusFilter);
+        if (daysFilter) params.set("days", daysFilter);
+        if (favoritesOnly) params.set("favorites", "true");
+        if (favoriteIds.size > 0) params.set("favoriteIds", [...favoriteIds].join(","));
+        params.set("page", String(page));
+      }
+      const res = await fetch(`/api/investor/notifications${params.size ? `?${params.toString()}` : ""}`, { cache: "no-store" });
       const body = await res.json();
       if (res.ok && body.ok) {
-        setItems(body.notifications as InvestorNotificationItem[]);
+        setCenterEnabled(Boolean(body.centerEnabled));
+        setItems((body.notifications as InvestorNotificationItem[]).map((item) => ({ ...item, isFavorite: favoriteIds.has(item.id) })));
         setUnread(Number(body.unreadCount) || 0);
+        setTotalPages(Math.max(1, Number(body.pagination?.totalPages) || 1));
       }
     } catch {
       // Silent: the bell degrades gracefully when the feed is unavailable.
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [centerEnabled, daysFilter, deferredQuery, favoriteIds, favoritesOnly, page, statusFilter, typeFilter]);
 
   React.useEffect(() => {
     void load();
@@ -652,11 +691,29 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
   async function toggle() {
     const next = !open;
     setOpen(next);
-    if (next && unread > 0) {
+    if (next && unread > 0 && !centerEnabled) {
       setUnread(0);
       setItems((current) => current.map((item) => ({ ...item, isRead: true })));
       await fetch("/api/investor/notifications/mark-read", { method: "POST" }).catch(() => undefined);
     }
+  }
+
+  async function markAllRead() {
+    setUnread(0);
+    setItems((current) => current.map((item) => ({ ...item, isRead: true })));
+    await fetch("/api/investor/notifications/mark-read", { method: "POST" }).catch(() => undefined);
+    if (statusFilter === "unread") void load();
+  }
+
+  function toggleFavorite(id: string) {
+    setFavoriteIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      window.localStorage.setItem(NOTIFICATION_FAVORITES_KEY, JSON.stringify([...next]));
+      return next;
+    });
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, isFavorite: !item.isFavorite } : item)));
   }
 
   return (
@@ -677,37 +734,58 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.98] shadow-premium backdrop-blur-2xl">
-          <div className="border-b border-border dark:border-white/10 px-4 py-3">
+        <div className={`absolute right-0 z-50 mt-2 max-w-[calc(100vw-1rem)] overflow-hidden rounded-[1.35rem] border border-border dark:border-white/10 bg-card dark:bg-graphite-900/[0.98] shadow-premium backdrop-blur-2xl ${centerEnabled ? "w-[40rem]" : "w-80"}`}>
+          <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 dark:border-white/10">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{s.title}</p>
+            {centerEnabled && unread > 0 ? <button type="button" onClick={() => void markAllRead()} className="text-xs font-semibold text-foreground hover:underline">{s.markAll}</button> : null}
           </div>
+          {centerEnabled ? (
+            <div className="grid gap-2 border-b border-border p-3 dark:border-white/10 sm:grid-cols-2">
+              <label className="sm:col-span-2">
+                <span className="sr-only">{s.search}</span>
+                <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder={s.search} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-gold-300 dark:border-white/10" />
+              </label>
+              <select value={typeFilter} onChange={(event) => { setTypeFilter(event.target.value); setPage(1); }} className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10">
+                <option value="">{s.allTypes}</option>
+                {Object.entries(titles).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+              <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10">
+                <option value="">{s.allStatus}</option><option value="unread">{s.unread}</option><option value="read">{s.read}</option>
+              </select>
+              <select value={daysFilter} onChange={(event) => { setDaysFilter(event.target.value); setPage(1); }} className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10">
+                <option value="">{s.allDates}</option><option value="7">{s.last7}</option><option value="30">{s.last30}</option>
+              </select>
+              <button type="button" aria-pressed={favoritesOnly} onClick={() => { setFavoritesOnly((value) => !value); setPage(1); }} className={`min-h-11 rounded-xl border px-3 text-sm font-semibold ${favoritesOnly ? "border-gold-300 bg-gold-300/15 text-foreground" : "border-border text-muted-foreground dark:border-white/10"}`}>{s.favorites}</button>
+            </div>
+          ) : null}
           <div className="max-h-[24rem] overflow-y-auto">
-            {items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-muted-foreground">{s.empty}</p>
+            {loading && items.length === 0 ? (
+              <div className="space-y-2 p-4" aria-busy="true"><div className="h-12 animate-pulse rounded-xl bg-muted" /><div className="h-12 animate-pulse rounded-xl bg-muted" /></div>
+            ) : items.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">{centerEnabled ? s.noMatches : s.empty}</p>
             ) : (
               items.map((item) => {
                 const title = titles[item.type] ?? item.title;
                 const inner = (
-                  <div className={`flex gap-3 px-4 py-3 transition-colors hover:bg-muted/30 dark:hover:bg-white/[0.04] ${item.isRead ? "" : "bg-muted/30 dark:bg-white/[0.05]"}`}>
+                  <div className={`flex min-w-0 flex-1 gap-3 px-4 py-3 transition-colors hover:bg-muted/30 dark:hover:bg-white/[0.04] ${item.isRead ? "" : "bg-muted/30 dark:bg-white/[0.05]"}`}>
                     <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${item.isRead ? "bg-transparent" : "bg-gold-200"}`} />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">{title}</p>
+                      {centerEnabled ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{item.body}</p> : null}
                       <p className="mt-1 text-xs text-muted-foreground">{fmt.dateTime(item.createdAt)}</p>
                     </div>
                   </div>
                 );
-                return item.linkHref ? (
-                  <Link key={item.id} href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="block border-b border-border dark:border-white/[0.06] last:border-b-0">
-                    {inner}
-                  </Link>
-                ) : (
-                  <div key={item.id} className="border-b border-border dark:border-white/[0.06] last:border-b-0">
-                    {inner}
+                return (
+                  <div key={item.id} className="flex items-start border-b border-border dark:border-white/[0.06] last:border-b-0">
+                    {item.linkHref ? <Link href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="min-w-0 flex-1">{inner}</Link> : inner}
+                    {centerEnabled ? <button type="button" aria-label={item.isFavorite ? s.unfavoriteAria : s.favoriteAria} onClick={() => toggleFavorite(item.id)} className={`m-2 flex size-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-muted ${item.isFavorite ? "text-amber-600" : "text-muted-foreground"}`}><Star className={`size-4 ${item.isFavorite ? "fill-current" : ""}`} /></button> : null}
                   </div>
                 );
               })
             )}
           </div>
+          {centerEnabled && totalPages > 1 ? <div className="flex items-center justify-between border-t border-border px-3 py-2 dark:border-white/10"><button type="button" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="min-h-10 rounded-full px-3 text-xs font-semibold text-foreground disabled:opacity-40">{s.previous}</button><span className="text-xs text-muted-foreground">{page} / {totalPages}</span><button type="button" disabled={page >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} className="min-h-10 rounded-full px-3 text-xs font-semibold text-foreground disabled:opacity-40">{s.next}</button></div> : null}
         </div>
       ) : null}
     </div>

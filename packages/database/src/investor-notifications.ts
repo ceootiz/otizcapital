@@ -1,4 +1,4 @@
-import type { InvestorNotification } from "@prisma/client";
+import { Prisma, type InvestorNotification } from "@prisma/client";
 import { prisma } from "./client";
 
 export const INVESTOR_NOTIFICATION_TYPES = [
@@ -64,6 +64,55 @@ export async function listInvestorNotifications(investorId: string, limit = 20) 
     orderBy: { createdAt: "desc" },
     take: limit
   });
+}
+
+export type InvestorNotificationSearchOptions = {
+  query?: string;
+  type?: string;
+  isRead?: boolean;
+  from?: Date;
+  ids?: string[];
+  page?: number;
+  pageSize?: number;
+};
+
+export async function searchInvestorNotifications(investorId: string, options: InvestorNotificationSearchOptions = {}) {
+  const page = Math.max(1, Math.floor(options.page ?? 1));
+  const pageSize = Math.min(20, Math.max(1, Math.floor(options.pageSize ?? 8)));
+  const query = options.query?.trim().slice(0, 100);
+  const where: Prisma.InvestorNotificationWhereInput = {
+    investorId,
+    ...(options.type ? { type: options.type } : {}),
+    ...(typeof options.isRead === "boolean" ? { isRead: options.isRead } : {}),
+    ...(options.from ? { createdAt: { gte: options.from } } : {}),
+    ...(options.ids ? { id: { in: options.ids } } : {}),
+    ...(query
+      ? {
+          OR: [
+            { title: { contains: query, mode: "insensitive" } },
+            { body: { contains: query, mode: "insensitive" } }
+          ]
+        }
+      : {})
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.investorNotification.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    }),
+    prisma.investorNotification.count({ where })
+  ]);
+
+  return {
+    rows,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(total / pageSize))
+  };
 }
 
 export async function countUnreadInvestorNotifications(investorId: string) {
