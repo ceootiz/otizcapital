@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "./client";
 
 // Generic audit-log writer. Every admin action (login, approvals, edits) should
@@ -83,6 +84,53 @@ export async function listAuditLogs(options: {
     orderBy: { createdAt: "desc" },
     take: options.limit ?? 20
   });
+}
+
+export type AuditLogSearchOptions = {
+  query?: string;
+  actor?: string;
+  action?: string;
+  entityType?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  page?: number;
+  pageSize?: number;
+};
+
+export async function searchAuditLogs(options: AuditLogSearchOptions = {}) {
+  const page = Math.max(1, Math.floor(options.page ?? 1));
+  const pageSize = Math.min(5000, Math.max(1, Math.floor(options.pageSize ?? 30)));
+  const query = options.query?.trim().slice(0, 120);
+  const where: Prisma.AuditLogWhereInput = {
+    ...(options.actor ? { actor: { contains: options.actor, mode: "insensitive" } } : {}),
+    ...(options.action ? { action: options.action } : {}),
+    ...(options.entityType ? { entityType: options.entityType } : {}),
+    ...(options.dateFrom || options.dateTo
+      ? { createdAt: { gte: options.dateFrom, lte: options.dateTo } }
+      : {}),
+    ...(query
+      ? {
+          OR: [
+            { actor: { contains: query, mode: "insensitive" } },
+            { action: { contains: query, mode: "insensitive" } },
+            { entityType: { contains: query, mode: "insensitive" } },
+            { entityId: { contains: query, mode: "insensitive" } }
+          ]
+        }
+      : {})
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    }),
+    prisma.auditLog.count({ where })
+  ]);
+
+  return { rows, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
 }
 
 export function serializeAuditLog(record: {
