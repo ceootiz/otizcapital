@@ -20,6 +20,7 @@ export * from "./deposit-addresses";
 export * from "./yield-settings";
 export * from "./site-settings";
 export * from "./site-content-studio";
+export * from "./operations-calendar";
 export * from "./investor-sessions";
 export * from "./investor-notifications";
 export * from "./investor-onboarding";

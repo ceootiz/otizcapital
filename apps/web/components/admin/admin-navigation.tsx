@@ -16,7 +16,8 @@ export type AdminNavigationSection =
   | "content"
   | "contact-settings"
   | "feature-flags"
-  | "audit-log";
+  | "audit-log"
+  | "calendar";
 
 const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale: Locale) => string }> = [
   { key: "dashboard", href: (locale) => `/${locale}/admin/dashboard` },
@@ -33,7 +34,8 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
   { key: "content", href: (locale) => `/${locale}/admin/content` },
   { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` },
   { key: "feature-flags", href: (locale) => `/${locale}/admin/settings/features` },
-  { key: "audit-log", href: (locale) => `/${locale}/admin/audit-log` }
+  { key: "audit-log", href: (locale) => `/${locale}/admin/audit-log` },
+  { key: "calendar", href: (locale) => `/${locale}/admin/calendar` }
 ];
 
 const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
@@ -52,7 +54,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     content: "Content",
     "contact-settings": "Contact",
     "feature-flags": "Features",
-    "audit-log": "Audit log"
+    "audit-log": "Audit log",
+    calendar: "Calendar"
   },
   ru: {
     dashboard: "Дашборд",
@@ -69,7 +72,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     content: "Контент",
     "contact-settings": "Контакты",
     "feature-flags": "Функции",
-    "audit-log": "Журнал действий"
+    "audit-log": "Журнал действий",
+    calendar: "Календарь"
   }
 };
 

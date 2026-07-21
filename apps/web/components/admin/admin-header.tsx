@@ -31,6 +31,7 @@ const SECTION_PREFIXES: Array<[string, AdminNavigationSection]> = [
   ["/admin/applications", "applications"],
   ["/admin/allocations", "allocations"],
   ["/admin/withdrawals", "withdrawals"],
+  ["/admin/calendar", "calendar"],
   ["/admin/dashboard", "dashboard"],
   ["/admin/incidents", "incidents"],
   ["/admin/investors", "investors"],
