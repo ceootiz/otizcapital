@@ -9,7 +9,7 @@ const ADMIN_CSRF_HEADER = "x-csrf-token";
 
 type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
-const UI: Record<"en" | "ru", {
+const UI: Record<Locale, {
   eyebrow: string;
   title: string;
   description: string;
@@ -32,6 +32,13 @@ const UI: Record<"en" | "ru", {
   removeItem: string;
   item: string;
   saved: string;
+  draftSaved: string;
+  publish: string;
+  publishing: string;
+  published: string;
+  preview: string;
+  edit: string;
+  draftReady: string;
   resetDone: string;
   loadError: string;
   saveError: string;
@@ -63,6 +70,13 @@ const UI: Record<"en" | "ru", {
     removeItem: "Remove",
     item: "Item",
     saved: "Content saved and published.",
+    draftSaved: "Draft saved. The public page has not changed.",
+    publish: "Publish",
+    publishing: "Publishing...",
+    published: "Draft published.",
+    preview: "Preview",
+    edit: "Continue editing",
+    draftReady: "Draft ready",
     resetDone: "Content reset to defaults.",
     loadError: "Unable to load content.",
     saveError: "Unable to save content.",
@@ -94,6 +108,13 @@ const UI: Record<"en" | "ru", {
     removeItem: "Удалить",
     item: "Элемент",
     saved: "Контент сохранён и опубликован.",
+    draftSaved: "Черновик сохранён. Публичная страница не изменилась.",
+    publish: "Опубликовать",
+    publishing: "Публикация...",
+    published: "Черновик опубликован.",
+    preview: "Предпросмотр",
+    edit: "Продолжить редактирование",
+    draftReady: "Черновик готов",
     resetDone: "Контент сброшен к значениям по умолчанию.",
     loadError: "Не удалось загрузить контент.",
     saveError: "Не удалось сохранить контент.",
@@ -101,10 +122,19 @@ const UI: Record<"en" | "ru", {
     yieldLabel: "Годовая ставка (%)",
     yieldSaved: "Ставка доходности сохранена.",
     yieldError: "Не удалось сохранить ставку доходности."
+  },
+  de: {
+    eyebrow: "Inhaltsverwaltung", title: "Website-Inhalte", description: "Bearbeiten Sie öffentliche Texte und Zahlen. Im Studio werden Änderungen zuerst als Entwurf gespeichert.", backHome: "Zur Startseite", scope: "Seite", scopeHome: "Startseite", scopeApply: "Antragsseite", language: "Inhaltssprache", fallbackNote: "Felder ohne Übersetzung zeigen den englischen Standard, bis Sie sie bearbeiten.", save: "Entwurf speichern", saving: "Wird gespeichert...", reset: "Auf Standard zurücksetzen", resetting: "Wird zurückgesetzt...", resetConfirm: "Diese Seite und Sprache auf die integrierten Standardwerte zurücksetzen?", reload: "Neu laden", loading: "Inhalte werden geladen...", usingOverride: "Eigene Inhalte veröffentlicht", usingDefaults: "Standardinhalte werden verwendet", addItem: "Element hinzufügen", removeItem: "Entfernen", item: "Element", saved: "Inhalte gespeichert und veröffentlicht.", draftSaved: "Entwurf gespeichert. Die öffentliche Seite wurde nicht geändert.", publish: "Veröffentlichen", publishing: "Wird veröffentlicht...", published: "Entwurf veröffentlicht.", preview: "Vorschau", edit: "Weiter bearbeiten", draftReady: "Entwurf bereit", resetDone: "Inhalte auf Standard zurückgesetzt.", loadError: "Inhalte konnten nicht geladen werden.", saveError: "Inhalte konnten nicht gespeichert werden.", yieldTitle: "Renditesatz im Rechner", yieldLabel: "Jahresrate (%)", yieldSaved: "Renditesatz gespeichert.", yieldError: "Renditesatz konnte nicht gespeichert werden."
+  },
+  es: {
+    eyebrow: "Gestión de contenido", title: "Contenido del sitio", description: "Edite textos y cifras públicas. En el estudio, los cambios se guardan primero como borrador.", backHome: "Volver al inicio", scope: "Página", scopeHome: "Página principal", scopeApply: "Página de solicitud", language: "Idioma del contenido", fallbackNote: "Los campos sin traducción muestran el valor inglés hasta que los edite.", save: "Guardar borrador", saving: "Guardando...", reset: "Restablecer valores", resetting: "Restableciendo...", resetConfirm: "¿Restablecer esta página y este idioma a los valores incluidos?", reload: "Recargar", loading: "Cargando contenido...", usingOverride: "Contenido propio publicado", usingDefaults: "Usando contenido incluido", addItem: "Añadir elemento", removeItem: "Eliminar", item: "Elemento", saved: "Contenido guardado y publicado.", draftSaved: "Borrador guardado. La página pública no ha cambiado.", publish: "Publicar", publishing: "Publicando...", published: "Borrador publicado.", preview: "Vista previa", edit: "Seguir editando", draftReady: "Borrador listo", resetDone: "Contenido restablecido.", loadError: "No se pudo cargar el contenido.", saveError: "No se pudo guardar el contenido.", yieldTitle: "Tasa del calculador", yieldLabel: "Tasa anual (%)", yieldSaved: "Tasa guardada.", yieldError: "No se pudo guardar la tasa."
+  },
+  zh: {
+    eyebrow: "内容管理", title: "网站内容", description: "编辑公开文本和数字。在内容工作室中，更改会先保存为草稿。", backHome: "返回首页", scope: "页面", scopeHome: "首页", scopeApply: "申请页面", language: "内容语言", fallbackNote: "尚未翻译的字段会显示英文默认值，直到您完成编辑。", save: "保存草稿", saving: "正在保存...", reset: "恢复默认内容", resetting: "正在恢复...", resetConfirm: "将此页面和语言恢复为内置默认内容？", reload: "重新加载", loading: "正在加载内容...", usingOverride: "已发布自定义内容", usingDefaults: "正在使用默认内容", addItem: "添加项目", removeItem: "删除", item: "项目", saved: "内容已保存并发布。", draftSaved: "草稿已保存。公开页面未发生变化。", publish: "发布", publishing: "正在发布...", published: "草稿已发布。", preview: "预览", edit: "继续编辑", draftReady: "草稿已准备", resetDone: "内容已恢复为默认值。", loadError: "无法加载内容。", saveError: "无法保存内容。", yieldTitle: "收益率计算器", yieldLabel: "年利率（%）", yieldSaved: "收益率已保存。", yieldError: "无法保存收益率。"
   }
 };
 
-const getUi = (locale: Locale) => UI[locale === "ru" ? "ru" : "en"];
+const getUi = (locale: Locale) => UI[locale];
 
 function getCookieValue(name: string) {
   if (typeof document === "undefined") return "";
@@ -235,9 +265,13 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
   const [contentLocale, setContentLocale] = useState<Locale>(locale);
   const [data, setData] = useState<Json | null>(null);
   const [hasOverride, setHasOverride] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [studioEnabled, setStudioEnabled] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [notice, setNotice] = useState<{ tone: "ok" | "error"; message: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -249,6 +283,8 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
       if (!res.ok || !body.ok) throw new Error(body.error || t.loadError);
       setData(body.content as Json);
       setHasOverride(Boolean(body.hasOverride));
+      setHasDraft(Boolean(body.hasDraft));
+      setStudioEnabled(Boolean(body.studioEnabled));
     } catch (error) {
       setData(null);
       setNotice({ tone: "error", message: error instanceof Error ? error.message : t.loadError });
@@ -278,13 +314,35 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
       const body = await res.json();
       if (!res.ok || !body.ok) throw new Error(body.error || t.saveError);
       setHasOverride(true);
-      setNotice({ tone: "ok", message: t.saved });
+      setHasDraft(studioEnabled);
+      setNotice({ tone: "ok", message: studioEnabled ? t.draftSaved : t.saved });
     } catch (error) {
       setNotice({ tone: "error", message: error instanceof Error ? error.message : t.saveError });
     } finally {
       setSaving(false);
     }
-  }, [data, scope, contentLocale, t.saved, t.saveError]);
+  }, [data, scope, contentLocale, studioEnabled, t.draftSaved, t.saved, t.saveError]);
+
+  const publish = useCallback(async () => {
+    setPublishing(true);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", [ADMIN_CSRF_HEADER]: getCookieValue(ADMIN_CSRF_COOKIE) },
+        body: JSON.stringify({ scope, locale: contentLocale, action: "publish" })
+      });
+      const body = await res.json();
+      if (!res.ok || !body.ok) throw new Error(body.error || t.saveError);
+      setHasOverride(true);
+      setHasDraft(false);
+      setNotice({ tone: "ok", message: t.published });
+    } catch (error) {
+      setNotice({ tone: "error", message: error instanceof Error ? error.message : t.saveError });
+    } finally {
+      setPublishing(false);
+    }
+  }, [scope, contentLocale, t.published, t.saveError]);
 
   const reset = useCallback(async () => {
     if (!window.confirm(t.resetConfirm)) return;
@@ -355,12 +413,17 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
               </select>
             </label>
 
-            <span className={`text-xs ${hasOverride ? "text-emerald-300" : "text-muted-foreground"}`}>
-              {hasOverride ? t.usingOverride : t.usingDefaults}
+            <span className={`text-xs ${hasDraft || hasOverride ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"}`}>
+              {hasDraft ? t.draftReady : hasOverride ? t.usingOverride : t.usingDefaults}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
+            {studioEnabled ? (
+              <button type="button" onClick={() => setPreviewing((current) => !current)} disabled={loading || data === null} className="rounded-full border border-border dark:border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40">
+                {previewing ? t.edit : t.preview}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => void reset()}
@@ -377,6 +440,11 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
             >
               {saving ? t.saving : t.save}
             </button>
+            {studioEnabled ? (
+              <button type="button" onClick={() => void publish()} disabled={publishing || loading || !hasDraft} className="rounded-full bg-foreground px-5 py-2 text-xs font-semibold text-background transition-opacity hover:opacity-85 disabled:opacity-40">
+                {publishing ? t.publishing : t.publish}
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -390,6 +458,8 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
 
         {loading ? (
           <p className="text-sm text-muted-foreground">{t.loading}</p>
+        ) : previewing && data ? (
+          <ContentPreview value={data} />
         ) : data && typeof data === "object" && !Array.isArray(data) ? (
           <div className="flex flex-col gap-6">
             {Object.entries(data).map(([key, value]) => (
@@ -400,6 +470,13 @@ export function AdminContentPage({ locale }: { locale: Locale }) {
       </div>
     </main>
   );
+}
+
+function ContentPreview({ value }: { value: Json }) {
+  if (typeof value === "string" || typeof value === "number") return <p className="text-sm leading-7 text-foreground">{String(value)}</p>;
+  if (typeof value === "boolean" || value === null) return null;
+  if (Array.isArray(value)) return <div className="grid gap-3 md:grid-cols-2">{value.map((item, index) => <div key={index} className="rounded-2xl border border-border bg-muted/20 p-4 dark:border-white/10 dark:bg-black/20"><ContentPreview value={item} /></div>)}</div>;
+  return <section className="space-y-4 rounded-2xl border border-border bg-card p-5 dark:border-white/10">{Object.entries(value).map(([key, child]) => <div key={key} className="space-y-2"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{humanize(key)}</p><ContentPreview value={child} /></div>)}</section>;
 }
 
 type NodeProps = {

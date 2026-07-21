@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@otiz/database";
+import { getContentStudioDocument, isProductFeatureEnabled, prisma, publishContentDraft, resetContentStudioDocument, saveContentDraft } from "@otiz/database";
 import { CONTENT_SCOPES, isLocale, resolveContent, type ContentScope, type Locale } from "@otiz/lib";
 import { getAdminSession, verifyAdminCsrfToken } from "@/lib/admin-session";
 
@@ -34,23 +34,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid scope or locale." }, { status: 422 });
   }
 
-  let dataJson: string | null = null;
+  let publishedJson: string | null = null;
+  let draftJson: string | null = null;
+  const studioEnabled = await isProductFeatureEnabled("content-studio-v2");
   try {
-    const row = await prisma.siteContent.findUnique({
-      where: { scope_locale: { scope, locale } },
-      select: { dataJson: true }
-    });
-    dataJson = row?.dataJson ?? null;
+    const document = await getContentStudioDocument(scope, locale);
+    publishedJson = document.publishedJson;
+    draftJson = document.draftJson;
   } catch {
-    dataJson = null;
+    publishedJson = null;
+    draftJson = null;
   }
 
   return NextResponse.json({
     ok: true,
     scope,
     locale,
-    hasOverride: dataJson !== null,
-    content: resolveContent(scope, locale, dataJson)
+    studioEnabled,
+    hasOverride: publishedJson !== null,
+    hasDraft: draftJson !== null,
+    content: resolveContent(scope, locale, studioEnabled ? draftJson ?? publishedJson : publishedJson)
   });
 }
 
@@ -76,14 +79,40 @@ export async function PUT(request: Request) {
     return NextResponse.json({ ok: false, error: "Content document is too large." }, { status: 413 });
   }
 
-  await prisma.siteContent.upsert({
-    where: { scope_locale: { scope, locale } },
-    create: { scope, locale, dataJson, updatedBy: csrf.session.actor },
-    update: { dataJson, updatedBy: csrf.session.actor }
-  });
+  if (await isProductFeatureEnabled("content-studio-v2")) {
+    await saveContentDraft({ scope, locale, dataJson, actor: csrf.session.actor });
+  } else {
+    await prisma.siteContent.upsert({
+      where: { scope_locale: { scope, locale } },
+      create: { scope, locale, dataJson, updatedBy: csrf.session.actor },
+      update: { dataJson, updatedBy: csrf.session.actor }
+    });
+    revalidatePath(publicPathFor(scope, locale));
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+// POST /api/admin/content { scope, locale, action: "publish" }
+// Publishes the current draft without changing the public page during editing.
+export async function POST(request: Request) {
+  const csrf = verifyAdminCsrfToken(request);
+  if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
+  if (!(await isProductFeatureEnabled("content-studio-v2"))) {
+    return NextResponse.json({ ok: false, error: "Content Studio is disabled." }, { status: 409 });
+  }
+
+  const payload = (await request.json().catch(() => null)) as { scope?: unknown; locale?: unknown; action?: unknown } | null;
+  const scope = parseScope(payload?.scope);
+  const locale = parseLocale(payload?.locale);
+  if (!scope || !locale || payload?.action !== "publish") {
+    return NextResponse.json({ ok: false, error: "Invalid publish request." }, { status: 422 });
+  }
+
+  const publishedJson = await publishContentDraft({ scope, locale, actor: csrf.session.actor });
+  if (!publishedJson) return NextResponse.json({ ok: false, error: "No draft is ready to publish." }, { status: 409 });
 
   revalidatePath(publicPathFor(scope, locale));
-
   return NextResponse.json({ ok: true });
 }
 
@@ -97,7 +126,11 @@ export async function DELETE(request: Request) {
   const locale = parseLocale(url.searchParams.get("locale"));
   if (!scope || !locale) return NextResponse.json({ ok: false, error: "Invalid scope or locale." }, { status: 422 });
 
-  await prisma.siteContent.deleteMany({ where: { scope, locale } });
+  if (await isProductFeatureEnabled("content-studio-v2")) {
+    await resetContentStudioDocument({ scope, locale, actor: csrf.session.actor });
+  } else {
+    await prisma.siteContent.deleteMany({ where: { scope, locale } });
+  }
   revalidatePath(publicPathFor(scope, locale));
 
   return NextResponse.json({ ok: true });
