@@ -24,7 +24,10 @@ export default async function InvestorHistoryRoute({ params, searchParams }: { p
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const enabled = await isProductFeatureEnabled("money-movement");
+  const [enabled, statementsEnabled] = await Promise.all([
+    isProductFeatureEnabled("money-movement"),
+    isProductFeatureEnabled("account-statements")
+  ]);
   const [payments, totals] = await Promise.all([
     listInvestorPayments(investor.id),
     getInvestorPaymentTotals(investor.id)
@@ -43,7 +46,7 @@ export default async function InvestorHistoryRoute({ params, searchParams }: { p
     });
 
     return <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} />
+      <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} />
     </InvestorShell>;
   }
 

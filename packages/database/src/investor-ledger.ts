@@ -46,7 +46,7 @@ type LedgerInput = {
 };
 
 const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 10000;
 
 function amount(value: unknown) {
   const parsed = Number(String(value ?? "").replace(/[^0-9.-]/g, ""));
