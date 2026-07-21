@@ -107,6 +107,13 @@ export type InvestorDashboardAllocation = {
   expectedReturnNote: string;
   currentStage: InvestorDashboardStage;
   status: string;
+  currency: string;
+  comparisonResult: number | null;
+  resultIsEstimated: boolean;
+  roiPercent: number | null;
+  durationDays: number;
+  payoutStatus: string;
+  completedAt: string | null;
   progressPercent: number;
   riskLevel: InvestorDashboardRiskLevel;
   startedAt: string | null;
@@ -249,6 +256,11 @@ function serializeDashboardAllocation(
   const expectedReturn = toOptionalNumber(allocation.estimatedResult);
   const expectedPayoutAt = getExpectedPayoutDate(allocation);
   const stage = getAllocationStage(allocation);
+  const actualProfit = toNumber(allocation.actualProfit);
+  const resultIsEstimated = !CLOSED_ALLOCATION_STATUSES.has(allocation.status);
+  const comparisonResult = resultIsEstimated ? expectedReturn : actualProfit;
+  const startedAt = allocation.startedAt ?? allocation.createdAt;
+  const endedAt = allocation.completedAt ?? now;
   const latestProof = allocation.proofs?.filter((proof) => proof.status === "AVAILABLE" || proof.status === "VERIFIED")[0] ?? null;
 
   return {
@@ -263,6 +275,13 @@ function serializeDashboardAllocation(
     expectedReturnNote: expectedReturn ? `${allocation.currency} ${expectedReturn.toLocaleString("en-US")}` : allocation.estimatedResult ? String(allocation.estimatedResult) : "Not estimated",
     currentStage: stage,
     status: allocation.status,
+    currency: allocation.currency,
+    comparisonResult,
+    resultIsEstimated,
+    roiPercent: investedAmount > 0 && comparisonResult !== null ? (comparisonResult / investedAmount) * 100 : null,
+    durationDays: Math.max(1, Math.ceil((endedAt.getTime() - startedAt.getTime()) / (24 * 60 * 60 * 1000))),
+    payoutStatus: allocation.payoutStatus,
+    completedAt: toIsoDate(allocation.completedAt),
     progressPercent: getProgressPercent(stage),
     riskLevel: allocation.riskHealth?.level === "HIGH" || allocation.riskHealth?.level === "CRITICAL" || allocation.riskHealth?.level === "ELEVATED" ? "elevated" : getRiskLevel(allocation, expectedPayoutAt, now),
     startedAt: toIsoDate(allocation.startedAt),
@@ -293,6 +312,7 @@ export function buildInvestorDashboardData(input: {
   const investorVisibleAllocationRecords = allocations.filter((allocation) => INVESTOR_VISIBLE_ALLOCATION_STATUSES.has(allocation.status));
   const completedAllocationRecords = allocations.filter((allocation) => COMPLETED_ALLOCATION_STATUSES.has(allocation.status));
   const activeAllocations = investorVisibleAllocationRecords.map((allocation) => serializeDashboardAllocation(allocation, latestPublishedMonthlyReport, now));
+  const allInvestorAllocations = allocations.filter((allocation) => allocation.status !== "CANCELED").map((allocation) => serializeDashboardAllocation(allocation, latestPublishedMonthlyReport, now));
   const completedCapital = completedAllocationRecords.reduce((sum, allocation) => sum + toNumber(allocation.allocationAmount), 0);
   const realizedProfit = completedAllocationRecords.reduce((sum, allocation) => sum + toNumber(allocation.actualProfit), 0);
   const payoutCandidates = allocations
@@ -332,7 +352,7 @@ export function buildInvestorDashboardData(input: {
       lastReportDate: latestPublishedMonthlyReport?.publishedAt ?? input.investor.lastReportAt?.toISOString() ?? null
     },
     activeAllocations,
-    allocations: activeAllocations,
+    allocations: allInvestorAllocations,
     latestPublishedMonthlyReport
   };
 }

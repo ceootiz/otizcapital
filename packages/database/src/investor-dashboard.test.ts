@@ -81,6 +81,14 @@ describe("investor dashboard data", () => {
     expect(dashboard.summary.realizedProfit).toBe(1500);
     expect(dashboard.summary.totalPayouts).toBe(1000);
     expect(dashboard.summary.currentAverageRoi).toBe(10);
+    expect(dashboard.allocations).toHaveLength(3);
+    expect(dashboard.allocations.find((item) => item.id === "completed-paid")).toMatchObject({
+      comparisonResult: 1000,
+      resultIsEstimated: false,
+      roiPercent: 10,
+      durationDays: 3,
+      payoutStatus: "PAID"
+    });
   });
 
   it("calculates the next expected payout date from unpaid allocation cycles", () => {
