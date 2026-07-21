@@ -14,7 +14,8 @@ export type AdminNavigationSection =
   | "referrals"
   | "promo-codes"
   | "content"
-  | "contact-settings";
+  | "contact-settings"
+  | "feature-flags";
 
 const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale: Locale) => string }> = [
   { key: "dashboard", href: (locale) => `/${locale}/admin/dashboard` },
@@ -29,7 +30,8 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
   { key: "referrals", href: (locale) => `/${locale}/admin/referrals` },
   { key: "promo-codes", href: (locale) => `/${locale}/admin/promo-codes` },
   { key: "content", href: (locale) => `/${locale}/admin/content` },
-  { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` }
+  { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` },
+  { key: "feature-flags", href: (locale) => `/${locale}/admin/settings/features` }
 ];
 
 const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
@@ -46,7 +48,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     referrals: "Referrals",
     "promo-codes": "Promo codes",
     content: "Content",
-    "contact-settings": "Contact"
+    "contact-settings": "Contact",
+    "feature-flags": "Features"
   },
   ru: {
     dashboard: "Дашборд",
@@ -61,7 +64,8 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     referrals: "Рефералы",
     "promo-codes": "Промокоды",
     content: "Контент",
-    "contact-settings": "Контакты"
+    "contact-settings": "Контакты",
+    "feature-flags": "Функции"
   }
 };
 
