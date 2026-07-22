@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, PackagePlus, Save, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Download, PackagePlus, Save, ShieldCheck } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 
@@ -851,8 +851,13 @@ type AgreementDoc = { id: string; status: string; signedAt: string | null; creat
 const REPORTS_STRINGS = {
   en: {
     title: "Report files (XLSX)",
-    desc: "Download the pre-filled template, then upload the completed report. The investor is notified automatically.",
+    desc: "Use the OTIZ template so the report can be read correctly and added to the investor's account.",
+    workflowTitle: "How to upload a report",
+    stepDownload: "Download the pre-filled template",
+    stepComplete: "Complete the report in Excel without changing the column names",
+    stepUpload: "Select the completed .xlsx file below and upload it",
     downloadTemplate: "Download report template",
+    downloadingTemplate: "Downloading template...",
     uploadTitle: "Upload report",
     monthLabel: "Report month",
     monthPlaceholder: "May 2026",
@@ -877,12 +882,18 @@ const REPORTS_STRINGS = {
     agreementNone: "No agreement generated yet.",
     errFile: "Select an .xlsx file and a month.",
     errUpload: "Upload failed. Please try again.",
+    errTemplate: "The template could not be downloaded. Please try again.",
     errCredit: "Unable to credit report profit."
   },
   ru: {
     title: "Файлы отчётов (XLSX)",
-    desc: "Скачайте предзаполненный шаблон, затем загрузите готовый отчёт. Инвестор будет уведомлён автоматически.",
+    desc: "Используйте шаблон OTIZ, чтобы данные отчёта корректно попали в кабинет инвестора.",
+    workflowTitle: "Как загрузить отчёт",
+    stepDownload: "Скачайте предзаполненный шаблон",
+    stepComplete: "Заполните отчёт в Excel, не меняя названия столбцов",
+    stepUpload: "Выберите готовый файл .xlsx ниже и загрузите его",
     downloadTemplate: "Скачать шаблон отчёта",
+    downloadingTemplate: "Скачиваем шаблон...",
     uploadTitle: "Загрузить отчёт",
     monthLabel: "Месяц отчёта",
     monthPlaceholder: "Май 2026",
@@ -907,6 +918,7 @@ const REPORTS_STRINGS = {
     agreementNone: "Соглашение ещё не сформировано.",
     errFile: "Выберите файл .xlsx и укажите месяц.",
     errUpload: "Не удалось загрузить. Попробуйте ещё раз.",
+    errTemplate: "Не удалось скачать шаблон. Попробуйте ещё раз.",
     errCredit: "Не удалось зачислить прибыль из отчёта."
   }
 } as const;
@@ -918,6 +930,7 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
   const [agreement, setAgreement] = React.useState<AgreementDoc>(null);
   const [month, setMonth] = React.useState("");
   const [file, setFile] = React.useState<File | null>(null);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = React.useState(false);
   const [isUploading, setIsUploading] = React.useState(false);
   const [creditingId, setCreditingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -939,6 +952,31 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
   React.useEffect(() => {
     void load();
   }, [load]);
+
+  async function downloadTemplate() {
+    setIsDownloadingTemplate(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/investors/${investorId}/report-template`, { cache: "no-store" });
+      if (!response.ok) throw new Error(t.errTemplate);
+
+      const blob = await response.blob();
+      const disposition = response.headers.get("content-disposition") ?? "";
+      const fileName = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? `otiz-report-template-${investorId}.xlsx`;
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (downloadError) {
+      setError(downloadError instanceof Error ? downloadError.message : t.errTemplate);
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
+  }
 
   async function upload() {
     if (!file || !month.trim()) {
@@ -1008,13 +1046,17 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <a
-            href={`/api/admin/investors/${investorId}/report-template`}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] px-5 text-sm font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-muted/50 dark:hover:bg-white/[0.08]"
-          >
-            {t.downloadTemplate}
-          </a>
+        <div className="rounded-2xl border border-gold-300/35 bg-gold-300/10 p-4 dark:border-gold-200/20 dark:bg-gold-200/[0.06]">
+          <p className="text-sm font-semibold text-foreground">{t.workflowTitle}</p>
+          <ol className="mt-3 grid gap-2 text-sm text-muted-foreground">
+            <li><span className="font-semibold text-foreground">1.</span> {t.stepDownload}</li>
+            <li><span className="font-semibold text-foreground">2.</span> {t.stepComplete}</li>
+            <li><span className="font-semibold text-foreground">3.</span> {t.stepUpload}</li>
+          </ol>
+          <Button type="button" variant="outline" className="mt-4" disabled={isDownloadingTemplate} onClick={downloadTemplate}>
+            <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+            {isDownloadingTemplate ? t.downloadingTemplate : t.downloadTemplate}
+          </Button>
         </div>
 
         <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.035] p-4">
