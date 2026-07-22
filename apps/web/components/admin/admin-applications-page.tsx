@@ -1200,7 +1200,10 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             <SummaryCard label={t.summaryHighValueNoContact} value={formatOptionalCount(queueCounts?.sla["high-value-no-contact"], areQueueCountsLoading, Boolean(queueCountsError), f)} />
             <SummaryCard label={t.summaryNewLeads} value={formatInteger(summary.newLeads, f)} />
             <SummaryCard label={t.summaryContacted} value={formatInteger(summary.contacted, f)} />
-            <SummaryCard label={t.summaryApproved} value={formatInteger(summary.approved, f)} />
+            <SummaryCard
+              label={t.summaryApproved}
+              value={formatOptionalCount(queueCounts?.views.approved, areQueueCountsLoading, Boolean(queueCountsError), f)}
+            />
             <SummaryCard label={t.summaryHighVip} value={formatInteger(summary.highVipPriority, f)} />
             <SummaryCard label={t.summaryOverdueNextActions} value={formatInteger(summary.overdueNextActions, f)} />
             <SummaryCard label={t.summaryPlannedAllocationTotal} value={formatMoney(summary.plannedAllocationTotal, f)} />
