@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Circle, Send } from "lucide-react";
 import { isLocale, type Locale } from "@otiz/lib";
-import { getSiteSettings } from "@otiz/database";
+import { getInvestorApplicationStatusRecord, getSiteSettings } from "@otiz/database";
 import { Card, CardContent } from "@otiz/ui";
+import { ApplicationStatusAutoRefresh } from "../../../../components/apply/application-status-auto-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,13 @@ const STRINGS = {
     back: "Back to homepage",
     eyebrow: "Application status",
     heading: "Application received and under review",
-    sentTo: "Confirmation sent to",
+    headingApproved: "Application approved",
+    headingAccess: "Your investor access is ready",
+    headingRejected: "Application not approved",
+    sentTo: "Application registered for",
+    statusNote: "This status updates automatically.",
+    accessCta: "Go to investor login",
+    rejectedNote: "Contact the OTIZ team if you would like clarification on this decision.",
     timelineTitle: "What happens next",
     steps: [
       "Application received",
@@ -31,7 +38,13 @@ const STRINGS = {
     back: "На главную",
     eyebrow: "Статус заявки",
     heading: "Заявка получена и находится на рассмотрении",
-    sentTo: "Подтверждение отправлено на",
+    headingApproved: "Заявка одобрена",
+    headingAccess: "Доступ к кабинету инвестора готов",
+    headingRejected: "Заявка не одобрена",
+    sentTo: "Заявка зарегистрирована для",
+    statusNote: "Статус обновляется автоматически.",
+    accessCta: "Перейти ко входу в кабинет",
+    rejectedNote: "Если вам нужно уточнение по решению, свяжитесь с командой OTIZ.",
     timelineTitle: "Что дальше",
     steps: [
       "Заявка получена",
@@ -48,7 +61,13 @@ const STRINGS = {
     back: "Volver al inicio",
     eyebrow: "Estado de la solicitud",
     heading: "Solicitud recibida y en revisión",
-    sentTo: "Confirmación enviada a",
+    headingApproved: "Solicitud aprobada",
+    headingAccess: "Su acceso de inversor está listo",
+    headingRejected: "Solicitud no aprobada",
+    sentTo: "Solicitud registrada para",
+    statusNote: "Este estado se actualiza automáticamente.",
+    accessCta: "Ir al acceso de inversor",
+    rejectedNote: "Contacte con el equipo de OTIZ si necesita aclaraciones sobre esta decisión.",
     timelineTitle: "Qué ocurre a continuación",
     steps: [
       "Solicitud recibida",
@@ -65,7 +84,13 @@ const STRINGS = {
     back: "Zur Startseite",
     eyebrow: "Status der Anfrage",
     heading: "Anfrage erhalten und in Prüfung",
-    sentTo: "Bestätigung gesendet an",
+    headingApproved: "Anfrage genehmigt",
+    headingAccess: "Ihr Investorenzugang ist bereit",
+    headingRejected: "Anfrage nicht genehmigt",
+    sentTo: "Anfrage registriert für",
+    statusNote: "Dieser Status wird automatisch aktualisiert.",
+    accessCta: "Zur Investoren-Anmeldung",
+    rejectedNote: "Wenden Sie sich an das OTIZ-Team, wenn Sie eine Erläuterung zu dieser Entscheidung benötigen.",
     timelineTitle: "Wie es weitergeht",
     steps: [
       "Anfrage erhalten",
@@ -82,7 +107,13 @@ const STRINGS = {
     back: "返回首页",
     eyebrow: "申请状态",
     heading: "申请已收到，正在审核中",
-    sentTo: "确认信息已发送至",
+    headingApproved: "申请已批准",
+    headingAccess: "您的投资者账户访问权限已准备就绪",
+    headingRejected: "申请未获批准",
+    sentTo: "申请登记邮箱",
+    statusNote: "此状态会自动更新。",
+    accessCta: "前往投资者登录",
+    rejectedNote: "如需了解此决定，请联系 OTIZ 团队。",
     timelineTitle: "后续流程",
     steps: [
       "申请已收到",
@@ -117,18 +148,33 @@ export default async function ApplyStatusRoute({
   searchParams
 }: {
   params: { locale: Locale };
-  searchParams: { email?: string };
+  searchParams: { applicationId?: string; email?: string };
 }) {
   if (!isLocale(params.locale)) {
     notFound();
   }
 
   const t = getStrings(params.locale);
-  const maskedEmail = typeof searchParams.email === "string" ? maskEmail(searchParams.email) : null;
+  const applicationId = typeof searchParams.applicationId === "string" && /^[a-z0-9_-]+$/i.test(searchParams.applicationId)
+    ? searchParams.applicationId
+    : null;
+  const application = applicationId ? await getInvestorApplicationStatusRecord(applicationId) : null;
+  const maskedEmail = application?.email
+    ? maskEmail(application.email)
+    : typeof searchParams.email === "string"
+      ? maskEmail(searchParams.email)
+      : null;
+  const isRejected = application?.status === "REJECTED";
+  const isApproved = Boolean(application?.approvedAt) || application?.status === "APPROVED" || Boolean(application?.investor);
+  const hasAccess = Boolean(application?.investor);
+  const hasContact = Boolean(application?.contactedAt) || isApproved || isRejected;
+  const completedSteps = [Boolean(application), hasContact, isApproved || isRejected, hasAccess];
+  const heading = hasAccess ? t.headingAccess : isRejected ? t.headingRejected : isApproved ? t.headingApproved : t.heading;
   const { contactTelegram } = await getSiteSettings();
 
   return (
     <main className="relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
+      <ApplicationStatusAutoRefresh enabled={Boolean(application && !hasAccess && !isRejected)} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_48%_0%,rgba(212,175,95,0.16),transparent_34rem),radial-gradient(circle_at_12%_12%,rgba(255,255,255,0.08),transparent_26rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <div className="container relative z-10 max-w-2xl">
@@ -144,18 +190,19 @@ export default async function ApplyStatusRoute({
               <CheckCircle2 className="size-6" />
             </div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{t.eyebrow}</p>
-            <h1 className="mt-3 font-display text-3xl tracking-[-0.03em] text-foreground md:text-4xl">{t.heading}</h1>
+            <h1 className="mt-3 font-display text-3xl tracking-[-0.03em] text-foreground md:text-4xl">{heading}</h1>
             {maskedEmail ? (
               <p className="mt-4 text-sm text-muted-foreground">
                 {t.sentTo} <span className="font-medium text-foreground">{maskedEmail}</span>
               </p>
             ) : null}
+            {application ? <p className="mt-2 text-xs text-muted-foreground">{t.statusNote}</p> : null}
 
             <div className="mt-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.timelineTitle}</p>
               <ol className="mt-4 grid gap-4">
                 {t.steps.map((step, index) => {
-                  const done = index === 0;
+                  const done = completedSteps[index] ?? false;
                   return (
                     <li key={step} className="flex items-start gap-3">
                       {done ? (
@@ -169,6 +216,19 @@ export default async function ApplyStatusRoute({
                 })}
               </ol>
             </div>
+
+            {hasAccess ? (
+              <Link
+                href={`/${params.locale}/investor/login`}
+                className="mt-7 inline-flex items-center rounded-full bg-gold-300 px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold-200"
+              >
+                {t.accessCta}
+              </Link>
+            ) : isRejected ? (
+              <p className="mt-7 rounded-[1.35rem] border border-border bg-muted/30 p-5 text-sm text-muted-foreground dark:border-white/10 dark:bg-black/20">
+                {t.rejectedNote}
+              </p>
+            ) : null}
 
             <div className="mt-8 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5">
               <p className="text-sm text-muted-foreground">{t.contactNote}</p>

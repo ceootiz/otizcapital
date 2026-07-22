@@ -136,12 +136,13 @@ export function ApplicationPage({
         promoCode: (form.promoCode ?? "").trim() || undefined
       });
       const submittedEmail = application.email?.trim() || "";
-      await investorApplicationSubmitter.submit(application);
+      const result = await investorApplicationSubmitter.submit(application);
       setForm(initialForm);
-      // Redirect to the bookmarkable post-application status page. The email
-      // (if provided) is passed so the page can show a masked confirmation.
-      const query = submittedEmail ? `?email=${encodeURIComponent(submittedEmail)}` : "";
-      router.push(`/${locale}/apply/status${query}`);
+      // Bind the status page to this exact application. The email remains only
+      // as a legacy display fallback if the application cannot be loaded.
+      const query = new URLSearchParams({ applicationId: result.id });
+      if (submittedEmail) query.set("email", submittedEmail);
+      router.push(`/${locale}/apply/status?${query.toString()}`);
     } catch (error) {
       // A rejected promo code surfaces as a field error rather than a generic
       // form error, so the applicant can fix just the code.

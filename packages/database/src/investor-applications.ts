@@ -404,6 +404,27 @@ export async function countInvestorApplicationRecords(options?: InvestorApplicat
   });
 }
 
+export async function getInvestorApplicationStatusRecord(id: string) {
+  return prisma.investorApplication.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      status: true,
+      contactedAt: true,
+      approvedAt: true,
+      rejectedAt: true,
+      createdAt: true,
+      investor: {
+        select: {
+          id: true,
+          status: true
+        }
+      }
+    }
+  });
+}
+
 export async function updateInvestorApplicationStatus(input: {
   id: string;
   status: ApplicationStatus;
