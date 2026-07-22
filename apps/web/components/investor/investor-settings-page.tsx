@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createAdminFormatters, locales, localeNames, localeShortNames, type Locale } from "@otiz/lib";
 import { InvestorReferralSection } from "./investor-referral-section";
 
@@ -20,6 +21,8 @@ const STRINGS = {
       current: "Current password",
       new: "New password",
       confirm: "Confirm new password",
+      show: "Show password",
+      hide: "Hide password",
       save: "Save",
       saving: "Saving...",
       success: "Your password has been updated.",
@@ -96,6 +99,8 @@ const STRINGS = {
       current: "Текущий пароль",
       new: "Новый пароль",
       confirm: "Подтвердите новый пароль",
+      show: "Показать пароль",
+      hide: "Скрыть пароль",
       save: "Сохранить",
       saving: "Сохранение...",
       success: "Ваш пароль обновлён.",
@@ -172,6 +177,8 @@ const STRINGS = {
       current: "Contraseña actual",
       new: "Nueva contraseña",
       confirm: "Confirmar nueva contraseña",
+      show: "Mostrar contraseña",
+      hide: "Ocultar contraseña",
       save: "Guardar",
       saving: "Guardando...",
       success: "Su contraseña se ha actualizado.",
@@ -248,6 +255,8 @@ const STRINGS = {
       current: "Aktuelles Passwort",
       new: "Neues Passwort",
       confirm: "Neues Passwort bestätigen",
+      show: "Passwort anzeigen",
+      hide: "Passwort ausblenden",
       save: "Speichern",
       saving: "Wird gespeichert...",
       success: "Ihr Passwort wurde aktualisiert.",
@@ -324,6 +333,8 @@ const STRINGS = {
       current: "当前密码",
       new: "新密码",
       confirm: "确认新密码",
+      show: "显示密码",
+      hide: "隐藏密码",
       save: "保存",
       saving: "正在保存……",
       success: "您的密码已更新。",
@@ -471,6 +482,9 @@ export function InvestorSettingsPage({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordIsSet, setPasswordIsSet] = useState(hasPassword);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
@@ -663,7 +677,7 @@ export function InvestorSettingsPage({
       setPasswordBusy(true);
       try {
         const payload: Record<string, string> = { newPassword, confirmPassword };
-        if (hasPassword) payload.currentPassword = currentPassword;
+        if (passwordIsSet) payload.currentPassword = currentPassword;
 
         const res = await fetch("/api/investor/settings/password", {
           method: "POST",
@@ -677,6 +691,9 @@ export function InvestorSettingsPage({
           setCurrentPassword("");
           setNewPassword("");
           setConfirmPassword("");
+          setShowNewPassword(false);
+          setShowConfirmPassword(false);
+          setPasswordIsSet(true);
           return;
         }
 
@@ -699,7 +716,7 @@ export function InvestorSettingsPage({
         setPasswordBusy(false);
       }
     },
-    [confirmPassword, currentPassword, hasPassword, newPassword, t.security]
+    [confirmPassword, currentPassword, newPassword, passwordIsSet, t.security]
   );
 
   // --- Notifications toggle ---
@@ -780,15 +797,15 @@ export function InvestorSettingsPage({
       <section className={cardClass}>
         <div className="mb-5">
           <h2 className="font-display text-xl font-semibold tracking-[-0.02em] text-foreground">
-            {hasPassword ? t.security.changeTitle : t.security.setTitle}
+            {passwordIsSet ? t.security.changeTitle : t.security.setTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {hasPassword ? t.security.changeDesc : t.security.setDesc}
+            {passwordIsSet ? t.security.changeDesc : t.security.setDesc}
           </p>
         </div>
 
         <form className="grid gap-4" onSubmit={handlePasswordSubmit} noValidate>
-          {hasPassword ? (
+          {passwordIsSet ? (
             <label className="grid gap-2">
               <span className={labelClass}>{t.security.current}</span>
               <input
@@ -803,24 +820,46 @@ export function InvestorSettingsPage({
 
           <label className="grid gap-2">
             <span className={labelClass}>{t.security.new}</span>
-            <input
-              type="password"
-              autoComplete="new-password"
-              className={inputClass}
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-            />
+            <span className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                autoComplete="new-password"
+                className={`${inputClass} w-full pr-12`}
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+              />
+              <button
+                type="button"
+                aria-label={showNewPassword ? t.security.hide : t.security.show}
+                aria-pressed={showNewPassword}
+                onClick={() => setShowNewPassword((visible) => !visible)}
+                className="absolute right-1 top-1/2 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-200/40"
+              >
+                {showNewPassword ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+              </button>
+            </span>
           </label>
 
           <label className="grid gap-2">
             <span className={labelClass}>{t.security.confirm}</span>
-            <input
-              type="password"
-              autoComplete="new-password"
-              className={inputClass}
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-            />
+            <span className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                className={`${inputClass} w-full pr-12`}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+              <button
+                type="button"
+                aria-label={showConfirmPassword ? t.security.hide : t.security.show}
+                aria-pressed={showConfirmPassword}
+                onClick={() => setShowConfirmPassword((visible) => !visible)}
+                className="absolute right-1 top-1/2 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-200/40"
+              >
+                {showConfirmPassword ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+              </button>
+            </span>
           </label>
 
           {passwordError ? <p className="text-sm text-red-400">{passwordError}</p> : null}
