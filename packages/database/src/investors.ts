@@ -68,6 +68,86 @@ export async function listInvestorRecords() {
   });
 }
 
+export async function deleteInvestorRecords(input: { ids: string[]; actor: string }) {
+  const ids = Array.from(new Set(input.ids)).slice(0, 50);
+  if (ids.length === 0) {
+    return { ok: false as const, status: 422 as const, error: "Select at least one investor." };
+  }
+
+  return prisma.$transaction(async (transaction) => {
+    const investors = await transaction.investor.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, fullName: true, email: true, status: true, totalCapital: true, createdAt: true }
+    });
+
+    if (investors.length !== ids.length) {
+      return { ok: false as const, status: 404 as const, error: "One or more investors no longer exist." };
+    }
+
+    const allocations = await transaction.allocation.findMany({
+      where: { investorId: { in: ids } },
+      select: { id: true }
+    });
+    const reports = await transaction.monthlyReport.findMany({
+      where: { investorId: { in: ids } },
+      select: { id: true }
+    });
+    const fileReports = await transaction.investorFileReport.findMany({
+      where: { investorId: { in: ids } },
+      select: { id: true }
+    });
+    const allocationIds = allocations.map((record) => record.id);
+    const reportIds = reports.map((record) => record.id);
+    const fileReportIds = fileReports.map((record) => record.id);
+
+    await transaction.referralCommission.deleteMany({
+      where: { OR: [{ investorReferrerId: { in: ids } }, { referredInvestorId: { in: ids } }] }
+    });
+    await transaction.referralClick.deleteMany({ where: { investorReferrerId: { in: ids } } });
+    await transaction.investorApplication.updateMany({ where: { investorId: { in: ids } }, data: { investorId: null } });
+    await transaction.investorApplication.updateMany({ where: { referredByInvestorId: { in: ids } }, data: { referredByInvestorId: null } });
+    await transaction.investor.updateMany({ where: { referredByInvestorId: { in: ids } }, data: { referredByInvestorId: null } });
+
+    await transaction.operationalIncident.deleteMany({
+      where: { OR: [{ investorId: { in: ids } }, { allocationId: { in: allocationIds } }, { monthlyReportId: { in: reportIds } }] }
+    });
+    await transaction.ledgerEntry.deleteMany({
+      where: { OR: [{ investorId: { in: ids } }, { allocationId: { in: allocationIds } }, { monthlyReportId: { in: reportIds } }] }
+    });
+    await transaction.monthlyReportAllocation.deleteMany({
+      where: { OR: [{ allocationId: { in: allocationIds } }, { monthlyReportId: { in: reportIds } }] }
+    });
+    await transaction.allocationProof.deleteMany({ where: { allocationId: { in: allocationIds } } });
+    await transaction.investorPayment.deleteMany({
+      where: { OR: [{ investorId: { in: ids } }, { fileReportId: { in: fileReportIds } }] }
+    });
+    await transaction.investorFileReport.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.depositNotification.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.investorDocument.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.investorSession.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.investorNotification.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.withdrawalRequest.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.investorWallet.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.passwordResetToken.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.allocation.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.monthlyReport.deleteMany({ where: { investorId: { in: ids } } });
+    await transaction.investor.deleteMany({ where: { id: { in: ids } } });
+
+    await transaction.auditLog.createMany({
+      data: investors.map((investor) => ({
+        actor: input.actor,
+        action: "DELETE_INVESTOR",
+        entityType: "Investor",
+        entityId: investor.id,
+        beforeJson: JSON.stringify(investor),
+        afterJson: JSON.stringify({ deleted: true, bulk: ids.length > 1 })
+      }))
+    });
+
+    return { ok: true as const, deletedIds: investors.map((investor) => investor.id) };
+  }, { timeout: 60_000 });
+}
+
 export async function updateInvestorRecord(input: {
   id: string;
   status?: InvestorStatus;
