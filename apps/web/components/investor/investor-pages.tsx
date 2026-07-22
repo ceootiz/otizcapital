@@ -92,6 +92,7 @@ const INVESTOR_STRINGS = {
       settings: { eyebrow: "Account settings", title: "Settings", description: "Manage your security, language, notification preferences, and account data." }
     },
     kpi: {
+      totalBalance: "Balance", availableBalance: "Available", workingCapital: "Working capital", retainedProfit: "Retained profit",
       activeCapital: "Active capital", totalInvested: "Total invested", realizedProfit: "Realized profit", expectedProfit: "Expected profit",
       totalPayouts: "Total payouts", pendingPayouts: "Pending payouts", activeAllocations: "Active allocations", completedAllocations: "Completed allocations",
       currentAverageRoi: "Current average ROI", nextExpectedPayout: "Next expected payout"
@@ -190,6 +191,7 @@ const INVESTOR_STRINGS = {
       settings: { eyebrow: "Настройки аккаунта", title: "Настройки", description: "Управляйте безопасностью, языком, настройками уведомлений и данными аккаунта." }
     },
     kpi: {
+      totalBalance: "Баланс", availableBalance: "Доступно", workingCapital: "В работе", retainedProfit: "Оставленная прибыль",
       activeCapital: "Активный капитал", totalInvested: "Всего инвестировано", realizedProfit: "Реализованная прибыль", expectedProfit: "Ожидаемая прибыль",
       totalPayouts: "Всего выплат", pendingPayouts: "Ожидающие выплаты", activeAllocations: "Активные аллокации", completedAllocations: "Завершённые аллокации",
       currentAverageRoi: "Текущий средний ROI", nextExpectedPayout: "Следующая ожидаемая выплата"
@@ -413,13 +415,28 @@ export function InvestorDashboardHome({
   // hollow "$0"s. Allocation counters always show their real number.
   const moneyMetric = (value: number) => (value === 0 && !data.summary.hasHistory ? "—" : f.money(value));
 
+  const balanceCards = (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalBalance} value={moneyMetric(data.summary.totalBalance)} />
+      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.availableBalance} value={moneyMetric(data.summary.availableBalance)} />
+      <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.workingCapital} value={moneyMetric(data.summary.workingCapital)} />
+      <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.retainedProfit} value={moneyMetric(data.summary.retainedProfit)} />
+    </div>
+  );
+
   // Zero-allocation onboarding view: no capital assigned yet.
   if (data.summary.activeAllocationsCount === 0 && data.summary.completedAllocationsCount === 0) {
-    return <InvestorWelcome locale={locale} name={investorName} addresses={depositAddresses} />;
+    return (
+      <div className="grid gap-6">
+        {balanceCards}
+        <InvestorWelcome locale={locale} name={investorName} addresses={depositAddresses} />
+      </div>
+    );
   }
 
   return (
     <div className="grid gap-6">
+      {balanceCards}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.activeCapital} value={moneyMetric(data.summary.activeCapital)} />
         <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.totalInvested} value={moneyMetric(data.summary.totalInvested)} />

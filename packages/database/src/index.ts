@@ -22,6 +22,7 @@ export * from "./site-settings";
 export * from "./site-content-studio";
 export * from "./operations-calendar";
 export * from "./investor-ledger";
+export * from "./investor-balance";
 export * from "./investor-sessions";
 export * from "./investor-notifications";
 export * from "./investor-onboarding";

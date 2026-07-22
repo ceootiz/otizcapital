@@ -2,6 +2,7 @@ import { prisma } from "./client";
 import { calculateAllocationProofCompletenessFromInput, getInvestorSafeProofHealth, type ProofCompletenessBreakdown, type InvestorSafeProofHealth } from "./proof-completeness";
 import { getActiveReadinessPolicy } from "./readiness-policies";
 import { calculateAllocationRiskFromInput, type InvestorSafeRiskSummary } from "./risk-engine";
+import { getInvestorBalanceSummary, type InvestorBalanceSummary } from "./investor-balance";
 
 export type InvestorDashboardStage = "funding" | "purchasing" | "shipping" | "warehouse" | "selling" | "completed" | "paid_out" | "loss";
 export type InvestorDashboardRiskLevel = "standard" | "monitored" | "elevated";
@@ -133,6 +134,11 @@ export type InvestorDashboardAllocation = {
 };
 
 export type InvestorDashboardSummary = {
+  totalBalance: number;
+  availableBalance: number;
+  workingCapital: number;
+  confirmedDeposits: number;
+  retainedProfit: number;
   activeCapital: number;
   totalInvested: number;
   realizedProfit: number;
@@ -301,6 +307,7 @@ export function buildInvestorDashboardData(input: {
   allocations: InvestorDashboardAllocationRecord[];
   monthlyReports: InvestorDashboardMonthlyReportRecord[];
   withdrawalRequests?: InvestorDashboardWithdrawalRequestRecord[];
+  balanceSummary?: InvestorBalanceSummary;
   now?: Date;
 }): InvestorDashboardData {
   const now = input.now ?? new Date();
@@ -332,19 +339,37 @@ export function buildInvestorDashboardData(input: {
     null;
   const paidWithdrawals = withdrawalRequests.filter((request) => request.status === "PAID");
   const pendingWithdrawals = withdrawalRequests.filter((request) => ["REQUESTED", "APPROVED", "SCHEDULED"].includes(request.status));
+  const activeCapital = activeAllocationRecords.reduce((sum, allocation) => sum + toNumber(allocation.allocationAmount), 0);
+  const fallbackPendingWithdrawals = pendingWithdrawals.reduce((sum, request) => sum + toNumber(request.amount), 0);
+  const balance = input.balanceSummary ?? {
+    totalBalance: 0,
+    availableBalance: 0,
+    workingCapital: activeCapital,
+    pendingWithdrawals: fallbackPendingWithdrawals,
+    confirmedDeposits: 0,
+    retainedProfit: 0,
+    referralBonus: 0,
+    paidWithdrawals: 0,
+    hasActivity: false
+  };
 
   return {
     investorId: input.investor.id,
     summary: {
-      activeCapital: activeAllocationRecords.reduce((sum, allocation) => sum + toNumber(allocation.allocationAmount), 0),
+      totalBalance: balance.totalBalance,
+      availableBalance: balance.availableBalance,
+      workingCapital: balance.workingCapital,
+      confirmedDeposits: balance.confirmedDeposits,
+      retainedProfit: balance.retainedProfit,
+      activeCapital,
       totalInvested: allocations.filter((allocation) => allocation.status !== "CANCELED").reduce((sum, allocation) => sum + toNumber(allocation.allocationAmount), 0),
       realizedProfit,
       expectedProfit: activeAllocationRecords.reduce((sum, allocation) => sum + (toOptionalNumber(allocation.estimatedResult) ?? 0), 0),
       totalPayouts: withdrawalRequests.length > 0 ? paidWithdrawals.reduce((sum, request) => sum + toNumber(request.amount), 0) : allocations.filter((allocation) => PAID_OUT_STATUSES.has(allocation.payoutStatus)).reduce((sum, allocation) => sum + toNumber(allocation.actualProfit), 0),
-      pendingPayouts: pendingWithdrawals.reduce((sum, request) => sum + toNumber(request.amount), 0),
+      pendingPayouts: balance.pendingWithdrawals,
       activeAllocationsCount: activeAllocationRecords.length,
       completedAllocationsCount: completedAllocationRecords.length,
-      hasHistory: allocations.length > 0 || withdrawalRequests.length > 0,
+      hasHistory: allocations.length > 0 || withdrawalRequests.length > 0 || balance.hasActivity,
       currentAverageRoi: completedCapital > 0 ? (realizedProfit / completedCapital) * 100 : null,
       nextExpectedPayoutDate: toIsoDate(futurePayoutDate),
       latestPublishedMonthlyReport,
@@ -365,7 +390,7 @@ export async function getInvestorDashboardDataForInvestor(investorId: string) {
 
   if (!investor) return null;
 
-  const [allocations, monthlyReports, withdrawalRequests, policy] = await Promise.all([
+  const [allocations, monthlyReports, withdrawalRequests, policy, balanceSummary] = await Promise.all([
     prisma.allocation.findMany({
       where: { investorId },
       include: {
@@ -385,7 +410,8 @@ export async function getInvestorDashboardDataForInvestor(investorId: string) {
       where: { investorId },
       orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
     }),
-    getActiveReadinessPolicy()
+    getActiveReadinessPolicy(),
+    getInvestorBalanceSummary(investorId)
   ]);
 
   const allocationsWithProofCompleteness = allocations.map((allocation) => {
@@ -413,5 +439,5 @@ export async function getInvestorDashboardDataForInvestor(investorId: string) {
     };
   });
 
-  return buildInvestorDashboardData({ investor, allocations: allocationsWithProofCompleteness, monthlyReports, withdrawalRequests });
+  return buildInvestorDashboardData({ investor, allocations: allocationsWithProofCompleteness, monthlyReports, withdrawalRequests, balanceSummary });
 }

@@ -81,17 +81,51 @@ export async function reviewDepositNotification(input: {
   verificationStatus?: DepositVerificationStatus | null;
   verificationData?: unknown;
 }) {
-  const result = await prisma.depositNotification.updateMany({
-    where: { id: input.id, status: "PENDING" },
-    data: {
-      status: input.status,
-      adminNote: input.adminNote,
-      reviewedBy: input.reviewedBy,
-      reviewedAt: new Date(),
-      ...(input.verificationStatus !== undefined ? { verificationStatus: input.verificationStatus } : {}),
-      ...(input.verificationData !== undefined ? { verificationData: (input.verificationData ?? Prisma.JsonNull) as Prisma.InputJsonValue } : {})
+  return prisma.$transaction(async (transaction) => {
+    const reviewedAt = new Date();
+    const result = await transaction.depositNotification.updateMany({
+      where: { id: input.id, status: "PENDING" },
+      data: {
+        status: input.status,
+        adminNote: input.adminNote,
+        reviewedBy: input.reviewedBy,
+        reviewedAt,
+        ...(input.verificationStatus !== undefined ? { verificationStatus: input.verificationStatus } : {}),
+        ...(input.verificationData !== undefined ? { verificationData: (input.verificationData ?? Prisma.JsonNull) as Prisma.InputJsonValue } : {})
+      }
+    });
+    const record = await transaction.depositNotification.findUnique({ where: { id: input.id } });
+
+    if (record && result.count > 0) {
+      if (input.status === "CONFIRMED") {
+        await transaction.ledgerEntry.create({
+          data: {
+            ledgerType: "INVESTOR_BALANCE",
+            investorId: record.investorId,
+            entryType: "DEPOSIT",
+            amount: record.amount.toString(),
+            currency: "USD",
+            occurredAt: reviewedAt,
+            sourceType: "DEPOSIT_NOTIFICATION",
+            sourceId: record.id,
+            description: `Confirmed deposit via ${record.network}`,
+            createdBy: input.reviewedBy
+          }
+        });
+      }
+
+      await transaction.auditLog.create({
+        data: {
+          actor: input.reviewedBy,
+          action: input.status === "CONFIRMED" ? "CONFIRM_DEPOSIT" : "REJECT_DEPOSIT",
+          entityType: "DepositNotification",
+          entityId: record.id,
+          beforeJson: JSON.stringify({ status: "PENDING" }),
+          afterJson: JSON.stringify({ status: record.status, amount: record.amount.toString(), investorId: record.investorId })
+        }
+      });
     }
+
+    return { updated: result.count > 0, record };
   });
-  const record = await prisma.depositNotification.findUnique({ where: { id: input.id }, include: { investor: true } });
-  return { updated: result.count > 0, record };
 }
