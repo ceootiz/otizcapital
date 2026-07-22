@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckSquare, FileText, Search, Trash2, Users, X } from "lucide-react";
+import { ArrowDown, ArrowUp, CheckSquare, ChevronsUpDown, FileText, Search, Trash2, Users, X } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog } from "@otiz/ui";
 
@@ -52,6 +52,9 @@ const STRINGS = {
     DISABLED: "Disabled",
     SEARCH_PLACEHOLDER: "Search by name, email, or status...",
     CLEAR_SEARCH: "Clear search",
+    SORT: "Sort",
+    SORT_ASCENDING: "Ascending",
+    SORT_DESCENDING: "Descending",
     NO_RESULTS_TITLE: "No matching investors",
     NO_RESULTS_DESCRIPTION: "Try a different name, email, or status.",
     SELECT: "Select",
@@ -89,6 +92,9 @@ const STRINGS = {
     DISABLED: "Отключён",
     SEARCH_PLACEHOLDER: "Поиск по имени, email или статусу...",
     CLEAR_SEARCH: "Очистить поиск",
+    SORT: "Сортировка",
+    SORT_ASCENDING: "По возрастанию",
+    SORT_DESCENDING: "По убыванию",
     NO_RESULTS_TITLE: "Совпадений не найдено",
     NO_RESULTS_DESCRIPTION: "Попробуйте другое имя, email или статус.",
     SELECT: "Выбрать",
@@ -111,6 +117,8 @@ const STRINGS = {
 
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
+type InvestorSortField = "capital" | "createdAt";
+type InvestorSortDirection = "asc" | "desc";
 
 export function AdminInvestorsPage({ locale, investors }: { locale: Locale; investors: AdminInvestor[] }) {
   const t = getStrings(locale);
@@ -118,6 +126,7 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
   const formatters = createAdminFormatters(locale);
   const [query, setQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
+  const [sort, setSort] = React.useState<{ field: InvestorSortField; direction: InvestorSortDirection } | null>(null);
   const [selectionMode, setSelectionMode] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(() => new Set());
   const [confirmDelete, setConfirmDelete] = React.useState(false);
@@ -131,14 +140,22 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
   }, [query]);
 
   const filteredInvestors = React.useMemo(() => {
-    if (!debouncedQuery) return investors;
-    return investors.filter((investor) => {
+    const matches = debouncedQuery ? investors.filter((investor) => {
       const statusLabel = enumLabel("investorStatus", investor.status, locale).toLowerCase();
       return [investor.fullName, investor.email, investor.status, statusLabel]
         .filter(Boolean)
         .some((field) => field.toLowerCase().includes(debouncedQuery));
+    }) : investors;
+
+    if (!sort) return matches;
+
+    return [...matches].sort((first, second) => {
+      const comparison = sort.field === "capital"
+        ? (Number(first.totalCapital) || 0) - (Number(second.totalCapital) || 0)
+        : new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime();
+      return sort.direction === "asc" ? comparison : -comparison;
     });
-  }, [investors, debouncedQuery, locale]);
+  }, [investors, debouncedQuery, locale, sort]);
 
   const selectedInvestors = React.useMemo(
     () => investors.filter((investor) => selectedIds.has(investor.id)),
@@ -174,6 +191,24 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
       else filteredInvestors.forEach((investor) => next.add(investor.id));
       return next;
     });
+  }
+
+  function toggleSort(field: InvestorSortField) {
+    setSort((current) => current?.field === field
+      ? { field, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { field, direction: "asc" });
+  }
+
+  function sortIcon(field: InvestorSortField) {
+    if (sort?.field !== field) return <ChevronsUpDown className="size-3.5" aria-hidden="true" />;
+    return sort.direction === "asc"
+      ? <ArrowUp className="size-3.5" aria-hidden="true" />
+      : <ArrowDown className="size-3.5" aria-hidden="true" />;
+  }
+
+  function sortDescription(field: InvestorSortField) {
+    if (sort?.field !== field) return t.SORT;
+    return sort.direction === "asc" ? t.SORT_ASCENDING : t.SORT_DESCENDING;
   }
 
   async function deleteSelected() {
@@ -258,6 +293,17 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                   </button>
                 ) : null}
               </div>
+              <div className="mb-4 flex flex-wrap items-center gap-2 lg:hidden">
+                <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t.SORT}</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => toggleSort("capital")} aria-label={`${t.COL_CAPITAL}: ${sortDescription("capital")}`}>
+                  {t.COL_CAPITAL}
+                  <span className="ml-2">{sortIcon("capital")}</span>
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => toggleSort("createdAt")} aria-label={`${t.COL_CREATED}: ${sortDescription("createdAt")}`}>
+                  {t.COL_CREATED}
+                  <span className="ml-2">{sortIcon("createdAt")}</span>
+                </Button>
+              </div>
               {selectionMode ? (
                 <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-white/[0.035] sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-3">
@@ -289,10 +335,16 @@ export function AdminInvestorsPage({ locale, investors }: { locale: Locale; inve
                     <span>{t.COL_NAME}</span>
                     <span>{t.COL_CONTACT}</span>
                     <span>{t.COL_STATUS}</span>
-                    <span>{t.COL_CAPITAL}</span>
+                    <button type="button" onClick={() => toggleSort("capital")} className="flex items-center gap-1.5 text-left transition-colors hover:text-foreground" aria-label={`${t.COL_CAPITAL}: ${sortDescription("capital")}`}>
+                      {t.COL_CAPITAL}
+                      {sortIcon("capital")}
+                    </button>
                     <span>{t.COL_REINVEST}</span>
                     <span>{t.COL_SOURCE_APPLICATION}</span>
-                    <span>{t.COL_CREATED}</span>
+                    <button type="button" onClick={() => toggleSort("createdAt")} className="flex items-center gap-1.5 text-left transition-colors hover:text-foreground" aria-label={`${t.COL_CREATED}: ${sortDescription("createdAt")}`}>
+                      {t.COL_CREATED}
+                      {sortIcon("createdAt")}
+                    </button>
                   </div>
                 </div>
                 {investors.length === 0 ? (
