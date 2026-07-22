@@ -125,19 +125,20 @@ export function buildInvestorEmail(event: NotificationEvent): InvestorEmailConte
     case "INVESTOR_CREATED": {
       const heading = "Заявка одобрена";
       const loginUrl = `${base}/ru/investor/login`;
-      // Prefer the investor's personal access code (generated on approval);
-      // the shared env code remains only as a legacy fallback.
-      const accessCode = str(payload, "personalAccessCode") || process.env.INVESTOR_ACCESS_CODE || "";
-      const accessLine = accessCode
-        ? `Войдите по адресу ${loginUrl}, используя ваш email и ваш персональный код доступа: <strong style="color:${GOLD};">${escapeHtml(accessCode)}</strong>. Никому не сообщайте этот код.`
-        : `Войдите по адресу ${loginUrl}, используя ваш email. Код доступа предоставит ваш менеджер.`;
+      // The generated approval credential is presented as a temporary password.
+      // After the investor creates a permanent password, the temporary value is
+      // no longer accepted by the login endpoint.
+      const temporaryPassword = str(payload, "personalAccessCode") || process.env.INVESTOR_ACCESS_CODE || "";
+      const accessLine = temporaryPassword
+        ? `Войдите по адресу ${loginUrl}, используя ваш email и временный пароль: <strong style="color:${GOLD};">${escapeHtml(temporaryPassword)}</strong>. После входа задайте постоянный пароль в настройках и никому его не сообщайте.`
+        : `Войдите по адресу ${loginUrl}, используя ваш email и пароль. Если вы ещё не задавали пароль, нажмите «Забыли пароль?» на странице входа.`;
       const lines = [
         `${greeting} Поздравляем — ваша заявка одобрена, и для вас создан кабинет инвестора.`,
         accessLine,
         "В кабинете вы увидите аллокации, отчёты и запросы на вывод. Мы свяжемся с вами по следующим шагам."
       ];
       const html = shell(heading, paragraphs(lines) + button(loginUrl, "Войти в кабинет"));
-      const accessText = accessCode ? `Код доступа: ${accessCode}` : "Код доступа предоставит ваш менеджер.";
+      const accessText = temporaryPassword ? `Временный пароль: ${temporaryPassword}` : "Задайте пароль через ссылку «Забыли пароль?» на странице входа.";
       return {
         subject: "Ваша заявка одобрена — OTIZ Capital",
         html,

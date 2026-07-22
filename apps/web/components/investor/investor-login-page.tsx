@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, KeyRound, Lock } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
 
@@ -11,131 +11,106 @@ const STRINGS = {
   en: {
     backToHomepage: "Back to homepage",
     investorAccess: "Investor access",
-    cardDescription: "Enter your investor email to continue. We'll ask for your password or access code next.",
-    cardDescriptionPassword: "Welcome back. Enter your password to open the investor dashboard.",
-    cardDescriptionCode: "Enter your temporary access code to open the investor dashboard.",
+    cardDescription: "Enter your investor email and password. For your first sign-in, use the temporary password from your approval email.",
     email: "Email",
     investorEmailAria: "Investor email",
     emailPlaceholder: "you@example.com",
-    continue: "Continue",
-    checking: "Checking...",
-    changeEmail: "Change email",
     password: "Password",
     passwordPlaceholder: "Your password",
-    signInWithPassword: "Sign in with password",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     forgotPassword: "Forgot password?",
-    useAccessCode: "Use access code instead",
-    accessCode: "Access code",
-    accessCodePlaceholder: "Configured temporary code",
-    devHintPrefix: "Development fallback code:",
-    devHintSuffix: ". Replace with `INVESTOR_ACCESS_CODE` before deployment.",
     errorFallback: "Unable to open investor dashboard.",
     emailRequired: "Enter a valid investor email.",
-    openDashboard: "Open investor dashboard",
+    passwordRequired: "Enter your password.",
+    invalidCredentials: "The email or password is incorrect.",
+    inactiveAccount: "Investor access is not active. Contact your manager.",
+    tooManyAttempts: "Too many sign-in attempts. Please try again later.",
+    openDashboard: "Sign in",
     openingDashboard: "Opening dashboard..."
   },
   ru: {
     backToHomepage: "Назад на главную",
     investorAccess: "Доступ для инвестора",
-    cardDescription: "Введите email инвестора, чтобы продолжить. Далее мы запросим пароль или код доступа.",
-    cardDescriptionPassword: "С возвращением. Введите пароль, чтобы открыть кабинет инвестора.",
-    cardDescriptionCode: "Введите временный код доступа, чтобы открыть кабинет инвестора.",
+    cardDescription: "Введите email и пароль. Для первого входа используйте временный пароль из письма об одобрении.",
     email: "Email",
     investorEmailAria: "Email инвестора",
     emailPlaceholder: "you@example.com",
-    continue: "Продолжить",
-    checking: "Проверяем...",
-    changeEmail: "Изменить email",
     password: "Пароль",
     passwordPlaceholder: "Ваш пароль",
-    signInWithPassword: "Войти с паролем",
+    showPassword: "Показать пароль",
+    hidePassword: "Скрыть пароль",
     forgotPassword: "Забыли пароль?",
-    useAccessCode: "Использовать код доступа",
-    accessCode: "Код доступа",
-    accessCodePlaceholder: "Настроенный временный код",
-    devHintPrefix: "Резервный код для разработки:",
-    devHintSuffix: ". Замените на `INVESTOR_ACCESS_CODE` перед развёртыванием.",
     errorFallback: "Не удалось открыть кабинет инвестора.",
     emailRequired: "Введите корректный email инвестора.",
-    openDashboard: "Открыть кабинет инвестора",
+    passwordRequired: "Введите пароль.",
+    invalidCredentials: "Неверный email или пароль.",
+    inactiveAccount: "Доступ инвестора не активен. Свяжитесь с менеджером.",
+    tooManyAttempts: "Слишком много попыток входа. Попробуйте позже.",
+    openDashboard: "Войти",
     openingDashboard: "Открываем кабинет..."
   },
   es: {
     backToHomepage: "Volver al inicio",
     investorAccess: "Acceso para inversores",
-    cardDescription: "Introduzca su correo de inversor para continuar. A continuación le solicitaremos su contraseña o código de acceso.",
-    cardDescriptionPassword: "Bienvenido de nuevo. Introduzca su contraseña para abrir el panel del inversor.",
-    cardDescriptionCode: "Introduzca su código de acceso temporal para abrir el panel del inversor.",
+    cardDescription: "Introduzca su correo y contraseña. Para el primer acceso, use la contraseña temporal del correo de aprobación.",
     email: "Correo electrónico",
     investorEmailAria: "Correo del inversor",
     emailPlaceholder: "you@example.com",
-    continue: "Continuar",
-    checking: "Comprobando...",
-    changeEmail: "Cambiar correo",
     password: "Contraseña",
     passwordPlaceholder: "Su contraseña",
-    signInWithPassword: "Iniciar sesión con contraseña",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña",
     forgotPassword: "¿Olvidó su contraseña?",
-    useAccessCode: "Usar código de acceso",
-    accessCode: "Código de acceso",
-    accessCodePlaceholder: "Código temporal configurado",
-    devHintPrefix: "Código alternativo de desarrollo:",
-    devHintSuffix: ". Sustitúyalo por `INVESTOR_ACCESS_CODE` antes del despliegue.",
     errorFallback: "No se pudo abrir el panel del inversor.",
     emailRequired: "Introduzca un correo de inversor válido.",
-    openDashboard: "Abrir el panel del inversor",
+    passwordRequired: "Introduzca su contraseña.",
+    invalidCredentials: "El correo o la contraseña son incorrectos.",
+    inactiveAccount: "El acceso del inversor no está activo. Contacte con su gestor.",
+    tooManyAttempts: "Demasiados intentos de acceso. Inténtelo más tarde.",
+    openDashboard: "Iniciar sesión",
     openingDashboard: "Abriendo el panel..."
   },
   de: {
     backToHomepage: "Zurück zur Startseite",
     investorAccess: "Investor-Zugang",
-    cardDescription: "Geben Sie Ihre Investor-E-Mail ein, um fortzufahren. Anschließend fragen wir nach Ihrem Passwort oder Zugangscode.",
-    cardDescriptionPassword: "Willkommen zurück. Geben Sie Ihr Passwort ein, um das Investor-Dashboard zu öffnen.",
-    cardDescriptionCode: "Geben Sie Ihren temporären Zugangscode ein, um das Investor-Dashboard zu öffnen.",
+    cardDescription: "Geben Sie Ihre E-Mail und Ihr Passwort ein. Verwenden Sie bei der ersten Anmeldung das temporäre Passwort aus der Bestätigungs-E-Mail.",
     email: "E-Mail",
     investorEmailAria: "Investor-E-Mail",
     emailPlaceholder: "you@example.com",
-    continue: "Weiter",
-    checking: "Wird geprüft...",
-    changeEmail: "E-Mail ändern",
     password: "Passwort",
     passwordPlaceholder: "Ihr Passwort",
-    signInWithPassword: "Mit Passwort anmelden",
+    showPassword: "Passwort anzeigen",
+    hidePassword: "Passwort ausblenden",
     forgotPassword: "Passwort vergessen?",
-    useAccessCode: "Stattdessen Zugangscode verwenden",
-    accessCode: "Zugangscode",
-    accessCodePlaceholder: "Konfigurierter temporärer Code",
-    devHintPrefix: "Entwicklungs-Ausweichcode:",
-    devHintSuffix: ". Ersetzen Sie ihn vor der Bereitstellung durch `INVESTOR_ACCESS_CODE`.",
     errorFallback: "Das Investor-Dashboard konnte nicht geöffnet werden.",
     emailRequired: "Geben Sie eine gültige Investor-E-Mail ein.",
-    openDashboard: "Investor-Dashboard öffnen",
+    passwordRequired: "Geben Sie Ihr Passwort ein.",
+    invalidCredentials: "E-Mail oder Passwort ist falsch.",
+    inactiveAccount: "Der Investor-Zugang ist nicht aktiv. Kontaktieren Sie Ihren Manager.",
+    tooManyAttempts: "Zu viele Anmeldeversuche. Bitte versuchen Sie es später erneut.",
+    openDashboard: "Anmelden",
     openingDashboard: "Dashboard wird geöffnet..."
   },
   zh: {
     backToHomepage: "返回首页",
     investorAccess: "投资者访问",
-    cardDescription: "请输入您的投资者邮箱以继续。随后我们将要求您输入密码或访问码。",
-    cardDescriptionPassword: "欢迎回来。请输入您的密码以打开投资者仪表板。",
-    cardDescriptionCode: "请输入您的临时访问码以打开投资者仪表板。",
+    cardDescription: "请输入邮箱和密码。首次登录时，请使用批准邮件中的临时密码。",
     email: "邮箱",
     investorEmailAria: "投资者邮箱",
     emailPlaceholder: "you@example.com",
-    continue: "继续",
-    checking: "正在检查……",
-    changeEmail: "更改邮箱",
     password: "密码",
     passwordPlaceholder: "您的密码",
-    signInWithPassword: "使用密码登录",
+    showPassword: "显示密码",
+    hidePassword: "隐藏密码",
     forgotPassword: "忘记密码？",
-    useAccessCode: "改用访问码",
-    accessCode: "访问码",
-    accessCodePlaceholder: "已配置的临时访问码",
-    devHintPrefix: "开发环境备用访问码：",
-    devHintSuffix: "。部署前请替换为 `INVESTOR_ACCESS_CODE`。",
     errorFallback: "无法打开投资者仪表板。",
     emailRequired: "请输入有效的投资者邮箱。",
-    openDashboard: "打开投资者仪表板",
+    passwordRequired: "请输入密码。",
+    invalidCredentials: "邮箱或密码不正确。",
+    inactiveAccount: "投资者访问尚未启用，请联系您的客户经理。",
+    tooManyAttempts: "登录尝试次数过多，请稍后重试。",
+    openDashboard: "登录",
     openingDashboard: "正在打开仪表板……"
   }
 } as const;
@@ -150,34 +125,16 @@ function isValidEmail(value: string) {
   return /^\S+@\S+\.\S+$/.test(value.trim());
 }
 
-type Step = "email" | "auth";
-type AuthMode = "password" | "code";
-
 export function InvestorLoginPage({ locale }: { locale: Locale }) {
   const t = getStrings(locale);
   const router = useRouter();
-  const [step, setStep] = React.useState<Step>("email");
-  const [mode, setMode] = React.useState<AuthMode>("code");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [accessCode, setAccessCode] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [isChecking, setIsChecking] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const passwordRef = React.useRef<HTMLInputElement>(null);
-  const accessCodeRef = React.useRef<HTMLInputElement>(null);
-
-  // Focus the credential field when advancing to step two.
-  React.useEffect(() => {
-    if (step !== "auth") {
-      return;
-    }
-    const target = mode === "password" ? passwordRef.current : accessCodeRef.current;
-    target?.focus();
-  }, [step, mode]);
-
-  async function onContinue(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
@@ -185,37 +142,26 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
       setError(t.emailRequired);
       return;
     }
-
-    setIsChecking(true);
-    try {
-      const response = await fetch(`/api/investor/auth-method?email=${encodeURIComponent(email.trim())}`);
-      const payload = (await response.json().catch(() => null)) as { hasPassword?: boolean } | null;
-      // On 429 or any failure we fall back to access-code mode so the user is never blocked.
-      setMode(payload?.hasPassword ? "password" : "code");
-    } catch {
-      setMode("code");
-    } finally {
-      setIsChecking(false);
-      setStep("auth");
+    if (!password) {
+      setError(t.passwordRequired);
+      return;
     }
-  }
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
     setIsSubmitting(true);
 
     try {
-      const body = mode === "password" ? { email, password } : { email, accessCode };
       const response = await fetch("/api/investor/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ email: email.trim(), password })
       });
       const payload = (await response.json()) as { ok: boolean; error?: string };
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || t.errorFallback);
+        if (response.status === 401 || response.status === 404) throw new Error(t.invalidCredentials);
+        if (response.status === 403) throw new Error(t.inactiveAccount);
+        if (response.status === 429) throw new Error(t.tooManyAttempts);
+        throw new Error(t.errorFallback);
       }
 
       router.push(`/${locale}/investor/dashboard`);
@@ -226,20 +172,6 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
       setIsSubmitting(false);
     }
   }
-
-  function backToEmail() {
-    setError(null);
-    setPassword("");
-    setAccessCode("");
-    setStep("email");
-  }
-
-  const description =
-    step === "email"
-      ? t.cardDescription
-      : mode === "password"
-        ? t.cardDescriptionPassword
-        : t.cardDescriptionCode;
 
   return (
     <main className="relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
@@ -254,17 +186,13 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
           <CardHeader>
             <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">
-              {step === "auth" && mode === "password" ? <Lock className="size-5" /> : <KeyRound className="size-5" />}
+              <Lock className="size-5" />
             </div>
             <CardTitle className="text-2xl">{t.investorAccess}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <CardDescription>{t.cardDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Step one — email */}
-            <form
-              className={`flex-col gap-5 transition-all duration-300 ${step === "email" ? "flex opacity-100" : "hidden opacity-0"}`}
-              onSubmit={onContinue}
-            >
+            <form className="flex flex-col gap-5" onSubmit={onSubmit}>
               <label className="flex flex-col gap-2">
                 <span className={labelClass}>{t.email}</span>
                 <input
@@ -277,92 +205,44 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
                   className={inputClass}
                 />
               </label>
-              {step === "email" && error ? (
-                <p className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{error}</p>
-              ) : null}
-              <Button type="submit" size="lg" disabled={isChecking} className="gap-2">
-                {isChecking ? t.checking : t.continue}
-                {!isChecking ? <ArrowRight className="size-4" /> : null}
-              </Button>
-            </form>
-
-            {/* Step two — credential */}
-            <form
-              className={`flex-col gap-5 transition-all duration-300 ${step === "auth" ? "flex opacity-100" : "hidden opacity-0"}`}
-              onSubmit={onSubmit}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <span className={labelClass}>{t.email}</span>
-                  <p className="mt-1 truncate text-sm text-foreground">{email}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={backToEmail}
-                  className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {t.changeEmail}
-                </button>
-              </div>
-
-              {mode === "password" ? (
-                <div className="flex flex-col gap-2">
-                  <label className="flex flex-col gap-2">
-                    <span className={labelClass}>{t.password}</span>
+              <div className="flex flex-col gap-2">
+                <label className="flex flex-col gap-2">
+                  <span className={labelClass}>{t.password}</span>
+                  <span className="relative">
                     <input
-                      ref={passwordRef}
                       aria-label={t.password}
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder={t.passwordPlaceholder}
-                      className={inputClass}
+                      className={`${inputClass} w-full pr-12`}
                     />
-                  </label>
-                  <Link
-                    href={`/${locale}/investor/forgot-password`}
-                    className="self-start text-xs font-medium text-muted-foreground transition-colors hover:text-amber-700 dark:hover:text-gold-100"
-                  >
-                    {t.forgotPassword}
-                  </Link>
-                </div>
-              ) : (
-                <label className="flex flex-col gap-2">
-                  <span className={labelClass}>{t.accessCode}</span>
-                  <input
-                    ref={accessCodeRef}
-                    aria-label={t.accessCode}
-                    type="password"
-                    autoComplete="one-time-code"
-                    value={accessCode}
-                    onChange={(event) => setAccessCode(event.target.value)}
-                    placeholder={t.accessCodePlaceholder}
-                    className={inputClass}
-                  />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      aria-label={showPassword ? t.hidePassword : t.showPassword}
+                      className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground dark:hover:bg-white/[0.08]"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </span>
                 </label>
-              )}
+                <Link
+                  href={`/${locale}/investor/forgot-password`}
+                  className="self-start text-sm font-semibold text-amber-700 transition-colors hover:underline dark:text-gold-100"
+                >
+                  {t.forgotPassword}
+                </Link>
+              </div>
 
-              {step === "auth" && error ? (
+              {error ? (
                 <p className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{error}</p>
               ) : null}
 
               <Button type="submit" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? t.openingDashboard : mode === "password" ? t.signInWithPassword : t.openDashboard}
+                {isSubmitting ? t.openingDashboard : t.openDashboard}
               </Button>
-
-              {mode === "password" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError(null);
-                    setMode("code");
-                  }}
-                  className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {t.useAccessCode}
-                </button>
-              ) : null}
             </form>
           </CardContent>
         </Card>

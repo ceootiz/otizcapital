@@ -45,12 +45,13 @@ export async function POST(request: Request) {
 
   const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   const email = sanitizeString(payload?.email, 180).toLowerCase();
-  const accessCode = sanitizeString(payload?.accessCode, 120);
-  // Password is intentionally NOT run through sanitizeString: it must be compared
-  // byte-for-byte against the stored bcrypt hash (collapsing whitespace would
-  // corrupt legitimate passwords). We only bound its length.
+  // Keep accepting the old accessCode field for already-open browser tabs, but
+  // the current UI always submits one password field. For accounts without a
+  // permanent password, the approval credential acts as the first temporary
+  // password. Once a bcrypt hash exists, only that password is accepted.
   const password = typeof payload?.password === "string" ? payload.password.slice(0, 200) : "";
-  const usePassword = password.length > 0;
+  const legacyAccessCode = sanitizeString(payload?.accessCode, 120);
+  const credential = password || legacyAccessCode;
 
   if (!isEmail(email)) {
     return NextResponse.json({ ok: false, error: "A valid investor email is required." }, { status: 422 });
@@ -58,32 +59,20 @@ export async function POST(request: Request) {
 
   const investor = await findInvestorByEmail(email);
 
-  // Access-code mode. Investors with a personalAccessCode (accounts created
-  // after the shared-code hole was closed) must present THEIR code; the shared
-  // INVESTOR_ACCESS_CODE only works for legacy accounts without one. For an
-  // unknown email the shared code is still verified first so the error ordering
-  // (401 invalid code before 404 unknown account) matches the previous behavior.
-  if (!usePassword) {
-    const codeMatches = investor?.personalAccessCode
-      ? Boolean(accessCode) && safeEqual(accessCode, investor.personalAccessCode)
-      : verifyInvestorAccessCode(accessCode);
-    if (!codeMatches) {
-      recordInvestorLoginFailure(request);
-      return NextResponse.json({ ok: false, error: "Invalid investor access code." }, { status: 401 });
-    }
-  }
-
   if (!investor) {
     recordInvestorLoginFailure(request);
-    return NextResponse.json({ ok: false, error: "Investor account not found. Ask a manager to activate access from an approved application." }, { status: 404 });
+    return NextResponse.json({ ok: false, error: "Invalid email or password." }, { status: 401 });
   }
 
-  if (usePassword) {
-    const matches = investor.passwordHash ? await bcrypt.compare(password, investor.passwordHash) : false;
-    if (!matches) {
-      recordInvestorLoginFailure(request);
-      return NextResponse.json({ ok: false, error: "Invalid email or password." }, { status: 401 });
-    }
+  const matches = investor.passwordHash
+    ? Boolean(password) && await bcrypt.compare(password, investor.passwordHash)
+    : investor.personalAccessCode
+      ? Boolean(credential) && safeEqual(credential, investor.personalAccessCode)
+      : verifyInvestorAccessCode(credential);
+
+  if (!matches) {
+    recordInvestorLoginFailure(request);
+    return NextResponse.json({ ok: false, error: "Invalid email or password." }, { status: 401 });
   }
 
   if (investor.status !== "ACTIVE") {
