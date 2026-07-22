@@ -136,6 +136,7 @@ export type InvestorDashboardAllocation = {
 export type InvestorDashboardSummary = {
   totalBalance: number;
   availableBalance: number;
+  awaitingAllocation: number;
   workingCapital: number;
   confirmedDeposits: number;
   retainedProfit: number;
@@ -344,8 +345,10 @@ export function buildInvestorDashboardData(input: {
   const balance = input.balanceSummary ?? {
     totalBalance: 0,
     availableBalance: 0,
+    awaitingAllocation: 0,
     workingCapital: activeCapital,
     pendingWithdrawals: fallbackPendingWithdrawals,
+    recordedCapital: 0,
     confirmedDeposits: 0,
     retainedProfit: 0,
     referralBonus: 0,
@@ -358,6 +361,7 @@ export function buildInvestorDashboardData(input: {
     summary: {
       totalBalance: balance.totalBalance,
       availableBalance: balance.availableBalance,
+      awaitingAllocation: balance.awaitingAllocation,
       workingCapital: balance.workingCapital,
       confirmedDeposits: balance.confirmedDeposits,
       retainedProfit: balance.retainedProfit,

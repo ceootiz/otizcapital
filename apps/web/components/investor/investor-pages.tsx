@@ -92,7 +92,7 @@ const INVESTOR_STRINGS = {
       settings: { eyebrow: "Account settings", title: "Settings", description: "Manage your security, language, notification preferences, and account data." }
     },
     kpi: {
-      totalBalance: "Balance", availableBalance: "Available", workingCapital: "Working capital", retainedProfit: "Retained profit",
+      totalBalance: "Balance", availableBalance: "Awaiting allocation", workingCapital: "Working capital", retainedProfit: "Retained profit",
       activeCapital: "Active capital", totalInvested: "Total invested", realizedProfit: "Realized profit", expectedProfit: "Expected profit",
       totalPayouts: "Total payouts", pendingPayouts: "Pending payouts", activeAllocations: "Active allocations", completedAllocations: "Completed allocations",
       currentAverageRoi: "Current average ROI", nextExpectedPayout: "Next expected payout"
@@ -191,7 +191,7 @@ const INVESTOR_STRINGS = {
       settings: { eyebrow: "Настройки аккаунта", title: "Настройки", description: "Управляйте безопасностью, языком, настройками уведомлений и данными аккаунта." }
     },
     kpi: {
-      totalBalance: "Баланс", availableBalance: "Доступно", workingCapital: "В работе", retainedProfit: "Оставленная прибыль",
+      totalBalance: "Баланс", availableBalance: "Ожидает аллокации", workingCapital: "В работе", retainedProfit: "Оставленная прибыль",
       activeCapital: "Активный капитал", totalInvested: "Всего инвестировано", realizedProfit: "Реализованная прибыль", expectedProfit: "Ожидаемая прибыль",
       totalPayouts: "Всего выплат", pendingPayouts: "Ожидающие выплаты", activeAllocations: "Активные аллокации", completedAllocations: "Завершённые аллокации",
       currentAverageRoi: "Текущий средний ROI", nextExpectedPayout: "Следующая ожидаемая выплата"
@@ -418,7 +418,7 @@ export function InvestorDashboardHome({
   const balanceCards = (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalBalance} value={moneyMetric(data.summary.totalBalance)} />
-      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.availableBalance} value={moneyMetric(data.summary.availableBalance)} />
+      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.availableBalance} value={moneyMetric(data.summary.awaitingAllocation)} />
       <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.workingCapital} value={moneyMetric(data.summary.workingCapital)} />
       <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.retainedProfit} value={moneyMetric(data.summary.retainedProfit)} />
     </div>

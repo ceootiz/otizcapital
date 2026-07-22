@@ -1,5 +1,6 @@
 import { Prisma, type DepositNotification } from "@prisma/client";
 import { prisma } from "./client";
+import { calculateCapitalAfterConfirmedDeposit } from "./investor-balance";
 
 // Investor-submitted "I sent a deposit" claims, reviewed by the admin.
 
@@ -132,6 +133,23 @@ export async function reviewDepositNotification(input: {
             description: `Confirmed deposit via ${record.network}`,
             createdBy: input.reviewedBy
           }
+        });
+
+        const [investor, previousConfirmedDeposits, allocationCount, profitCreditCount] = await Promise.all([
+          transaction.investor.findUnique({ where: { id: record.investorId }, select: { totalCapital: true } }),
+          transaction.depositNotification.count({ where: { investorId: record.investorId, status: "CONFIRMED", id: { not: record.id } } }),
+          transaction.allocation.count({ where: { investorId: record.investorId, status: { not: "CANCELED" } } }),
+          transaction.ledgerEntry.count({ where: { investorId: record.investorId, ledgerType: "INVESTOR_BALANCE", entryType: "PROFIT", isReversal: false, voidedAt: null } })
+        ]);
+        const recordedCapital = Number(investor?.totalCapital ?? 0);
+        const nextCapital = calculateCapitalAfterConfirmedDeposit({
+          recordedCapital: Number.isFinite(recordedCapital) ? recordedCapital : 0,
+          depositAmount: Number(record.amount),
+          hasEstablishedCapitalActivity: previousConfirmedDeposits > 0 || allocationCount > 0 || profitCreditCount > 0
+        });
+        await transaction.investor.update({
+          where: { id: record.investorId },
+          data: { totalCapital: String(nextCapital) }
         });
       }
 
