@@ -187,11 +187,23 @@ type ApiProcessNotificationsResponse = {
 type ApiCreateInvestorResponse = {
   ok: boolean;
   created?: boolean;
+  credentials?: InvestorAccessCredentials | null;
   data?: {
     investor: AdminLinkedInvestor;
     application: AdminApplication;
   };
   error?: string;
+};
+
+type InvestorAccessCredentials = {
+  email: string;
+  accessCode: string;
+  loginPath: string;
+};
+
+type CreateInvestorResult = {
+  application: AdminApplication;
+  credentials: InvestorAccessCredentials | null;
 };
 
 type CrmDraft = {
@@ -345,6 +357,12 @@ const STRINGS = {
     createInvestorProfileDesc: "Create a protected investor profile from this approved application.",
     creating: "Creating...",
     createInvestorAccount: "Create investor account",
+    showAccessDetails: "Show first-login details",
+    accessDetailsTitle: "First login",
+    accessCodeLabel: "Personal access code",
+    accessDetailsHelp: "Send these details to the investor. After signing in, the investor creates a personal password.",
+    copyLoginInstructions: "Copy login instructions",
+    loginInstructionsCopied: "Instructions copied",
     emailRequired: "Email is required for investor login access.",
     slaIndicators: "SLA indicators",
     noActiveSla: "No active SLA flags for this application.",
@@ -532,6 +550,12 @@ const STRINGS = {
     createInvestorProfileDesc: "Создайте защищённый профиль инвестора из этой одобренной заявки.",
     creating: "Создание...",
     createInvestorAccount: "Создать аккаунт инвестора",
+    showAccessDetails: "Показать данные первого входа",
+    accessDetailsTitle: "Первый вход",
+    accessCodeLabel: "Персональный код доступа",
+    accessDetailsHelp: "Передайте эти данные инвестору. После входа инвестор создаст собственный пароль.",
+    copyLoginInstructions: "Скопировать инструкцию для входа",
+    loginInstructionsCopied: "Инструкция скопирована",
     emailRequired: "Для входа инвестора требуется email.",
     slaIndicators: "Индикаторы SLA",
     noActiveSla: "Нет активных флагов SLA для этой заявки.",
@@ -1126,7 +1150,10 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
       setNotice(payload.created ? t.investorCreatedLinked : t.investorExistingLinked);
       await Promise.all([loadAuditLogs(payload.data.application.id), loadNotificationEvents(payload.data.application.id)]);
       setRefreshKey((current) => current + 1);
-      return payload.data.application;
+      return {
+        application: payload.data.application,
+        credentials: payload.credentials ?? null
+      };
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t.unableCreateInvestor);
       throw requestError;
@@ -1645,9 +1672,31 @@ function PriorityReasonsPanel({ reasons, locale }: { reasons: ApplicationPriorit
   );
 }
 
-function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { application: AdminApplication; isCreating: boolean; onCreate: () => void; locale: Locale }) {
+function InvestorLinkPanel({
+  application,
+  credentials,
+  isCreating,
+  onCreate,
+  locale
+}: {
+  application: AdminApplication;
+  credentials: InvestorAccessCredentials | null;
+  isCreating: boolean;
+  onCreate: () => void;
+  locale: Locale;
+}) {
   const t = getStrings(locale);
   const f = createAdminFormatters(locale);
+  const [copied, setCopied] = React.useState(false);
+
+  async function copyLoginInstructions() {
+    if (!credentials) return;
+    const loginUrl = `${window.location.origin}${credentials.loginPath}`;
+    const instructions = `${t.accessDetailsTitle}\n${loginUrl}\nEmail: ${credentials.email}\n${t.accessCodeLabel}: ${credentials.accessCode}`;
+    await navigator.clipboard.writeText(instructions);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2_000);
+  }
 
   if (application.investor) {
     return (
@@ -1665,6 +1714,22 @@ function InvestorLinkPanel({ application, isCreating, onCreate, locale }: { appl
             </p>
           </div>
         </div>
+        {credentials ? (
+          <div className="mt-4 rounded-[1rem] border border-gold-200/30 bg-background/70 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.accessDetailsTitle}</p>
+            <p className="mt-3 break-all text-sm font-medium text-foreground">{credentials.email}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t.accessCodeLabel}</p>
+            <code className="mt-1 block break-all rounded-lg bg-muted px-3 py-2 text-sm text-foreground">{credentials.accessCode}</code>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">{t.accessDetailsHelp}</p>
+            <Button type="button" variant="outline" size="sm" className="mt-3" onClick={copyLoginInstructions}>
+              {copied ? t.loginInstructionsCopied : t.copyLoginInstructions}
+            </Button>
+          </div>
+        ) : (
+          <Button type="button" variant="outline" size="sm" className="mt-4" disabled={isCreating} onClick={onCreate}>
+            {isCreating ? t.creating : t.showAccessDetails}
+          </Button>
+        )}
       </div>
     );
   }
@@ -1739,12 +1804,13 @@ function ApplicationDetail({
   isCreatingInvestor: boolean;
   onPatchApplication: (application: AdminApplication, payload: ApplicationPatchPayload, successMessage: string) => Promise<AdminApplication>;
   onSaveCrmDraft: (application: AdminApplication, draft: CrmDraft) => Promise<AdminApplication>;
-  onCreateInvestor: (application: AdminApplication) => Promise<AdminApplication>;
+  onCreateInvestor: (application: AdminApplication) => Promise<CreateInvestorResult>;
   crmConfig: CrmConfig;
   locale: Locale;
 }) {
   const t = getStrings(locale);
   const f = createAdminFormatters(locale);
+  const [accessCredentials, setAccessCredentials] = React.useState<(InvestorAccessCredentials & { applicationId: string }) | null>(null);
   const [draft, setDraft] = React.useState<CrmDraft>({ priority: "NORMAL", sourceLabel: "", managerNotes: "", nextAction: "", nextActionAt: "" });
   const [detailNotice, setDetailNotice] = React.useState<string | null>(null);
   const [detailError, setDetailError] = React.useState<string | null>(null);
@@ -1834,7 +1900,8 @@ function ApplicationDetail({
     setDetailError(null);
 
     try {
-      await onCreateInvestor(application);
+      const result = await onCreateInvestor(application);
+      setAccessCredentials(result.credentials ? { ...result.credentials, applicationId: result.application.id } : null);
       setDetailNotice(t.investorLinkedNotice);
     } catch (requestError) {
       setDetailError(requestError instanceof Error ? requestError.message : t.unableCreateInvestor);
@@ -1861,7 +1928,13 @@ function ApplicationDetail({
 
         <PriorityReasonsPanel reasons={priorityReasons} locale={locale} />
 
-        <InvestorLinkPanel application={application} isCreating={isCreatingInvestor} onCreate={createInvestorAccount} locale={locale} />
+        <InvestorLinkPanel
+          application={application}
+          credentials={accessCredentials?.applicationId === application.id ? accessCredentials : null}
+          isCreating={isCreatingInvestor}
+          onCreate={createInvestorAccount}
+          locale={locale}
+        />
 
         <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
