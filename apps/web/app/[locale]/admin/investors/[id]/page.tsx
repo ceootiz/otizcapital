@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getInvestorDetailRecord, getInvestorReferralSource, serializeInvestorDetail } from "@otiz/database";
+import { getInvestorDetailRecord, getInvestorReferralSource, getInvestorWithdrawalLockStatus, serializeInvestorDetail } from "@otiz/database";
 import { isLocale, type Locale } from "@otiz/lib";
 import { AdminInvestorDetailPage } from "@/components/admin/admin-investor-detail-page";
 import { requireAdminSession } from "@/lib/admin-session";
@@ -35,16 +35,20 @@ export default async function AdminInvestorDetailRoute({ params }: { params: { l
     notFound();
   }
 
-  const referralSource = await getInvestorReferralSource({
-    referredByArbitrageId: investor.referredByArbitrageId,
-    referredByInvestorId: investor.referredByInvestorId
-  });
+  const [referralSource, withdrawalAccess] = await Promise.all([
+    getInvestorReferralSource({
+      referredByArbitrageId: investor.referredByArbitrageId,
+      referredByInvestorId: investor.referredByInvestorId
+    }),
+    getInvestorWithdrawalLockStatus(investor.id)
+  ]);
 
   return (
     <AdminInvestorDetailPage
       locale={params.locale}
       investor={serializeInvestorDetail(investor)}
       referralSource={referralSource}
+      withdrawalAccess={withdrawalAccess}
     />
   );
 }

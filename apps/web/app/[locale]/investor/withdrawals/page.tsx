@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getInvestorWithdrawalLockStatus } from "@otiz/database";
 import { isLocale, type Locale } from "@otiz/lib";
 import { InvestorShell, InvestorWithdrawalsPage, getInvestorStrings } from "@/components/investor/investor-pages";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
@@ -19,12 +20,15 @@ export default async function InvestorWithdrawalsRoute({ params }: { params: { l
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const data = await getInvestorDashboardData(investor);
+  const [data, withdrawalAccess] = await Promise.all([
+    getInvestorDashboardData(investor),
+    getInvestorWithdrawalLockStatus(investor.id)
+  ]);
   const page = getInvestorStrings(params.locale).pages.withdrawals;
 
   return (
     <InvestorShell locale={params.locale} investor={investor} active="withdrawals" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorWithdrawalsPage locale={params.locale} allocations={data.allocations} withdrawals={data.withdrawals} summary={data.summary} />
+      <InvestorWithdrawalsPage locale={params.locale} withdrawals={data.withdrawals} summary={data.summary} withdrawalAccess={withdrawalAccess} />
     </InvestorShell>
   );
 }

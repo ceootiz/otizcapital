@@ -30,7 +30,7 @@ const YIELD_RATE_PERSONAL_TAG: Record<string, string> = {
   zh: "专属费率"
 };
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
-import type { SerializedDepositAddress } from "@otiz/database";
+import type { SerializedDepositAddress, WithdrawalLockStatus } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
 import type { InvestorDashboardAllocation, InvestorDashboardData, InvestorWithdrawal } from "@/lib/investor-dashboard-data";
 import { ThemeToggle } from "@/components/home/theme-toggle";
@@ -68,7 +68,6 @@ type InvestorMonthlyReport = {
   publishedAt: string | null;
 };
 
-const WITHDRAWAL_LOCK_DAYS = 90;
 
 // ---------------------------------------------------------------------------
 // Localized strings (EN + RU)
@@ -666,14 +665,14 @@ export function InvestorReportsPage({
 
 export function InvestorWithdrawalsPage({
   locale,
-  allocations,
   withdrawals,
-  summary
+  summary,
+  withdrawalAccess
 }: {
   locale: Locale;
-  allocations: InvestorDashboardAllocation[];
   withdrawals: InvestorWithdrawal[];
   summary: InvestorDashboardData["summary"];
+  withdrawalAccess: WithdrawalLockStatus;
 }) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
@@ -683,17 +682,6 @@ export function InvestorWithdrawalsPage({
   const paid = withdrawals.filter((withdrawal) => withdrawal.status === "PAID");
 
   const available = Math.max(0, summary.realizedProfit - summary.totalPayouts - summary.pendingPayouts);
-
-  // 90-day lock: withdrawals unlock 90 days after the earliest allocation start.
-  const startedTimes = allocations
-    .map((allocation) => allocation.startedAt)
-    .filter((value): value is string => Boolean(value))
-    .map((value) => new Date(value).getTime())
-    .filter((time) => Number.isFinite(time));
-  const earliestStart = startedTimes.length ? Math.min(...startedTimes) : null;
-  const unlockTime = earliestStart !== null ? earliestStart + WITHDRAWAL_LOCK_DAYS * 24 * 60 * 60 * 1000 : null;
-  const locked = unlockTime === null ? true : Date.now() < unlockTime;
-  const unlockDate = unlockTime !== null ? new Date(unlockTime).toISOString() : null;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
@@ -706,7 +694,7 @@ export function InvestorWithdrawalsPage({
           <ProofLine label={t.withdraw.available} value={f.money(available)} />
           <ProofLine label={t.withdraw.pendingPayouts} value={f.money(summary.pendingPayouts)} />
           <ProofLine label={t.withdraw.scheduledNext} value={f.date(summary.nextExpectedPayoutDate)} />
-          <InvestorWithdrawalForm locale={locale} availableAmount={available} locked={locked} unlockDate={unlockDate} />
+          <InvestorWithdrawalForm locale={locale} availableAmount={available} locked={withdrawalAccess.locked} unlockDate={withdrawalAccess.unlockDate} />
         </CardContent>
       </Card>
       <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">

@@ -1,10 +1,96 @@
 import { prisma } from "./client";
 
 export const WITHDRAWAL_REQUEST_STATUSES = ["REQUESTED", "APPROVED", "SCHEDULED", "PAID", "REJECTED", "CANCELLED"] as const;
+export const WITHDRAWAL_LOCK_DAYS = 90;
+export const WITHDRAWAL_FORCE_UNLOCK_ACTION = "FORCE_UNLOCK_INVESTOR_WITHDRAWALS";
 export const WITHDRAWAL_PENDING_STATUSES = ["REQUESTED", "APPROVED", "SCHEDULED"] as const;
 export const WITHDRAWAL_TERMINAL_STATUSES = ["PAID", "REJECTED", "CANCELLED"] as const;
 
 export type WithdrawalRequestStatus = (typeof WITHDRAWAL_REQUEST_STATUSES)[number];
+
+export type WithdrawalLockStatus = {
+  locked: boolean;
+  unlockDate: string | null;
+  manuallyUnlocked: boolean;
+  overrideAt: string | null;
+  overrideBy: string | null;
+};
+
+export function calculateWithdrawalLockStatus(input: {
+  firstAllocationAt: Date | null;
+  overrideAt?: Date | null;
+  overrideBy?: string | null;
+  now?: Date;
+}): WithdrawalLockStatus {
+  const unlockAt = input.firstAllocationAt
+    ? new Date(input.firstAllocationAt.getTime() + WITHDRAWAL_LOCK_DAYS * 24 * 60 * 60 * 1000)
+    : null;
+  const manuallyUnlocked = Boolean(input.overrideAt);
+  const locked = !manuallyUnlocked && (!unlockAt || (input.now ?? new Date()).getTime() < unlockAt.getTime());
+
+  return {
+    locked,
+    unlockDate: unlockAt?.toISOString() ?? null,
+    manuallyUnlocked,
+    overrideAt: input.overrideAt?.toISOString() ?? null,
+    overrideBy: input.overrideBy ?? null
+  };
+}
+
+export async function getInvestorWithdrawalLockStatus(investorId: string): Promise<WithdrawalLockStatus> {
+  const [allocations, override] = await Promise.all([
+    prisma.allocation.findMany({
+      where: { investorId },
+      select: { startedAt: true, createdAt: true }
+    }),
+    prisma.auditLog.findFirst({
+      where: { entityType: "Investor", entityId: investorId, action: WITHDRAWAL_FORCE_UNLOCK_ACTION },
+      orderBy: { createdAt: "desc" },
+      select: { actor: true, createdAt: true }
+    })
+  ]);
+  const allocationTimes = allocations.map((allocation) => (allocation.startedAt ?? allocation.createdAt).getTime());
+  const firstAllocationAt = allocationTimes.length ? new Date(Math.min(...allocationTimes)) : null;
+
+  return calculateWithdrawalLockStatus({
+    firstAllocationAt,
+    overrideAt: override?.createdAt ?? null,
+    overrideBy: override?.actor ?? null
+  });
+}
+
+export async function forceUnlockInvestorWithdrawals(input: { investorId: string; actor: string; reason: string }) {
+  const reason = input.reason.trim();
+  if (!reason) return { ok: false as const, status: 422 as const, error: "Unlock reason is required." };
+
+  const [investor, current] = await Promise.all([
+    prisma.investor.findUnique({ where: { id: input.investorId }, select: { id: true } }),
+    getInvestorWithdrawalLockStatus(input.investorId)
+  ]);
+  if (!investor) return { ok: false as const, status: 404 as const, error: "Investor not found." };
+  if (current.manuallyUnlocked) return { ok: true as const, created: false, access: current };
+
+  const event = await prisma.auditLog.create({
+    data: {
+      actor: input.actor,
+      action: WITHDRAWAL_FORCE_UNLOCK_ACTION,
+      entityType: "Investor",
+      entityId: input.investorId,
+      beforeJson: JSON.stringify(current),
+      afterJson: JSON.stringify({ manuallyUnlocked: true, reason })
+    }
+  });
+
+  return {
+    ok: true as const,
+    created: true,
+    access: calculateWithdrawalLockStatus({
+      firstAllocationAt: current.unlockDate ? new Date(new Date(current.unlockDate).getTime() - WITHDRAWAL_LOCK_DAYS * 24 * 60 * 60 * 1000) : null,
+      overrideAt: event.createdAt,
+      overrideBy: input.actor
+    })
+  };
+}
 export type WithdrawalPendingStatus = (typeof WITHDRAWAL_PENDING_STATUSES)[number];
 
 export type WithdrawalRequestRecord = {
@@ -196,9 +282,19 @@ export async function createWithdrawalRequest(input: {
   destinationMasked?: string | null;
   investorNote?: string | null;
 }) {
-  const investor = await prisma.investor.findUnique({ where: { id: input.investorId } });
+  const [investor, access] = await Promise.all([
+    prisma.investor.findUnique({ where: { id: input.investorId } }),
+    getInvestorWithdrawalLockStatus(input.investorId)
+  ]);
   if (!investor) return { ok: false as const, status: 404 as const, error: "Investor not found." };
   if (!isPositiveMoney(input.amount)) return { ok: false as const, status: 422 as const, error: "Withdrawal amount must be greater than 0." };
+  if (access.locked) {
+    return {
+      ok: false as const,
+      status: 409 as const,
+      error: access.unlockDate ? `Withdrawals are locked until ${access.unlockDate}.` : "Withdrawals are locked until the first allocation holding period ends."
+    };
+  }
 
   const request = await prisma.withdrawalRequest.create({
     data: {

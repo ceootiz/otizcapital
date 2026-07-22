@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInvestorPayoutSummary, filterInvestorWithdrawalRequests, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
+import { buildInvestorPayoutSummary, calculateWithdrawalLockStatus, filterInvestorWithdrawalRequests, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
 
 const baseDate = new Date("2026-05-10T00:00:00.000Z");
 
@@ -69,5 +69,38 @@ describe("withdrawal requests", () => {
   it("never returns full destination details", () => {
     expect(maskWithdrawalDestination("US88 FULL BANK ACCOUNT 123456789")).toBe("•••• 6789");
     expect(maskWithdrawalDestination("")).toBeNull();
+  });
+
+  it("keeps withdrawals locked during the 90-day holding period", () => {
+    const access = calculateWithdrawalLockStatus({
+      firstAllocationAt: new Date("2026-01-01T00:00:00.000Z"),
+      now: new Date("2026-02-01T00:00:00.000Z")
+    });
+
+    expect(access.locked).toBe(true);
+    expect(access.unlockDate).toBe("2026-04-01T00:00:00.000Z");
+  });
+
+  it("unlocks withdrawals after the holding period", () => {
+    const access = calculateWithdrawalLockStatus({
+      firstAllocationAt: new Date("2026-01-01T00:00:00.000Z"),
+      now: new Date("2026-04-02T00:00:00.000Z")
+    });
+
+    expect(access.locked).toBe(false);
+    expect(access.manuallyUnlocked).toBe(false);
+  });
+
+  it("allows an audited admin override before the holding period ends", () => {
+    const access = calculateWithdrawalLockStatus({
+      firstAllocationAt: new Date("2026-01-01T00:00:00.000Z"),
+      overrideAt: new Date("2026-02-01T00:00:00.000Z"),
+      overrideBy: "admin",
+      now: new Date("2026-02-02T00:00:00.000Z")
+    });
+
+    expect(access.locked).toBe(false);
+    expect(access.manuallyUnlocked).toBe(true);
+    expect(access.overrideBy).toBe("admin");
   });
 });

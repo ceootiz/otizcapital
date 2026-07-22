@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, PackagePlus, Save, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Download, LockKeyhole, PackagePlus, Save, ShieldCheck, UnlockKeyhole } from "lucide-react";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Separator } from "@otiz/ui";
 
 const ADMIN_CSRF_COOKIE = "admin_csrf_token";
 const ADMIN_CSRF_HEADER = "x-csrf-token";
@@ -197,7 +197,22 @@ const STRINGS = {
     NOTIFY_INVESTOR: "Notify investor",
     NOTIFY_INVESTOR_BUSY: "Notifying...",
     NOTICE_INVESTOR_NOTIFIED: "Investor notified about the allocation.",
-    ERROR_NOTIFY_INVESTOR: "Unable to notify the investor."
+    ERROR_NOTIFY_INVESTOR: "Unable to notify the investor.",
+    WITHDRAWAL_ACCESS_TITLE: "Withdrawal access",
+    WITHDRAWAL_ACCESS_DESC: "Only an administrator can open withdrawals before the 90-day holding period ends.",
+    WITHDRAWAL_LOCKED: "Locked until",
+    WITHDRAWAL_OPEN: "Withdrawals available",
+    WITHDRAWAL_FORCED: "Opened early by administrator",
+    WITHDRAWAL_NO_DATE: "No allocation start date yet",
+    WITHDRAWAL_REASON: "Reason for early access",
+    WITHDRAWAL_REASON_PLACEHOLDER: "Explain why withdrawals must be opened before the scheduled date",
+    WITHDRAWAL_UNLOCK: "Open withdrawals early",
+    WITHDRAWAL_UNLOCKING: "Opening...",
+    WITHDRAWAL_UNLOCK_NOTICE: "Withdrawals opened early. The action was recorded in the audit log.",
+    WITHDRAWAL_UNLOCK_ERROR: "Unable to open withdrawals early.",
+    WITHDRAWAL_CONFIRM_TITLE: "Open withdrawals before the scheduled date?",
+    WITHDRAWAL_CONFIRM_DESC: "The investor will be able to submit a withdrawal request immediately. The administrator and reason will be recorded.",
+    WITHDRAWAL_CONFIRM: "Open early"
   },
   ru: {
     BACK_TO_INVESTORS: "К инвесторам",
@@ -294,7 +309,22 @@ const STRINGS = {
     NOTICE_INVESTOR_NOTIFIED: "Инвестор уведомлён об аллокации.",
     ERROR_NOTIFY_INVESTOR: "Не удалось уведомить инвестора.",
     ERROR_CREATE_REPORT: "Не удалось создать отчёт.",
-    ERROR_UPDATE_REPORT: "Не удалось обновить отчёт."
+    ERROR_UPDATE_REPORT: "Не удалось обновить отчёт.",
+    WITHDRAWAL_ACCESS_TITLE: "Доступ к выплатам",
+    WITHDRAWAL_ACCESS_DESC: "Только администратор может открыть вывод до окончания 90-дневного срока.",
+    WITHDRAWAL_LOCKED: "Заблокировано до",
+    WITHDRAWAL_OPEN: "Выплаты доступны",
+    WITHDRAWAL_FORCED: "Открыто досрочно администратором",
+    WITHDRAWAL_NO_DATE: "Дата начала аллокации ещё не определена",
+    WITHDRAWAL_REASON: "Причина досрочного открытия",
+    WITHDRAWAL_REASON_PLACEHOLDER: "Укажите, почему выплаты нужно открыть раньше установленного срока",
+    WITHDRAWAL_UNLOCK: "Открыть выплаты досрочно",
+    WITHDRAWAL_UNLOCKING: "Открываем...",
+    WITHDRAWAL_UNLOCK_NOTICE: "Выплаты открыты досрочно. Действие записано в журнал аудита.",
+    WITHDRAWAL_UNLOCK_ERROR: "Не удалось открыть выплаты досрочно.",
+    WITHDRAWAL_CONFIRM_TITLE: "Открыть выплаты раньше установленного срока?",
+    WITHDRAWAL_CONFIRM_DESC: "Инвестор сразу сможет подать заявку на вывод. Администратор и причина будут записаны в журнал.",
+    WITHDRAWAL_CONFIRM: "Открыть досрочно"
   }
 } as const;
 
@@ -330,15 +360,18 @@ function calculateKpis(allocations: Allocation[]) {
 }
 
 type ReferralSource = { type: "arbitrageur" | "investor"; name: string } | null;
+type WithdrawalAccess = { locked: boolean; unlockDate: string | null; manuallyUnlocked: boolean; overrideAt: string | null; overrideBy: string | null };
 
 export function AdminInvestorDetailPage({
   locale,
   investor: initialInvestor,
-  referralSource = null
+  referralSource = null,
+  withdrawalAccess: initialWithdrawalAccess
 }: {
   locale: Locale;
   investor: InvestorDetail;
   referralSource?: ReferralSource;
+  withdrawalAccess: WithdrawalAccess;
 }) {
   const t = getStrings(locale);
   const formatters = createAdminFormatters(locale);
@@ -380,6 +413,10 @@ export function AdminInvestorDetailPage({
   const [updatingReportId, setUpdatingReportId] = React.useState<string | null>(null);
   const [updatingAllocationId, setUpdatingAllocationId] = React.useState<string | null>(null);
   const [notifyingAllocationId, setNotifyingAllocationId] = React.useState<string | null>(null);
+  const [withdrawalAccess, setWithdrawalAccess] = React.useState(initialWithdrawalAccess);
+  const [withdrawalUnlockReason, setWithdrawalUnlockReason] = React.useState("");
+  const [confirmWithdrawalUnlock, setConfirmWithdrawalUnlock] = React.useState(false);
+  const [isUnlockingWithdrawals, setIsUnlockingWithdrawals] = React.useState(false);
   const kpis = calculateKpis(investor.allocations);
 
   async function saveInvestor() {
@@ -407,6 +444,29 @@ export function AdminInvestorDetailPage({
       setError(requestError instanceof Error ? requestError.message : t.ERROR_UPDATE_INVESTOR);
     } finally {
       setIsSavingInvestor(false);
+    }
+  }
+
+  async function forceUnlockWithdrawals() {
+    setIsUnlockingWithdrawals(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/investors/${investor.id}/withdrawal-access`, {
+        method: "POST",
+        headers: getAdminMutationHeaders(),
+        body: JSON.stringify({ reason: withdrawalUnlockReason })
+      });
+      const payload = (await response.json()) as { ok: boolean; data?: WithdrawalAccess; error?: string };
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.WITHDRAWAL_UNLOCK_ERROR);
+      setWithdrawalAccess(payload.data);
+      setWithdrawalUnlockReason("");
+      setConfirmWithdrawalUnlock(false);
+      setNotice(t.WITHDRAWAL_UNLOCK_NOTICE);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : t.WITHDRAWAL_UNLOCK_ERROR);
+    } finally {
+      setIsUnlockingWithdrawals(false);
     }
   }
 
@@ -599,6 +659,42 @@ export function AdminInvestorDetailPage({
 
               <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
                 <CardHeader>
+                  <CardTitle>{t.WITHDRAWAL_ACCESS_TITLE}</CardTitle>
+                  <CardDescription>{t.WITHDRAWAL_ACCESS_DESC}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="flex items-start gap-3 rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20">
+                    {withdrawalAccess.locked ? <LockKeyhole className="mt-0.5 size-5 shrink-0 text-amber-700 dark:text-gold-100" /> : <UnlockKeyhole className="mt-0.5 size-5 shrink-0 text-emerald-700 dark:text-emerald-300" />}
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {withdrawalAccess.manuallyUnlocked
+                          ? t.WITHDRAWAL_FORCED
+                          : withdrawalAccess.locked
+                            ? t.WITHDRAWAL_LOCKED
+                            : t.WITHDRAWAL_OPEN}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {withdrawalAccess.unlockDate ? formatDate(withdrawalAccess.unlockDate) : t.WITHDRAWAL_NO_DATE}
+                      </p>
+                    </div>
+                  </div>
+                  {withdrawalAccess.locked ? (
+                    <>
+                      <label className="grid gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.WITHDRAWAL_REASON}</span>
+                        <textarea value={withdrawalUnlockReason} onChange={(event) => setWithdrawalUnlockReason(event.target.value)} placeholder={t.WITHDRAWAL_REASON_PLACEHOLDER} className="min-h-24 rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/60 dark:border-white/10 dark:bg-black/20" />
+                      </label>
+                      <Button type="button" variant="outline" disabled={isUnlockingWithdrawals || !withdrawalUnlockReason.trim()} onClick={() => setConfirmWithdrawalUnlock(true)}>
+                        <UnlockKeyhole data-icon="inline-start" />
+                        {isUnlockingWithdrawals ? t.WITHDRAWAL_UNLOCKING : t.WITHDRAWAL_UNLOCK}
+                      </Button>
+                    </>
+                  ) : null}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+                <CardHeader>
                   <CardTitle>{t.SOURCE_APPLICATION_TITLE}</CardTitle>
                   <CardDescription>{t.SOURCE_APPLICATION_DESC}</CardDescription>
                 </CardHeader>
@@ -783,6 +879,17 @@ export function AdminInvestorDetailPage({
           </div>
         </div>
       </section>
+      <ConfirmDialog
+        open={confirmWithdrawalUnlock}
+        title={t.WITHDRAWAL_CONFIRM_TITLE}
+        description={t.WITHDRAWAL_CONFIRM_DESC}
+        confirmLabel={isUnlockingWithdrawals ? t.WITHDRAWAL_UNLOCKING : t.WITHDRAWAL_CONFIRM}
+        cancelLabel={locale === "ru" ? "Отмена" : "Cancel"}
+        tone="positive"
+        loading={isUnlockingWithdrawals}
+        onConfirm={forceUnlockWithdrawals}
+        onCancel={() => setConfirmWithdrawalUnlock(false)}
+      />
     </main>
   );
 }
