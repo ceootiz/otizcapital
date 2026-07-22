@@ -26,6 +26,7 @@ const SECTION_PREFIXES: Array<[string, AdminNavigationSection]> = [
   ["/admin/settings/contact", "contact-settings"],
   ["/admin/checkpoint-health", "checkpoint-health"],
   ["/admin/deposit-addresses", "deposit-addresses"],
+  ["/admin/deposits", "deposits"],
   ["/admin/promo-codes", "promo-codes"],
   ["/admin/referrals", "referrals"],
   ["/admin/applications", "applications"],

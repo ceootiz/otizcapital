@@ -26,6 +26,10 @@ export type SerializedDepositNotification = {
   createdAt: string;
 };
 
+export type SerializedAdminDepositNotification = SerializedDepositNotification & {
+  investor: { id: string; fullName: string; email: string };
+};
+
 export function serializeDepositNotification(record: DepositNotification): SerializedDepositNotification {
   return {
     id: record.id,
@@ -69,6 +73,23 @@ export async function createDepositNotification(input: {
 
 export async function listDepositNotificationsForInvestor(investorId: string) {
   return prisma.depositNotification.findMany({ where: { investorId }, orderBy: { createdAt: "desc" } });
+}
+
+export async function listDepositNotificationsForAdmin() {
+  return prisma.depositNotification.findMany({
+    include: { investor: { select: { id: true, fullName: true, email: true } } },
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: 500
+  });
+}
+
+export function serializeAdminDepositNotification(
+  record: DepositNotification & { investor: { id: string; fullName: string; email: string } }
+): SerializedAdminDepositNotification {
+  return {
+    ...serializeDepositNotification(record),
+    investor: record.investor
+  };
 }
 
 // Review a pending claim. updateMany guards the PENDING → decided transition so
