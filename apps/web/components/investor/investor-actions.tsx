@@ -9,6 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { createAdminFormatters, localeNames, localeShortNames, locales, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress } from "@otiz/database";
 import { Button } from "@otiz/ui";
+import { getInvestorNotificationHref } from "@/lib/investor-notification-link";
 
 const STRINGS = {
   en: {
@@ -778,7 +779,7 @@ export function InvestorNotificationBell({ locale }: { locale: Locale }) {
                 );
                 return (
                   <div key={item.id} className="flex items-start border-b border-border dark:border-white/[0.06] last:border-b-0">
-                    {item.linkHref ? <Link href={`/${locale}${item.linkHref}`} onClick={() => setOpen(false)} className="min-w-0 flex-1">{inner}</Link> : inner}
+                    {item.linkHref ? <Link href={getInvestorNotificationHref(locale, item.linkHref)} onClick={() => setOpen(false)} className="min-w-0 flex-1">{inner}</Link> : inner}
                     {centerEnabled ? <button type="button" aria-label={item.isFavorite ? s.unfavoriteAria : s.favoriteAria} onClick={() => toggleFavorite(item.id)} className={`m-2 flex size-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-muted ${item.isFavorite ? "text-amber-600" : "text-muted-foreground"}`}><Star className={`size-4 ${item.isFavorite ? "fill-current" : ""}`} /></button> : null}
                   </div>
                 );
