@@ -417,7 +417,7 @@ export function InvestorDashboardHome({
 
   const balanceCards = (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalBalance} value={moneyMetric(data.summary.totalBalance)} />
+      <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalBalance} value={moneyMetric(data.summary.availableBalance)} />
       <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.availableBalance} value={moneyMetric(data.summary.awaitingAllocation)} />
       <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.workingCapital} value={moneyMetric(data.summary.workingCapital)} />
       <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.retainedProfit} value={moneyMetric(data.summary.retainedProfit)} />

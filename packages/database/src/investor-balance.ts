@@ -44,9 +44,8 @@ export function calculateInvestorBalanceSummary(input: {
   paidWithdrawals: number;
   pendingWithdrawals: number;
   workingCapital: number;
-  allocatedCapital: number;
 }): InvestorBalanceSummary {
-  const principalCapital = Math.max(input.recordedCapital, input.confirmedDeposits, input.allocatedCapital);
+  const principalCapital = Math.max(input.recordedCapital, input.confirmedDeposits, input.workingCapital);
   const totalBalance = principalCapital + input.retainedProfit + input.referralBonus - input.paidWithdrawals;
   const awaitingAllocation = Math.max(0, totalBalance - input.workingCapital - input.pendingWithdrawals);
 
@@ -111,10 +110,6 @@ export async function getInvestorBalanceSummary(investorId: string): Promise<Inv
   const workingCapital = allocations
     .filter((allocation) => WORKING_ALLOCATION_STATUSES.includes(allocation.status))
     .reduce((sum, allocation) => sum + money(allocation.allocationAmount), 0);
-  const allocatedCapital = allocations
-    .filter((allocation) => allocation.status !== "CANCELED")
-    .reduce((sum, allocation) => sum + money(allocation.allocationAmount), 0);
-
   return calculateInvestorBalanceSummary({
     recordedCapital: money(investor?.totalCapital),
     confirmedDeposits,
@@ -122,7 +117,6 @@ export async function getInvestorBalanceSummary(investorId: string): Promise<Inv
     referralBonus: referralBonusAmount,
     paidWithdrawals: paidWithdrawalAmount,
     pendingWithdrawals: pendingWithdrawalAmount,
-    workingCapital,
-    allocatedCapital
+    workingCapital
   });
 }

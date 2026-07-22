@@ -10,8 +10,7 @@ describe("investor balance", () => {
       referralBonus: 0,
       paidWithdrawals: 0,
       pendingWithdrawals: 0,
-      workingCapital: 5000,
-      allocatedCapital: 5000
+      workingCapital: 5000
     });
 
     expect(balance.totalBalance).toBe(10000);
@@ -27,12 +26,27 @@ describe("investor balance", () => {
       referralBonus: 0,
       paidWithdrawals: 0,
       pendingWithdrawals: 0,
-      workingCapital: 5000,
-      allocatedCapital: 5000
+      workingCapital: 5000
     });
 
     expect(balance.totalBalance).toBe(11000);
     expect(balance.awaitingAllocation).toBe(6000);
+  });
+
+  it("does not count completed allocations as additional capital", () => {
+    const balance = calculateInvestorBalanceSummary({
+      recordedCapital: 10000,
+      confirmedDeposits: 0,
+      retainedProfit: 0,
+      referralBonus: 0,
+      paidWithdrawals: 0,
+      pendingWithdrawals: 0,
+      workingCapital: 6800
+    });
+
+    expect(balance.totalBalance).toBe(10000);
+    expect(balance.availableBalance).toBe(3200);
+    expect(balance.workingCapital).toBe(6800);
   });
 
   it("does not double the opening capital on the first confirmed deposit", () => {
