@@ -18,12 +18,17 @@ const META = {
   }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
   return { title: meta.title, description: meta.description };
 }
 
-export default async function AdminIncidentsRoute({ params, searchParams }: { params: { locale: Locale }; searchParams: { severity?: string; status?: string; source?: string } }) {
+export default async function AdminIncidentsRoute(
+  props: { params: Promise<{ locale: Locale }>; searchParams: Promise<{ severity?: string; status?: string; source?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const incidents = await getOperationalIncidents({ severity: searchParams.severity, status: searchParams.status, source: searchParams.source, limit: 200 });

@@ -17,14 +17,16 @@ const META: Partial<Record<Locale, { title: string; description: string }>> = {
   }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     return {};
   }
   return META[params.locale] ?? META.en ?? {};
 }
 
-export default function ContentAdminRoute({ params }: { params: { locale: Locale } }) {
+export default async function ContentAdminRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

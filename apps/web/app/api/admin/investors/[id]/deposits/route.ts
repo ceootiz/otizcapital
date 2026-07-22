@@ -5,7 +5,8 @@ import { getAdminSession } from "@/lib/admin-session";
 export const dynamic = "force-dynamic";
 
 // GET: this investor's deposit claims for the admin detail page.
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });

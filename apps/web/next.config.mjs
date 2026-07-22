@@ -59,17 +59,17 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@otiz/ui", "@otiz/lib"],
+  // pdfkit + fontkit rely on runtime data files; keep them external so Next
+  // does not mangle them during bundling (account-history PDF export).
+  serverExternalPackages: ["pdfkit", "xlsx"],
+  // Ensure the embedded Cyrillic font ships in the PDF routes' serverless bundle.
+  // Every route that renders a PDF with the vendored fonts must be listed here.
+  outputFileTracingIncludes: {
+    "/api/investor/settings/export-pdf": ["./assets/fonts/*.ttf"],
+    "/api/investors/from-application": ["./assets/fonts/*.ttf"]
+  },
   experimental: {
-    optimizePackageImports: ["lucide-react", "recharts"],
-    // pdfkit + fontkit rely on runtime data files; keep them external so Next
-    // does not mangle them during bundling (account-history PDF export).
-    serverComponentsExternalPackages: ["pdfkit", "xlsx"],
-    // Ensure the embedded Cyrillic font ships in the PDF routes' serverless bundle.
-    // Every route that renders a PDF with the vendored fonts must be listed here.
-    outputFileTracingIncludes: {
-      "/api/investor/settings/export-pdf": ["./assets/fonts/*.ttf"],
-      "/api/investors/from-application": ["./assets/fonts/*.ttf"]
-    }
+    optimizePackageImports: ["lucide-react", "recharts"]
   },
   async headers() {
     return [

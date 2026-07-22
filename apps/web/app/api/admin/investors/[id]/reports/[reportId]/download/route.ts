@@ -6,7 +6,11 @@ export const dynamic = "force-dynamic";
 
 // GET: admin download of an uploaded report file. Read-only, admin-session gated
 // (no CSRF — opened as a direct download). Scoped to the investor in the path.
-export async function GET(_request: Request, { params }: { params: { id: string; reportId: string } }) {
+export async function GET(
+  _request: Request,
+  props: { params: Promise<{ id: string; reportId: string }> }
+) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });

@@ -12,12 +12,14 @@ const META: Partial<Record<Locale, { title: string; description: string }>> = {
   ru: { title: "Настройка 2FA | OTIZ CAPITAL", description: "Настройка двухфакторной аутентификации для доступа администратора." }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) return {};
   return META[params.locale] ?? META.en ?? {};
 }
 
-export default function AdminSetup2faRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminSetup2faRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

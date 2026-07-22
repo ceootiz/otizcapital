@@ -12,11 +12,13 @@ const META = {
   ru: { title: "Журнал действий | OTIZ CAPITAL", description: "Защищённая история важных действий администратора." }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   return (META as Record<string, Metadata>)[params.locale] ?? META.en;
 }
 
-export default async function AdminAuditLogRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminAuditLogRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const enabled = await isProductFeatureEnabled("audit-log");

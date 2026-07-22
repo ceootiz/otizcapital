@@ -104,7 +104,8 @@ function getContent(locale: Locale): ContactContent {
   return CONTENT[locale as "en" | "ru"] ?? CONTENT.en;
 }
 
-export function generateMetadata({ params }: { params: { locale: string } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     return {};
   }
@@ -121,7 +122,8 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
   };
 }
 
-export default function ContactRoute({ params }: { params: { locale: Locale } }) {
+export default async function ContactRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

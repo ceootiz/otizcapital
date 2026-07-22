@@ -12,12 +12,14 @@ const META: Partial<Record<Locale, { title: string; description: string }>> = {
   ru: { title: "Аллокации администратора | OTIZ CAPITAL", description: "Защищённый менеджер аллокаций администратора." }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = META[params.locale] ?? META.en!;
   return { title: meta.title, description: meta.description };
 }
 
-export default async function AdminAllocationsRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminAllocationsRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const [allocations, investors] = await Promise.all([getAdminAllocations(), listInvestorRecords()]);

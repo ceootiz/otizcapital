@@ -6,7 +6,8 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminDashboardRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

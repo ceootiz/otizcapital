@@ -5,7 +5,8 @@ import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api
 export const dynamic = "force-dynamic";
 
 // GET: download a document PDF. Ownership enforced by scoping to the investor.
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
 

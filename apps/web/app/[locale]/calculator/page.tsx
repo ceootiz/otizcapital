@@ -16,7 +16,8 @@ const META: Partial<Record<Locale, { title: string; description: string }>> = {
   ru: { title: "Калькулятор доходности | OTIZ CAPITAL", description: "Рассчитайте доход по текущей ставке аллокации OTIZ CAPITAL." }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     return {};
   }
@@ -47,7 +48,8 @@ export function generateMetadata({ params }: { params: { locale: Locale } }): Me
   };
 }
 
-export default async function CalculatorRoute({ params }: { params: { locale: Locale } }) {
+export default async function CalculatorRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

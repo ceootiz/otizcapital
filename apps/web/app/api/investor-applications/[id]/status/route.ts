@@ -11,7 +11,8 @@ function isAllowedStatus(value: string): value is ApplicationStatus {
   return APPLICATION_STATUSES.includes(value as ApplicationStatus);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
 
   if (!csrf.ok) {

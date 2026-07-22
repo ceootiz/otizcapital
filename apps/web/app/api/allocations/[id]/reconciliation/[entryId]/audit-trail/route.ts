@@ -9,7 +9,11 @@ function sanitizeString(value: unknown, maxLength = 1000) {
   return String(value).replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-export async function GET(_request: Request, { params }: { params: { id: string; entryId: string } }) {
+export async function GET(
+  _request: Request,
+  props: { params: Promise<{ id: string; entryId: string }> }
+) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
 

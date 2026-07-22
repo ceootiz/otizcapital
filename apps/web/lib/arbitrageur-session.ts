@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 // Arbitrageur (referral partner) cabinet session. Mirrors the investor session's
@@ -96,7 +96,7 @@ export function createArbitrageurSession(input: { arbitrageurId: string; email: 
   });
   if (!token) return false;
 
-  cookies().set(ARBITRAGEUR_SESSION_COOKIE, token, {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ARBITRAGEUR_SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: isProduction(),
@@ -107,7 +107,7 @@ export function createArbitrageurSession(input: { arbitrageurId: string; email: 
 }
 
 export function clearArbitrageurSession() {
-  cookies().set(ARBITRAGEUR_SESSION_COOKIE, "", {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ARBITRAGEUR_SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
     secure: isProduction(),
@@ -117,7 +117,7 @@ export function clearArbitrageurSession() {
 }
 
 export function getArbitrageurSession() {
-  const token = cookies().get(ARBITRAGEUR_SESSION_COOKIE)?.value;
+  const token = (cookies() as unknown as UnsafeUnwrappedCookies).get(ARBITRAGEUR_SESSION_COOKIE)?.value;
   if (!token) return null;
   return verifyToken(token);
 }

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { cookies, headers } from "next/headers";
+import { cookies, headers, type UnsafeUnwrappedCookies, type UnsafeUnwrappedHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { checkAdminMutationRateLimit } from "./admin-mutation-rate-limit";
 
@@ -31,7 +31,7 @@ type CsrfResult =
 // Binds a session to the client's IP + a hash of the User-Agent. Verified on
 // every request; a change invalidates the session (defense against token theft).
 function getClientFingerprint() {
-  const headerStore = headers();
+  const headerStore = (headers() as unknown as UnsafeUnwrappedHeaders);
   const ip =
     headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     headerStore.get("x-real-ip")?.trim() ||
@@ -184,12 +184,12 @@ export function createAdminSession() {
     expires: new Date(expiresAt)
   };
 
-  cookies().set(ADMIN_SESSION_COOKIE, token, {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ADMIN_SESSION_COOKIE, token, {
     ...cookieOptions,
     httpOnly: true
   });
 
-  cookies().set(ADMIN_CSRF_COOKIE, csrfToken, {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ADMIN_CSRF_COOKIE, csrfToken, {
     ...cookieOptions,
     httpOnly: false
   });
@@ -205,19 +205,19 @@ export function clearAdminSession() {
     expires: new Date(0)
   };
 
-  cookies().set(ADMIN_SESSION_COOKIE, "", {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ADMIN_SESSION_COOKIE, "", {
     ...cookieOptions,
     httpOnly: true
   });
 
-  cookies().set(ADMIN_CSRF_COOKIE, "", {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(ADMIN_CSRF_COOKIE, "", {
     ...cookieOptions,
     httpOnly: false
   });
 }
 
 export function getAdminSession() {
-  const token = cookies().get(ADMIN_SESSION_COOKIE)?.value;
+  const token = (cookies() as unknown as UnsafeUnwrappedCookies).get(ADMIN_SESSION_COOKIE)?.value;
 
   if (!token) {
     return null;
@@ -252,7 +252,7 @@ export function verifyAdminCsrfToken(request: Request): CsrfResult {
   }
 
   const headerToken = request.headers.get(ADMIN_CSRF_HEADER) || "";
-  const cookieToken = cookies().get(ADMIN_CSRF_COOKIE)?.value || "";
+  const cookieToken = (cookies() as unknown as UnsafeUnwrappedCookies).get(ADMIN_CSRF_COOKIE)?.value || "";
 
   if (!headerToken || !cookieToken || !safeEqual(headerToken, cookieToken) || !safeEqual(headerToken, session.csrfToken)) {
     return { ok: false, status: 403, error: "Invalid admin request." };

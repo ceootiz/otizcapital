@@ -18,11 +18,13 @@ const META = {
   }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   return params.locale === "ru" ? META.ru : META.en;
 }
 
-export default async function AdminInvestorDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
+export default async function AdminInvestorDetailRoute(props: { params: Promise<{ locale: Locale; id: string }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

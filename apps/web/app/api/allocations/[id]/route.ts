@@ -58,7 +58,8 @@ function isAllocationRiskLevel(value: string): value is AllocationRiskLevel {
   return ALLOCATION_RISK_LEVELS.includes(value as AllocationRiskLevel);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
 
   if (!csrf.ok) {

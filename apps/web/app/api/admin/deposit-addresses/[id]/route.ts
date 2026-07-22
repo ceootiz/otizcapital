@@ -9,7 +9,8 @@ function sanitize(value: unknown): string {
 }
 
 // PATCH /api/admin/deposit-addresses/[id] — update any subset of fields.
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 
@@ -67,7 +68,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE /api/admin/deposit-addresses/[id] — remove a deposit address.
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

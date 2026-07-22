@@ -11,7 +11,8 @@ import { AdminReferralsPage } from "@/components/admin/admin-referrals-page";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReferralsRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminReferralsRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
 

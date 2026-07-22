@@ -6,7 +6,8 @@ import { requireAdminSession } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminFeatureFlagsRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminFeatureFlagsRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   return <AdminFeatureFlagsPage locale={params.locale} initialFlags={await getProductFeatureFlags()} />;

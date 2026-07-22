@@ -39,7 +39,8 @@ function parseMetadataJson(value: unknown) {
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
 
@@ -63,7 +64,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   return NextResponse.json({ ok: true, data: { reconciliation, filteredLedgerEntries: ledgerEntries.entries, appliedFilters: ledgerEntries.appliedFilters } });
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

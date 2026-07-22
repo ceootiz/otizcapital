@@ -13,7 +13,8 @@ function exportDateStamp() {
   return new Date().toISOString().slice(0, 10).replace(/-/g, "");
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
 

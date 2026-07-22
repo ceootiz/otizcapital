@@ -4,7 +4,11 @@ import { verifyAdminCsrfToken } from "@/lib/admin-session";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request, { params }: { params: { id: string; reportId: string } }) {
+export async function POST(
+  request: Request,
+  props: { params: Promise<{ id: string; reportId: string }> }
+) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

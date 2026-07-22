@@ -5,7 +5,8 @@ import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api
 export const dynamic = "force-dynamic";
 
 // PATCH: mark one of the investor's wallets as the default withdrawal destination.
-export async function PATCH(_request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
   const updated = await setDefaultInvestorWallet(auth.investor.id, params.id);

@@ -196,6 +196,8 @@ export function AdminDashboardPage({ locale, data }: { locale: Locale; data: Adm
               <CardDescription>{t.exportDesc}</CardDescription>
             </CardHeader>
             <CardContent>
+              {/* This endpoint returns a file download rather than a navigable page. */}
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/api/admin/export"
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.03] px-5 text-sm font-semibold text-amber-700 dark:text-gold-100 transition-colors hover:bg-muted/50 dark:hover:bg-white/[0.08]"

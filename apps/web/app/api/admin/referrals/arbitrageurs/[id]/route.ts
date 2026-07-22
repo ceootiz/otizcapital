@@ -7,7 +7,8 @@ export const dynamic = "force-dynamic";
 // PATCH: approve/suspend an arbitrageur or set a per-partner commission rate.
 //   { action: "approve" | "suspend" }
 //   { action: "set-rate", customRate: number | null }  (fraction 0..1, or null to clear)
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 // PATCH: e-sign a pending document. Requires the acknowledgement checkbox
 // (accept: true) so a stray request cannot sign on the investor's behalf.
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
 

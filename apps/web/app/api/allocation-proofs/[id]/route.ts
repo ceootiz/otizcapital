@@ -24,7 +24,8 @@ function isProofStatus(value: string): value is AllocationProofStatus {
   return ALLOCATION_PROOF_STATUSES.includes(value as AllocationProofStatus);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

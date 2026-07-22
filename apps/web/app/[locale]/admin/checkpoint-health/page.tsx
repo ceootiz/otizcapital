@@ -20,7 +20,8 @@ const META = {
   }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     return {};
   }
@@ -33,7 +34,8 @@ export function generateMetadata({ params }: { params: { locale: Locale } }): Me
   };
 }
 
-export default async function AdminCheckpointHealthRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminCheckpointHealthRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const snapshot = await getAdminCheckpointHealthSummary();

@@ -9,7 +9,11 @@ function sanitizeString(value: unknown, maxLength = 1000) {
   return String(value).replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string; allocationId: string } }) {
+export async function PATCH(
+  request: Request,
+  props: { params: Promise<{ id: string; allocationId: string }> }
+) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 
@@ -27,7 +31,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   return NextResponse.json({ ok: true, data: serializeMonthlyReportAllocation(result.link) });
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string; allocationId: string } }) {
+export async function DELETE(
+  request: Request,
+  props: { params: Promise<{ id: string; allocationId: string }> }
+) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

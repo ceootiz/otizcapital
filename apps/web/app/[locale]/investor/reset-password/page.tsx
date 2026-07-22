@@ -5,19 +5,21 @@ import { InvestorResetPasswordPage } from "@/components/investor/investor-reset-
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) return {};
   const title = params.locale === "ru" ? "Новый пароль" : "New password";
   return { title: `${title} | OTIZ CAPITAL`, robots: { index: false, follow: false } };
 }
 
-export default function InvestorResetPasswordRoute({
-  params,
-  searchParams
-}: {
-  params: { locale: Locale };
-  searchParams: { token?: string };
-}) {
+export default async function InvestorResetPasswordRoute(
+  props: {
+    params: Promise<{ locale: Locale }>;
+    searchParams: Promise<{ token?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

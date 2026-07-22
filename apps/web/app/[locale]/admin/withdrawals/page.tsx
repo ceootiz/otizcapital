@@ -12,12 +12,17 @@ const META: Partial<Record<Locale, { title: string; description: string }>> = {
   ru: { title: "Выводы средств администратора | OTIZ CAPITAL", description: "Защищённое управление графиком выплат и запросами на вывод средств." }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = META[params.locale] ?? META.en!;
   return { title: meta.title, description: meta.description };
 }
 
-export default async function AdminWithdrawalsRoute({ params, searchParams }: { params: { locale: Locale }; searchParams: { status?: string } }) {
+export default async function AdminWithdrawalsRoute(
+  props: { params: Promise<{ locale: Locale }>; searchParams: Promise<{ status?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const status = searchParams.status && isWithdrawalRequestStatus(searchParams.status) ? (searchParams.status as WithdrawalRequestStatus) : undefined;

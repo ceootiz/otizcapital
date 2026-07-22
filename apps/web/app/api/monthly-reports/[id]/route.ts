@@ -24,7 +24,8 @@ function sanitizeString(value: unknown, maxLength = 4000) {
   return value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const id = sanitizeString(params.id, 160);
   const adminSession = getAdminSession();
 
@@ -48,7 +49,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   return NextResponse.json({ ok: true, data: serializeMonthlyReportDetail(report) });
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
 

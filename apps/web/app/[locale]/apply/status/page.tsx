@@ -138,18 +138,20 @@ function maskEmail(email: string): string | null {
   return `${trimmed.slice(0, 1)}***@${domain}`;
 }
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) return {};
   return { title: `${getStrings(params.locale).metaTitle} | OTIZ CAPITAL`, robots: { index: false, follow: false } };
 }
 
-export default async function ApplyStatusRoute({
-  params,
-  searchParams
-}: {
-  params: { locale: Locale };
-  searchParams: { applicationId?: string; email?: string };
-}) {
+export default async function ApplyStatusRoute(
+  props: {
+    params: Promise<{ locale: Locale }>;
+    searchParams: Promise<{ applicationId?: string; email?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

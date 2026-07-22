@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 // GET: download one file report as .xlsx. Ownership is enforced by scoping the
 // lookup to the signed-in investor.
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
 

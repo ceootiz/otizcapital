@@ -27,12 +27,17 @@ function parseRange(value: string | undefined): OperationsCalendarRange {
   return value === "today" || value === "month" ? value : "week";
 }
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const t = COPY[params.locale] ?? COPY.en;
   return { title: `${t.title} | OTIZ CAPITAL`, description: t.description };
 }
 
-export default async function AdminCalendarPage({ params, searchParams }: { params: { locale: Locale }; searchParams: { range?: string } }) {
+export default async function AdminCalendarPage(
+  props: { params: Promise<{ locale: Locale }>; searchParams: Promise<{ range?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
   const t = COPY[params.locale];

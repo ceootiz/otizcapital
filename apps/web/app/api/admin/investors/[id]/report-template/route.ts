@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 // GET: download a pre-filled XLSX report template for this investor. Read-only,
 // so it is gated by the admin session only (no CSRF header — this is opened as a
 // direct download).
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = getAdminSession();
   if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });

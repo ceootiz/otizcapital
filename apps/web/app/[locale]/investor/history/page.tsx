@@ -8,7 +8,8 @@ import { requireInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) return {};
   const page = getInvestorStrings(params.locale).pages.history;
   return { title: `${page.title} | OTIZ CAPITAL`, description: page.description };
@@ -18,7 +19,11 @@ function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
 }
 
-export default async function InvestorHistoryRoute({ params, searchParams }: { params: { locale: Locale }; searchParams: Record<string, string | string[] | undefined> }) {
+export default async function InvestorHistoryRoute(
+  props: { params: Promise<{ locale: Locale }>; searchParams: Promise<Record<string, string | string[] | undefined>> }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

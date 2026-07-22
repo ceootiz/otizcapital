@@ -18,7 +18,8 @@ const META = {
   }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
   return {
     title: meta.title,
@@ -26,7 +27,8 @@ export function generateMetadata({ params }: { params: { locale: Locale } }): Me
   };
 }
 
-export default async function AdminReportDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
+export default async function AdminReportDetailRoute(props: { params: Promise<{ locale: Locale; id: string }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   requireAdminSession(params.locale);
 

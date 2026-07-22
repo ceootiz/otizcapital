@@ -5,7 +5,8 @@ import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api
 export const dynamic = "force-dynamic";
 
 // DELETE: remove one of the signed-in investor's saved wallets.
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
   const deleted = await deleteInvestorWallet(auth.investor.id, params.id);

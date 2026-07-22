@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { findInvestorById, isInvestorSessionActive } from "@otiz/database";
 
@@ -139,7 +139,7 @@ export function createInvestorSession(input: { investorId: string; email: string
     return false;
   }
 
-  cookies().set(INVESTOR_SESSION_COOKIE, token, {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(INVESTOR_SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: isProduction(),
@@ -151,7 +151,7 @@ export function createInvestorSession(input: { investorId: string; email: string
 }
 
 export function clearInvestorSession() {
-  cookies().set(INVESTOR_SESSION_COOKIE, "", {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(INVESTOR_SESSION_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
     secure: isProduction(),
@@ -161,7 +161,7 @@ export function clearInvestorSession() {
 }
 
 export function getInvestorSession() {
-  const token = cookies().get(INVESTOR_SESSION_COOKIE)?.value;
+  const token = (cookies() as unknown as UnsafeUnwrappedCookies).get(INVESTOR_SESSION_COOKIE)?.value;
 
   if (!token) {
     return null;

@@ -18,7 +18,8 @@ const META = {
   }
 } as const;
 
-export async function generateMetadata({ params }: { params: { locale: Locale } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
   return {
     title: meta.title,
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: { params: { locale: Locale } 
   };
 }
 
-export default async function InvestorReportDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
+export default async function InvestorReportDetailRoute(props: { params: Promise<{ locale: Locale; id: string }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   const investor = await requireInvestorSession(params.locale);
   const report = await getInvestorMonthlyReportDetailRecord({ id: params.id, investorId: investor.id });

@@ -17,7 +17,8 @@ const METADATA_STRINGS: Record<string, { title: string; description: string }> =
   }
 };
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const strings = METADATA_STRINGS[params.locale] ?? METADATA_STRINGS.en;
   return {
     title: strings.title,
@@ -25,7 +26,8 @@ export function generateMetadata({ params }: { params: { locale: Locale } }): Me
   };
 }
 
-export default function AdminLoginRoute({ params }: { params: { locale: Locale } }) {
+export default async function AdminLoginRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     redirect("/en/admin/login");
   }

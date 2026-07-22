@@ -12,12 +12,14 @@ const META = {
   ru: { title: "Детали аллокации инвестора | OTIZ CAPITAL", description: "Подтверждения и статус аллокации инвестора." }
 } as const;
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   const meta = (META as unknown as Record<string, (typeof META)["en"]>)[params.locale] ?? META.en;
   return { title: meta.title, description: meta.description };
 }
 
-export default async function InvestorAllocationDetailRoute({ params }: { params: { locale: Locale; id: string } }) {
+export default async function InvestorAllocationDetailRoute(props: { params: Promise<{ locale: Locale; id: string }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   const investor = await requireInvestorSession(params.locale);
   const allocation = await getInvestorAllocationDetailRecord({ id: params.id, investorId: investor.id });

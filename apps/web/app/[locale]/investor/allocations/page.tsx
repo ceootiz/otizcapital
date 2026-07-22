@@ -9,13 +9,15 @@ import { requireInvestorSession } from "@/lib/investor-session";
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const params = await props.params;
   if (!isLocale(params.locale)) return {};
   const page = getInvestorStrings(params.locale).pages.allocations;
   return { title: `${page.title} | OTIZ CAPITAL`, description: page.description };
 }
 
-export default async function InvestorAllocationsRoute({ params }: { params: { locale: Locale } }) {
+export default async function InvestorAllocationsRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }

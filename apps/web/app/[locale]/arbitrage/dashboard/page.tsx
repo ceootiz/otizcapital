@@ -7,7 +7,8 @@ import { ArbitrageShell } from "@/components/arbitrage/arbitrage-shell";
 
 export const dynamic = "force-dynamic";
 
-export default async function ArbitrageDashboardRoute({ params }: { params: { locale: Locale } }) {
+export default async function ArbitrageDashboardRoute(props: { params: Promise<{ locale: Locale }> }) {
+  const params = await props.params;
   if (!isLocale(params.locale)) notFound();
   const arbitrageur = await requireArbitrageurPage(params.locale);
   const dashboard = await getArbitrageurDashboard(arbitrageur.id);

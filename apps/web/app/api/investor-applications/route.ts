@@ -161,7 +161,7 @@ export async function POST(request: Request) {
     // Referral attribution: resolve the referral_code cookie to an arbitrageur
     // or investor referrer. Best-effort — a bad/expired code never blocks the
     // application from being created.
-    const referralCode = sanitizeString(cookies().get("referral_code")?.value, 32);
+    const referralCode = sanitizeString((await cookies()).get("referral_code")?.value, 32);
     let referredByArbitrageId: string | null = null;
     let referredByInvestorId: string | null = null;
     if (referralCode) {

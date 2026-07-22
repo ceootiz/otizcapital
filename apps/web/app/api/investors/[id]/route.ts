@@ -20,7 +20,8 @@ function isInvestorStatus(value: string): value is InvestorStatus {
   return INVESTOR_STATUSES.includes(value as InvestorStatus);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const csrf = verifyAdminCsrfToken(request);
 
   if (!csrf.ok) {
