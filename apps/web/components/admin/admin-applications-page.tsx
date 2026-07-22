@@ -1842,7 +1842,8 @@ function ApplicationDetail({
   }
 
   return (
-    <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
+    <>
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72] xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -1872,22 +1873,6 @@ function ApplicationDetail({
             <Button type="button" variant="outline" size="sm" disabled={isUpdating || (!application.nextAction && !application.nextActionAt)} onClick={() => runQuickAction({ nextAction: null, nextActionAt: null }, t.nextActionCleared)}>{t.clearNextAction}</Button>
           </div>
         </div>
-
-        <ConfirmDialog
-          open={confirmAction !== null}
-          title={confirmAction === "REJECTED" ? t.confirmRejectTitle : t.confirmApproveTitle}
-          description={confirmAction === "REJECTED" ? t.confirmRejectDesc : t.confirmApproveDesc}
-          confirmLabel={confirmAction === "REJECTED" ? t.reject : t.approve}
-          cancelLabel={t.dialogBack}
-          tone={confirmAction === "REJECTED" ? "destructive" : "positive"}
-          loading={isUpdating}
-          onConfirm={() =>
-            confirmAction === "REJECTED"
-              ? runQuickAction({ status: "REJECTED" }, t.applicationRejected)
-              : runQuickAction({ status: "APPROVED" }, t.applicationApproved)
-          }
-          onCancel={() => setConfirmAction(null)}
-        />
 
         <Separator />
 
@@ -1969,7 +1954,23 @@ function ApplicationDetail({
           )}
         </div>
       </CardContent>
-    </Card>
+      </Card>
+      <ConfirmDialog
+        open={confirmAction !== null}
+        title={confirmAction === "REJECTED" ? t.confirmRejectTitle : t.confirmApproveTitle}
+        description={confirmAction === "REJECTED" ? t.confirmRejectDesc : t.confirmApproveDesc}
+        confirmLabel={confirmAction === "REJECTED" ? t.reject : t.approve}
+        cancelLabel={t.dialogBack}
+        tone={confirmAction === "REJECTED" ? "destructive" : "positive"}
+        loading={isUpdating}
+        onConfirm={() =>
+          confirmAction === "REJECTED"
+            ? runQuickAction({ status: "REJECTED" }, t.applicationRejected)
+            : runQuickAction({ status: "APPROVED" }, t.applicationApproved)
+        }
+        onCancel={() => setConfirmAction(null)}
+      />
+    </>
   );
 }
 
