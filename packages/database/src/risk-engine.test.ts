@@ -6,6 +6,8 @@ import { getSafeDefaultReadinessPolicy, type SerializedReadinessPolicy } from ".
 import { prisma } from "./client";
 import { regenerateMonthlyReportProofSnapshotRecord } from "./monthly-reports";
 
+const databaseIt = it.runIf(process.env.OTIZ_DB_TESTS_ENABLED === "true");
+
 const relaxedPolicy: SerializedReadinessPolicy = {
   ...getSafeDefaultReadinessPolicy(),
   id: "risk-test-policy",
@@ -348,7 +350,7 @@ describe("risk engine v1", () => {
     expect(summarizeRiskChange(diff)).toContain("new risk factor");
   });
 
-  it("records sanitized risk timeline metadata", async () => {
+  databaseIt("records sanitized risk timeline metadata", async () => {
     const entityId = `risk-sanitized-${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const sensitiveRisk: AllocationRisk = {
       allocationId: entityId,
@@ -408,7 +410,7 @@ describe("risk engine v1", () => {
     expect(JSON.stringify(evaluationEvent?.details)).not.toContain("metadataJson");
   });
 
-  it("includes sanitized risk timeline event details for level, score, and factor diffs", async () => {
+  databaseIt("includes sanitized risk timeline event details for level, score, and factor diffs", async () => {
     const entityId = `risk-details-${Date.now()}-${Math.round(Math.random() * 100000)}`;
     await prisma.auditLog.create({
       data: {
@@ -453,7 +455,7 @@ describe("risk engine v1", () => {
     expect(JSON.stringify(event?.details)).not.toContain("metadataJson");
   });
 
-  it("filters risk timelines by source, unknown source, and capped limit", async () => {
+  databaseIt("filters risk timelines by source, unknown source, and capped limit", async () => {
     const entityId = `risk-filter-${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const safeRisk: AllocationRisk = {
       allocationId: entityId,
@@ -542,7 +544,7 @@ describe("risk engine v1", () => {
     expect(investorSource).not.toContain("Manual evaluation");
   });
 
-  it("records risk timeline events on report snapshot regeneration without page-load spam", async () => {
+  databaseIt("records risk timeline events on report snapshot regeneration without page-load spam", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Risk Timeline Investor", email: `risk-timeline-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `RISK-TL-${suffix}`, productName: "Risk timeline batch", allocationAmount: "5000", status: "SELLING" } });
@@ -570,7 +572,7 @@ describe("risk engine v1", () => {
     expect(reportTimeline.events.some((event) => event.action === "EVALUATE_REPORT_RISK" && event.source === "report_snapshot")).toBe(true);
   });
 
-  it("records manual risk evaluation without mutating published investor report snapshots", async () => {
+  databaseIt("records manual risk evaluation without mutating published investor report snapshots", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Manual Risk Investor", email: `manual-risk-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `MANUAL-RISK-${suffix}`, productName: "Manual risk batch", allocationAmount: "5000", status: "SELLING" } });

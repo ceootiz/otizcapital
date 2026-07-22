@@ -3,6 +3,8 @@ import { calculateAllocationReconciliationFromEntries, calculateInvestorReconcil
 import { prisma } from "./client";
 import { createLedgerCsvExportAuditEvent } from "./audit-logs";
 
+const databaseIt = it.runIf(process.env.OTIZ_DB_TESTS_ENABLED === "true");
+
 const baseEntries = [
   { ledgerType: "INVENTORY", allocationId: "allocation-a", entryType: "UNITS_PURCHASED", amount: "0", quantity: 10, sourceType: "ALLOCATION", description: "Purchased units" },
   { ledgerType: "INVENTORY", allocationId: "allocation-a", entryType: "UNITS_RECEIVED", amount: "0", quantity: 10, sourceType: "ALLOCATION", description: "Received units" },
@@ -62,7 +64,7 @@ describe("three-ledger reconciliation", () => {
     expect(result.warnings.some((issue) => issue.id === "settlement-without-sold-units")).toBe(true);
   });
 
-  it("creates ledger entries with an audit event", async () => {
+  databaseIt("creates ledger entries with an audit event", async () => {
     const suffix = Date.now();
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Test Investor", email: `ledger-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-${suffix}`, productName: "Ledger batch", allocationAmount: "5000", status: "SELLING" } });
@@ -74,7 +76,7 @@ describe("three-ledger reconciliation", () => {
     expect(audit?.entityType).toBe("LedgerEntry");
   });
 
-  it("reverses ledger entries with offsetting amount and quantity", async () => {
+  databaseIt("reverses ledger entries with offsetting amount and quantity", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Reversal Investor", email: `ledger-reversal-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-REV-${suffix}`, productName: "Reversal batch", allocationAmount: "5000", status: "RECEIVED" } });
@@ -100,7 +102,7 @@ describe("three-ledger reconciliation", () => {
     expect(audit?.entityType).toBe("LedgerEntry");
   });
 
-  it("blocks reversing reversal entries and duplicate reversals", async () => {
+  databaseIt("blocks reversing reversal entries and duplicate reversals", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Double Reversal Investor", email: `ledger-double-reversal-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-DOUBLE-REV-${suffix}`, productName: "Double reversal batch", allocationAmount: "5000", status: "RECEIVED" } });
@@ -122,13 +124,13 @@ describe("three-ledger reconciliation", () => {
     if (!reversalOfReversal.ok) expect(reversalOfReversal.status).toBe(409);
   });
 
-  it("requires reversal reason", async () => {
+  databaseIt("requires reversal reason", async () => {
     const result = await reverseLedgerEntry({ ledgerEntryId: "missing", reversalReason: " ", actor: "admin" });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.status).toBe(422);
   });
 
-  it("creates correction flow with reversal and corrected entry", async () => {
+  databaseIt("creates correction flow with reversal and corrected entry", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Correction Investor", email: `ledger-correction-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-CORR-${suffix}`, productName: "Correction batch", allocationAmount: "5000", status: "RECEIVED" } });
@@ -156,7 +158,7 @@ describe("three-ledger reconciliation", () => {
     expect(audit?.entityType).toBe("LedgerEntry");
   });
 
-  it("returns sanitized audit trail for original, reversal, and correction entries", async () => {
+  databaseIt("returns sanitized audit trail for original, reversal, and correction entries", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Trail Investor", email: `ledger-trail-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-TRAIL-${suffix}`, productName: "Trail batch", allocationAmount: "5000", status: "RECEIVED" } });
@@ -201,7 +203,7 @@ describe("three-ledger reconciliation", () => {
     expect(trail?.originalEntry).not.toHaveProperty("metadataJson");
   });
 
-  it("filters allocation ledger entries without changing reconciliation calculations", async () => {
+  databaseIt("filters allocation ledger entries without changing reconciliation calculations", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Filter Investor", email: `ledger-filter-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-FILTER-${suffix}`, productName: "Filter batch", allocationAmount: "5000", status: "SELLING" } });
@@ -259,7 +261,7 @@ describe("three-ledger reconciliation", () => {
     expect(reconciliation.metrics.entryCount).toBe(allEntries.length);
   });
 
-  it("exports filtered ledger entries to CSV safely", async () => {
+  databaseIt("exports filtered ledger entries to CSV safely", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Csv Investor", email: `ledger-csv-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-CSV-${suffix}`, productName: "CSV batch", allocationAmount: "5000", status: "SELLING" } });
@@ -283,7 +285,7 @@ describe("three-ledger reconciliation", () => {
     expect(csv).not.toContain("do-not-export");
   });
 
-  it("creates sanitized audit metadata for ledger CSV exports", async () => {
+  databaseIt("creates sanitized audit metadata for ledger CSV exports", async () => {
     const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Csv Audit Investor", email: `ledger-csv-audit-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-CSV-AUDIT-${suffix}`, productName: "CSV audit batch", allocationAmount: "5000", status: "SELLING" } });
@@ -328,7 +330,7 @@ describe("three-ledger reconciliation", () => {
     expect(audit.afterJson).not.toContain("csv-audit-secret");
   });
 
-  it("creates cash and investor liability ledger entries that affect reconciliation summary", async () => {
+  databaseIt("creates cash and investor liability ledger entries that affect reconciliation summary", async () => {
     const suffix = Date.now();
     const investor = await prisma.investor.create({ data: { fullName: "Ledger Cash Investor", email: `ledger-cash-${suffix}@example.com`, status: "ACTIVE" } });
     const allocation = await prisma.allocation.create({ data: { investorId: investor.id, supplyCode: `LEDGER-CASH-${suffix}`, productName: "Cash ledger batch", allocationAmount: "7000", status: "SELLING" } });
@@ -346,7 +348,7 @@ describe("three-ledger reconciliation", () => {
     expect(reconciliation.ledgerSummary.investorLiability.capitalAllocated).toBe(7000);
   });
 
-  it("investor reconciliation includes only that investor's allocations", async () => {
+  databaseIt("investor reconciliation includes only that investor's allocations", async () => {
     const suffix = Date.now();
     const firstInvestor = await prisma.investor.create({ data: { fullName: "Ledger Investor A", email: `ledger-a-${suffix}@example.com`, status: "ACTIVE" } });
     const secondInvestor = await prisma.investor.create({ data: { fullName: "Ledger Investor B", email: `ledger-b-${suffix}@example.com`, status: "ACTIVE" } });
