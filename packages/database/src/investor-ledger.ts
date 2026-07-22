@@ -78,11 +78,11 @@ export function buildInvestorLedger(input: LedgerInput, filters: InvestorLedgerF
   const entries: InvestorLedgerEntry[] = [];
 
   for (const record of input.deposits) {
-    if (record.investorId !== input.investorId || record.status !== "CONFIRMED") continue;
+    if (record.investorId !== input.investorId) continue;
     entries.push({
       id: `deposit:${record.id}`,
       type: "DEPOSIT",
-      direction: "IN",
+      direction: record.status === "CONFIRMED" ? "IN" : "NEUTRAL",
       amount: amount(record.amount),
       currency: record.network.toUpperCase().includes("USDT") ? "USDT" : "USD",
       occurredAt: iso(record.reviewedAt) ?? record.createdAt.toISOString(),
@@ -179,7 +179,7 @@ export function buildInvestorLedger(input: LedgerInput, filters: InvestorLedgerF
 
 export async function getInvestorLedger(investorId: string, filters: InvestorLedgerFilters = {}) {
   const [deposits, allocations, payments, withdrawals, commissions] = await Promise.all([
-    prisma.depositNotification.findMany({ where: { investorId, status: "CONFIRMED" } }),
+    prisma.depositNotification.findMany({ where: { investorId } }),
     prisma.allocation.findMany({ where: { investorId } }),
     prisma.investorPayment.findMany({ where: { investorId } }),
     prisma.withdrawalRequest.findMany({ where: { investorId } }),

@@ -39,13 +39,13 @@ const STRINGS = {
     expectedCycle: "Expected cycle",
     estimatedResult: "Estimated result",
     payoutState: "Payout state",
-    proofHealth: "Proof health",
+    proofHealth: "Document status",
     evidenceSummary: "Evidence summary",
-    reconciliation: "Reconciliation",
+    reconciliation: "Verification",
     inventoryProgress: "Inventory progress",
     capitalReturned: "Capital returned",
     payoutStatus: "Payout status",
-    riskVisibility: "Risk visibility",
+    riskVisibility: "Attention level",
     riskSummary: "Risk summary",
     noPerformanceNote: "No performance note published.",
     noPayoutNote: "No payout note published.",
@@ -96,13 +96,13 @@ const STRINGS = {
     expectedCycle: "Ожидаемый цикл",
     estimatedResult: "Оценочный результат",
     payoutState: "Состояние выплаты",
-    proofHealth: "Состояние подтверждений",
+    proofHealth: "Статус документов",
     evidenceSummary: "Сводка по доказательствам",
-    reconciliation: "Сверка",
+    reconciliation: "Проверка",
     inventoryProgress: "Прогресс по запасам",
     capitalReturned: "Возвращённый капитал",
     payoutStatus: "Статус выплаты",
-    riskVisibility: "Видимость риска",
+    riskVisibility: "Уровень внимания",
     riskSummary: "Сводка по рискам",
     noPerformanceNote: "Заметка о результатах не опубликована.",
     noPayoutNote: "Заметка о выплате не опубликована.",
@@ -473,13 +473,13 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
                 <ReportLine label={t.expectedCycle} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.days}` : t.notSet} />
                 <ReportLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} />
                 <ReportLine label={t.payoutState} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
-                <ReportLine label={t.proofHealth} value={allocation.proofCompleteness ? `${allocation.proofCompleteness.state} · ${allocation.proofCompleteness.score}%` : t.underManagerReview} />
+                <ReportLine label={t.proofHealth} value={allocation.proofCompleteness ? `${enumLabel("proofCompletenessState", allocation.proofCompleteness.state, locale)} · ${allocation.proofCompleteness.score}%` : t.underManagerReview} />
                 <ReportLine label={t.evidenceSummary} value={allocation.proofCompleteness?.investorSafeSummary || t.evidenceUnderReview} />
                 <ReportLine label={t.reconciliation} value={allocation.reconciliation ? `${enumLabel("reconciliationState", allocation.reconciliation.status, locale)} · ${allocation.reconciliation.score}%` : t.underManagerReview} />
                 <ReportLine label={t.inventoryProgress} value={allocation.reconciliation?.inventoryProgressSummary || t.inventoryUnderReview} />
                 <ReportLine label={t.capitalReturned} value={allocation.reconciliation ? formatMoney(allocation.reconciliation.capitalReturned, allocation.currency) : t.underReview} />
                 <ReportLine label={t.payoutStatus} value={allocation.reconciliation?.payoutStatus || t.notReady} />
-                <ReportLine label={t.riskVisibility} value={allocation.risk ? `${allocation.risk.level} · ${allocation.risk.score}/100` : t.underManagerReview} />
+                <ReportLine label={t.riskVisibility} value={allocation.risk ? `${enumLabel("riskLevel", allocation.risk.level, locale)} · ${allocation.risk.score}/100` : t.underManagerReview} />
                 <ReportLine label={t.riskSummary} value={allocation.risk?.summary || t.riskUnderReview} />
               </div>
               {allocation.reconciliation?.exceptionNotice ? <div className="mt-4 rounded-[1.35rem] border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm leading-6 text-amber-700 dark:text-gold-100">{allocation.reconciliation.exceptionNotice}</div> : null}

@@ -26,15 +26,18 @@ describe("buildInvestorLedger", () => {
     expect(page.total).toBe(0);
   });
 
-  it("excludes unconfirmed deposits and does not debit unpaid withdrawals", () => {
+  it("shows unconfirmed deposits without crediting them and does not debit unpaid withdrawals", () => {
     const input = empty();
     const page = buildInvestorLedger({
       ...input,
       deposits: [{ id: "pending", investorId, amount: 100, network: "USDT", status: "PENDING", reviewedAt: null, createdAt: date("2026-01-01") }],
       withdrawals: [{ id: "requested", investorId, amount: 50, currency: "USD", status: "REQUESTED", requestedAt: date("2026-02-01"), scheduledFor: null, paidAt: null, createdAt: date("2026-02-01") }]
     });
-    expect(page.entries).toHaveLength(1);
-    expect(page.entries[0]).toMatchObject({ type: "WITHDRAWAL", direction: "NEUTRAL" });
+    expect(page.entries).toHaveLength(2);
+    expect(page.entries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: "DEPOSIT", direction: "NEUTRAL", status: "PENDING" }),
+      expect.objectContaining({ type: "WITHDRAWAL", direction: "NEUTRAL" })
+    ]));
   });
 
   it("supports type, date, and pagination filters", () => {

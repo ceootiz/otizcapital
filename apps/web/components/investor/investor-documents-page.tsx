@@ -147,6 +147,13 @@ const STRINGS = {
 } as const;
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
+const SUPPORT_LABELS: Record<Locale, string> = {
+  en: "Ask support",
+  ru: "Задать вопрос поддержке",
+  es: "Preguntar a soporte",
+  de: "Support fragen",
+  zh: "联系支持"
+};
 
 const PENDING = "PENDING_SIGNATURE";
 const SIGNED = "SIGNED";
@@ -235,11 +242,13 @@ export function InvestorDocumentsPage({ locale, documents: initial }: { locale: 
   if (documents.length === 0) {
     return (
       <div className="grid gap-4">
-        <div className="flex justify-end">{downloadAllControl}</div>
         <Card className="rounded-[1.35rem] bg-muted/30 dark:bg-white/[0.035]">
           <CardContent className="p-8 text-center">
             <FileText className="mx-auto size-9 text-amber-700 dark:text-gold-100" />
             <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-muted-foreground">{t.empty}</p>
+            <Link href={`/${locale}/investor/support`} className="mt-5 inline-flex min-h-11 items-center rounded-full border border-border px-5 text-sm font-semibold text-foreground dark:border-white/10">
+              {SUPPORT_LABELS[locale]}
+            </Link>
           </CardContent>
         </Card>
       </div>

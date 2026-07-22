@@ -59,6 +59,7 @@ export type EnumGroup =
   | "payoutStatus"
   | "proofType"
   | "proofStatus"
+  | "proofCompletenessState"
   | "reinvestDecision"
   | "ledgerType"
   | "ledgerEntry"
@@ -90,6 +91,7 @@ const EN: Record<EnumGroup, LabelMap> = {
   payoutStatus: { ALL: "All", NOT_READY: "Not ready", PENDING: "Pending", APPROVED: "Approved", PAID: "Paid", REINVESTED: "Reinvested" },
   proofType: { SHIPMENT_PROOF: "Shipment proof", WAREHOUSE_MEDIA: "Warehouse media", MARKETPLACE_REPORT: "Marketplace report", PURCHASE_INVOICE: "Purchase invoice", PAYOUT_PROOF: "Payout proof", SERIAL_VERIFICATION: "Serial verification", OTHER: "Other" },
   proofStatus: { PENDING: "Pending", AVAILABLE: "Available", VERIFIED: "Verified", HIDDEN: "Hidden" },
+  proofCompletenessState: { VERIFIED: "Verified", PARTIAL: "Partially complete", INCOMPLETE: "Documents missing", HIGH_RISK: "Needs urgent review" },
   reinvestDecision: { UNDECIDED: "Undecided", REINVEST: "Reinvest", PAYOUT: "Payout" },
   ledgerType: { INVENTORY: "Inventory", CASH: "Cash", INVESTOR_LIABILITY: "Investor liability" },
   ledgerEntry: {
@@ -124,6 +126,7 @@ const RU: Record<EnumGroup, LabelMap> = {
   payoutStatus: { ALL: "Все", NOT_READY: "Не готово", PENDING: "В ожидании", APPROVED: "Одобрено", PAID: "Выплачено", REINVESTED: "Реинвестировано" },
   proofType: { SHIPMENT_PROOF: "Подтверждение отгрузки", WAREHOUSE_MEDIA: "Складские материалы", MARKETPLACE_REPORT: "Отчёт маркетплейса", PURCHASE_INVOICE: "Счёт на закупку", PAYOUT_PROOF: "Подтверждение выплаты", SERIAL_VERIFICATION: "Проверка серийных номеров", OTHER: "Другое" },
   proofStatus: { PENDING: "В ожидании", AVAILABLE: "Доступно", VERIFIED: "Проверено", HIDDEN: "Скрыто" },
+  proofCompletenessState: { VERIFIED: "Проверено", PARTIAL: "Заполнено частично", INCOMPLETE: "Не хватает документов", HIGH_RISK: "Требует срочной проверки" },
   reinvestDecision: { UNDECIDED: "Не решено", REINVEST: "Реинвестировать", PAYOUT: "Выплата" },
   ledgerType: { INVENTORY: "Товар", CASH: "Денежные средства", INVESTOR_LIABILITY: "Обязательства перед инвестором" },
   ledgerEntry: {
@@ -150,7 +153,100 @@ const RU: Record<EnumGroup, LabelMap> = {
   applicationSort: { smart: "Умный приоритет", newest: "Сначала новые", oldest: "Сначала старые", "amount-desc": "По сумме (убыв.)", "next-action": "По дате действия" }
 };
 
-const ENUM_LABELS: Partial<Record<Locale, Record<EnumGroup, LabelMap>>> = { en: EN, ru: RU };
+const ES: Record<EnumGroup, LabelMap> = {
+  withdrawalStatus: { ALL: "Todos", REQUESTED: "Solicitado", APPROVED: "Aprobado", SCHEDULED: "Programado", PAID: "Pagado", REJECTED: "Rechazado", CANCELLED: "Cancelado" },
+  allocationStatus: { ALL: "Todos", DRAFT: "Borrador", PURCHASING: "Compra", SHIPPING: "Envío", RECEIVED: "Recibido", SELLING: "En venta", COMPLETED: "Completado", CANCELED: "Cancelado", LOSS: "Pérdida" },
+  riskLevel: { ALL: "Todos", STANDARD: "Estándar", MONITORED: "En seguimiento", ELEVATED: "Requiere atención" },
+  payoutStatus: { ALL: "Todos", NOT_READY: "No preparado", PENDING: "Pendiente", APPROVED: "Aprobado", PAID: "Pagado", REINVESTED: "Reinvertido" },
+  proofType: { SHIPMENT_PROOF: "Comprobante de envío", WAREHOUSE_MEDIA: "Material de almacén", MARKETPLACE_REPORT: "Informe del marketplace", PURCHASE_INVOICE: "Factura de compra", PAYOUT_PROOF: "Comprobante de pago", SERIAL_VERIFICATION: "Verificación de números de serie", OTHER: "Otro" },
+  proofStatus: { PENDING: "Pendiente", AVAILABLE: "Disponible", VERIFIED: "Verificado", HIDDEN: "Oculto" },
+  proofCompletenessState: { VERIFIED: "Verificado", PARTIAL: "Parcialmente completo", INCOMPLETE: "Faltan documentos", HIGH_RISK: "Revisión urgente" },
+  reinvestDecision: { UNDECIDED: "Sin decidir", REINVEST: "Reinvertir", PAYOUT: "Pagar" },
+  ledgerType: { INVENTORY: "Inventario", CASH: "Efectivo", INVESTOR_LIABILITY: "Obligación con el inversor" },
+  ledgerEntry: { UNITS_PURCHASED: "Unidades compradas", UNITS_RECEIVED: "Unidades recibidas", UNITS_SOLD: "Unidades vendidas", UNITS_RETURNED: "Unidades devueltas", UNITS_REMAINING_ADJUSTMENT: "Ajuste de unidades restantes", INVESTOR_CASH_IN: "Ingreso del inversor", SUPPLIER_PAYMENT: "Pago al proveedor", LOGISTICS_COST: "Coste logístico", MARKETPLACE_SETTLEMENT: "Liquidación del marketplace", MARKETPLACE_FEE: "Comisión del marketplace", REFUND: "Reembolso", PAYOUT: "Pago", REINVESTMENT: "Reinversión", CAPITAL_ALLOCATED: "Capital asignado", PROFIT_ACCRUED: "Beneficio reconocido", PAYOUT_APPROVED: "Pago aprobado", PAYOUT_PAID: "Pago realizado", REINVESTED: "Reinvertido", LOSS_RECOGNIZED: "Pérdida reconocida", LIABILITY_ADJUSTMENT: "Ajuste de obligación" },
+  ledgerSourceType: { ALLOCATION: "Operación", WITHDRAWAL_REQUEST: "Solicitud de retiro", MONTHLY_REPORT: "Informe mensual", MANUAL_ADJUSTMENT: "Ajuste manual", MARKETPLACE_SETTLEMENT: "Liquidación del marketplace", PROOF_ARTIFACT: "Documento de respaldo", OTHER: "Otro" },
+  ledgerReversalStatus: { ALL: "Todos", ORIGINAL_ONLY: "Solo originales", REVERSALS_ONLY: "Solo reversiones", REVERSED_ONLY: "Solo revertidos", CORRECTED_ONLY: "Solo corregidos" },
+  incidentSeverity: { ALL: "Todas", LOW: "Baja", MEDIUM: "Media", HIGH: "Alta", CRITICAL: "Crítica" },
+  incidentStatus: { ALL: "Todos", OPEN: "Abierto", ACKNOWLEDGED: "En revisión", RESOLVED: "Resuelto" },
+  riskSource: { ALL: "Todos", all: "Todos", risk_engine: "Evaluación de riesgo", reconciliation: "Verificación", readiness: "Preparación", snapshot_integrity: "Integridad del informe", withdrawal: "Retiro", proof_completeness: "Estado de documentos", manual: "Manual", manual_evaluation: "Evaluación manual", report_snapshot: "Copia del informe", readiness_gate: "Revisión de preparación", unknown: "Desconocido" },
+  applicationStatus: { NEW: "Nueva", REVIEWED: "Revisada", APPROVED: "Aprobada", REJECTED: "Rechazada", CONTACTED: "Contactada" },
+  applicationPriority: { LOW: "Baja", NORMAL: "Normal", HIGH: "Alta", VIP: "VIP" },
+  reinvestInterest: { yes: "Sí", no: "No", not_sure: "No está seguro" },
+  investorStatus: { ACTIVE: "Activo", PAUSED: "En pausa", CLOSED: "Cerrado" },
+  reportStatus: { DRAFT: "Borrador", PUBLISHED: "Publicado", ARCHIVED: "Archivado" },
+  reconciliationState: { BALANCED: "Verificado", WARNING: "Requiere atención", BROKEN: "No coincide" },
+  readinessState: { READY: "Preparado", READY_WITH_WARNINGS: "Preparado con observaciones", NEEDS_REVIEW: "Requiere revisión", BLOCKED: "Bloqueado" },
+  healthStatus: { HEALTHY: "Correcto", ATTENTION: "Atención", CRITICAL: "Crítico", WARNING: "Advertencia", BALANCED: "Verificado", BROKEN: "No coincide" },
+  notificationChannel: { EMAIL: "Correo", TELEGRAM: "Telegram", IN_APP: "En la aplicación", WEBHOOK: "Webhook" },
+  notificationStatus: { PENDING: "Pendiente", SENT: "Enviado", FAILED: "Error" },
+  checkpointCategory: { READINESS: "Preparación", RECONCILIATION: "Verificación", RISK: "Riesgo", WITHDRAWALS: "Retiros", PROOF: "Documentos", NOTIFICATIONS: "Notificaciones", INCIDENTS: "Incidencias", SNAPSHOT_INTEGRITY: "Integridad del informe" },
+  auditAction: { CREATE_READINESS_POLICY: "Crear política de preparación", CREATE_AND_ACTIVATE_READINESS_POLICY: "Crear y activar política de preparación", UPDATE_READINESS_POLICY: "Actualizar política de preparación", ACTIVATE_READINESS_POLICY: "Activar política de preparación" },
+  applicationSort: { smart: "Prioridad recomendada", newest: "Más recientes", oldest: "Más antiguas", "amount-desc": "Mayor importe", "next-action": "Próxima acción" }
+};
+
+const DE: Record<EnumGroup, LabelMap> = {
+  withdrawalStatus: { ALL: "Alle", REQUESTED: "Beantragt", APPROVED: "Genehmigt", SCHEDULED: "Geplant", PAID: "Bezahlt", REJECTED: "Abgelehnt", CANCELLED: "Storniert" },
+  allocationStatus: { ALL: "Alle", DRAFT: "Entwurf", PURCHASING: "Einkauf", SHIPPING: "Versand", RECEIVED: "Eingegangen", SELLING: "Im Verkauf", COMPLETED: "Abgeschlossen", CANCELED: "Storniert", LOSS: "Verlust" },
+  riskLevel: { ALL: "Alle", STANDARD: "Standard", MONITORED: "Unter Beobachtung", ELEVATED: "Aufmerksamkeit erforderlich" },
+  payoutStatus: { ALL: "Alle", NOT_READY: "Nicht bereit", PENDING: "Ausstehend", APPROVED: "Genehmigt", PAID: "Bezahlt", REINVESTED: "Reinvestiert" },
+  proofType: { SHIPMENT_PROOF: "Versandnachweis", WAREHOUSE_MEDIA: "Lagermaterial", MARKETPLACE_REPORT: "Marktplatzbericht", PURCHASE_INVOICE: "Einkaufsrechnung", PAYOUT_PROOF: "Auszahlungsnachweis", SERIAL_VERIFICATION: "Seriennummernprüfung", OTHER: "Sonstiges" },
+  proofStatus: { PENDING: "Ausstehend", AVAILABLE: "Verfügbar", VERIFIED: "Geprüft", HIDDEN: "Ausgeblendet" },
+  proofCompletenessState: { VERIFIED: "Geprüft", PARTIAL: "Teilweise vollständig", INCOMPLETE: "Dokumente fehlen", HIGH_RISK: "Dringende Prüfung" },
+  reinvestDecision: { UNDECIDED: "Nicht entschieden", REINVEST: "Reinvestieren", PAYOUT: "Auszahlen" },
+  ledgerType: { INVENTORY: "Bestand", CASH: "Geldmittel", INVESTOR_LIABILITY: "Verbindlichkeit gegenüber Investor" },
+  ledgerEntry: { UNITS_PURCHASED: "Einheiten gekauft", UNITS_RECEIVED: "Einheiten eingegangen", UNITS_SOLD: "Einheiten verkauft", UNITS_RETURNED: "Einheiten zurückgegeben", UNITS_REMAINING_ADJUSTMENT: "Restbestandskorrektur", INVESTOR_CASH_IN: "Einzahlung des Investors", SUPPLIER_PAYMENT: "Lieferantenzahlung", LOGISTICS_COST: "Logistikkosten", MARKETPLACE_SETTLEMENT: "Marktplatzabrechnung", MARKETPLACE_FEE: "Marktplatzgebühr", REFUND: "Rückerstattung", PAYOUT: "Auszahlung", REINVESTMENT: "Reinvestition", CAPITAL_ALLOCATED: "Kapital zugewiesen", PROFIT_ACCRUED: "Gewinn erfasst", PAYOUT_APPROVED: "Auszahlung genehmigt", PAYOUT_PAID: "Auszahlung erfolgt", REINVESTED: "Reinvestiert", LOSS_RECOGNIZED: "Verlust erfasst", LIABILITY_ADJUSTMENT: "Verbindlichkeitskorrektur" },
+  ledgerSourceType: { ALLOCATION: "Geschäft", WITHDRAWAL_REQUEST: "Auszahlungsantrag", MONTHLY_REPORT: "Monatsbericht", MANUAL_ADJUSTMENT: "Manuelle Korrektur", MARKETPLACE_SETTLEMENT: "Marktplatzabrechnung", PROOF_ARTIFACT: "Nachweisdokument", OTHER: "Sonstiges" },
+  ledgerReversalStatus: { ALL: "Alle", ORIGINAL_ONLY: "Nur Originale", REVERSALS_ONLY: "Nur Stornos", REVERSED_ONLY: "Nur stornierte", CORRECTED_ONLY: "Nur korrigierte" },
+  incidentSeverity: { ALL: "Alle", LOW: "Niedrig", MEDIUM: "Mittel", HIGH: "Hoch", CRITICAL: "Kritisch" },
+  incidentStatus: { ALL: "Alle", OPEN: "Offen", ACKNOWLEDGED: "In Prüfung", RESOLVED: "Gelöst" },
+  riskSource: { ALL: "Alle", all: "Alle", risk_engine: "Risikobewertung", reconciliation: "Prüfung", readiness: "Bereitschaft", snapshot_integrity: "Berichtsintegrität", withdrawal: "Auszahlung", proof_completeness: "Dokumentenstatus", manual: "Manuell", manual_evaluation: "Manuelle Bewertung", report_snapshot: "Berichtskopie", readiness_gate: "Bereitschaftsprüfung", unknown: "Unbekannt" },
+  applicationStatus: { NEW: "Neu", REVIEWED: "Geprüft", APPROVED: "Genehmigt", REJECTED: "Abgelehnt", CONTACTED: "Kontaktiert" },
+  applicationPriority: { LOW: "Niedrig", NORMAL: "Normal", HIGH: "Hoch", VIP: "VIP" },
+  reinvestInterest: { yes: "Ja", no: "Nein", not_sure: "Unsicher" },
+  investorStatus: { ACTIVE: "Aktiv", PAUSED: "Pausiert", CLOSED: "Geschlossen" },
+  reportStatus: { DRAFT: "Entwurf", PUBLISHED: "Veröffentlicht", ARCHIVED: "Archiviert" },
+  reconciliationState: { BALANCED: "Geprüft", WARNING: "Aufmerksamkeit erforderlich", BROKEN: "Abweichung" },
+  readinessState: { READY: "Bereit", READY_WITH_WARNINGS: "Bereit mit Hinweisen", NEEDS_REVIEW: "Prüfung erforderlich", BLOCKED: "Blockiert" },
+  healthStatus: { HEALTHY: "In Ordnung", ATTENTION: "Achtung", CRITICAL: "Kritisch", WARNING: "Warnung", BALANCED: "Geprüft", BROKEN: "Abweichung" },
+  notificationChannel: { EMAIL: "E-Mail", TELEGRAM: "Telegram", IN_APP: "In der Anwendung", WEBHOOK: "Webhook" },
+  notificationStatus: { PENDING: "Ausstehend", SENT: "Gesendet", FAILED: "Fehler" },
+  checkpointCategory: { READINESS: "Bereitschaft", RECONCILIATION: "Prüfung", RISK: "Risiko", WITHDRAWALS: "Auszahlungen", PROOF: "Dokumente", NOTIFICATIONS: "Benachrichtigungen", INCIDENTS: "Vorfälle", SNAPSHOT_INTEGRITY: "Berichtsintegrität" },
+  auditAction: { CREATE_READINESS_POLICY: "Bereitschaftsregel erstellen", CREATE_AND_ACTIVATE_READINESS_POLICY: "Bereitschaftsregel erstellen und aktivieren", UPDATE_READINESS_POLICY: "Bereitschaftsregel aktualisieren", ACTIVATE_READINESS_POLICY: "Bereitschaftsregel aktivieren" },
+  applicationSort: { smart: "Empfohlene Priorität", newest: "Neueste zuerst", oldest: "Älteste zuerst", "amount-desc": "Höchster Betrag", "next-action": "Nächste Aktion" }
+};
+
+const ZH: Record<EnumGroup, LabelMap> = {
+  withdrawalStatus: { ALL: "全部", REQUESTED: "已申请", APPROVED: "已批准", SCHEDULED: "已安排", PAID: "已支付", REJECTED: "已拒绝", CANCELLED: "已取消" },
+  allocationStatus: { ALL: "全部", DRAFT: "草稿", PURCHASING: "采购中", SHIPPING: "运输中", RECEIVED: "已入库", SELLING: "销售中", COMPLETED: "已完成", CANCELED: "已取消", LOSS: "亏损" },
+  riskLevel: { ALL: "全部", STANDARD: "正常", MONITORED: "跟进中", ELEVATED: "需要关注" },
+  payoutStatus: { ALL: "全部", NOT_READY: "尚未就绪", PENDING: "待处理", APPROVED: "已批准", PAID: "已支付", REINVESTED: "已复投" },
+  proofType: { SHIPMENT_PROOF: "发货凭证", WAREHOUSE_MEDIA: "仓库资料", MARKETPLACE_REPORT: "平台报告", PURCHASE_INVOICE: "采购发票", PAYOUT_PROOF: "付款凭证", SERIAL_VERIFICATION: "序列号核验", OTHER: "其他" },
+  proofStatus: { PENDING: "待处理", AVAILABLE: "可用", VERIFIED: "已核验", HIDDEN: "已隐藏" },
+  proofCompletenessState: { VERIFIED: "已核验", PARTIAL: "部分完整", INCOMPLETE: "缺少文件", HIGH_RISK: "需要紧急审核" },
+  reinvestDecision: { UNDECIDED: "未决定", REINVEST: "复投", PAYOUT: "支付" },
+  ledgerType: { INVENTORY: "库存", CASH: "资金", INVESTOR_LIABILITY: "投资者应付款" },
+  ledgerEntry: { UNITS_PURCHASED: "已采购数量", UNITS_RECEIVED: "已入库数量", UNITS_SOLD: "已售数量", UNITS_RETURNED: "退回数量", UNITS_REMAINING_ADJUSTMENT: "剩余数量调整", INVESTOR_CASH_IN: "投资者入金", SUPPLIER_PAYMENT: "供应商付款", LOGISTICS_COST: "物流成本", MARKETPLACE_SETTLEMENT: "平台结算", MARKETPLACE_FEE: "平台费用", REFUND: "退款", PAYOUT: "付款", REINVESTMENT: "复投", CAPITAL_ALLOCATED: "资金已分配", PROFIT_ACCRUED: "收益已确认", PAYOUT_APPROVED: "付款已批准", PAYOUT_PAID: "付款已完成", REINVESTED: "已复投", LOSS_RECOGNIZED: "亏损已确认", LIABILITY_ADJUSTMENT: "应付款调整" },
+  ledgerSourceType: { ALLOCATION: "项目", WITHDRAWAL_REQUEST: "提现申请", MONTHLY_REPORT: "月度报告", MANUAL_ADJUSTMENT: "手动调整", MARKETPLACE_SETTLEMENT: "平台结算", PROOF_ARTIFACT: "支持文件", OTHER: "其他" },
+  ledgerReversalStatus: { ALL: "全部", ORIGINAL_ONLY: "仅原始记录", REVERSALS_ONLY: "仅冲销记录", REVERSED_ONLY: "仅已冲销", CORRECTED_ONLY: "仅已更正" },
+  incidentSeverity: { ALL: "全部", LOW: "低", MEDIUM: "中", HIGH: "高", CRITICAL: "严重" },
+  incidentStatus: { ALL: "全部", OPEN: "待处理", ACKNOWLEDGED: "审核中", RESOLVED: "已解决" },
+  riskSource: { ALL: "全部", all: "全部", risk_engine: "风险评估", reconciliation: "核对", readiness: "准备状态", snapshot_integrity: "报告完整性", withdrawal: "提现", proof_completeness: "文件状态", manual: "手动", manual_evaluation: "手动评估", report_snapshot: "报告副本", readiness_gate: "准备审核", unknown: "未知" },
+  applicationStatus: { NEW: "新申请", REVIEWED: "已审核", APPROVED: "已批准", REJECTED: "已拒绝", CONTACTED: "已联系" },
+  applicationPriority: { LOW: "低", NORMAL: "普通", HIGH: "高", VIP: "VIP" },
+  reinvestInterest: { yes: "是", no: "否", not_sure: "不确定" },
+  investorStatus: { ACTIVE: "活跃", PAUSED: "已暂停", CLOSED: "已关闭" },
+  reportStatus: { DRAFT: "草稿", PUBLISHED: "已发布", ARCHIVED: "已归档" },
+  reconciliationState: { BALANCED: "已核对", WARNING: "需要关注", BROKEN: "存在差异" },
+  readinessState: { READY: "已就绪", READY_WITH_WARNINGS: "已就绪但有提示", NEEDS_REVIEW: "需要审核", BLOCKED: "已阻止" },
+  healthStatus: { HEALTHY: "正常", ATTENTION: "注意", CRITICAL: "严重", WARNING: "警告", BALANCED: "已核对", BROKEN: "存在差异" },
+  notificationChannel: { EMAIL: "电子邮件", TELEGRAM: "Telegram", IN_APP: "应用内", WEBHOOK: "Webhook" },
+  notificationStatus: { PENDING: "待处理", SENT: "已发送", FAILED: "失败" },
+  checkpointCategory: { READINESS: "准备状态", RECONCILIATION: "核对", RISK: "风险", WITHDRAWALS: "提现", PROOF: "文件", NOTIFICATIONS: "通知", INCIDENTS: "事件", SNAPSHOT_INTEGRITY: "报告完整性" },
+  auditAction: { CREATE_READINESS_POLICY: "创建准备规则", CREATE_AND_ACTIVATE_READINESS_POLICY: "创建并启用准备规则", UPDATE_READINESS_POLICY: "更新准备规则", ACTIVATE_READINESS_POLICY: "启用准备规则" },
+  applicationSort: { smart: "推荐优先级", newest: "最新优先", oldest: "最早优先", "amount-desc": "金额从高到低", "next-action": "下一步操作" }
+};
+
+const ENUM_LABELS: Partial<Record<Locale, Record<EnumGroup, LabelMap>>> = { en: EN, ru: RU, es: ES, de: DE, zh: ZH };
 
 /** Humanizes a raw enum token (e.g. "SHIPMENT_PROOF" -> "Shipment proof") as a fallback. */
 export function humanizeToken(value: string): string {

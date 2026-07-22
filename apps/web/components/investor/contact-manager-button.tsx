@@ -1,47 +1,28 @@
 "use client";
 
 import * as React from "react";
-import { Send } from "lucide-react";
+import Link from "next/link";
+import { LifeBuoy } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 
-const LABELS: Record<string, string> = {
+const LABELS: Record<Locale, string> = {
   en: "Contact manager",
-  ru: "Написать менеджеру"
+  ru: "Написать менеджеру",
+  es: "Contactar al gestor",
+  de: "Manager kontaktieren",
+  zh: "联系经理"
 };
 
-// Header button that opens the admin-configured Telegram handle in a new tab.
-// The handle is read from the public GET /api/settings/contact endpoint; until
-// it resolves we fall back to the default so the button is always functional.
-// Optional `context` pre-fills the Telegram message so the manager immediately
-// sees which page/entity the question is about (F6).
 export function ContactManagerButton({ locale, context }: { locale: Locale; context?: string }) {
-  const label = LABELS[locale] ?? LABELS.en;
-  const [handle, setHandle] = React.useState("otizceo");
-
-  React.useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/settings/contact", { signal: controller.signal })
-      .then((response) => response.json())
-      .then((payload: { ok: boolean; telegram?: string }) => {
-        if (payload.ok && payload.telegram) setHandle(payload.telegram);
-      })
-      .catch(() => {
-        /* keep the default handle */
-      });
-    return () => controller.abort();
-  }, []);
-
-  const href = context ? `https://t.me/${handle}?text=${encodeURIComponent(context)}` : `https://t.me/${handle}`;
+  const query = context ? `?context=${encodeURIComponent(context)}` : "";
 
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      href={`/${locale}/investor/support${query}`}
       className="inline-flex h-10 items-center gap-2 rounded-full border border-border dark:border-white/10 bg-muted/40 dark:bg-white/[0.06] px-4 text-sm font-semibold text-foreground transition-colors hover:border-gold-200/40 hover:bg-muted/60 dark:hover:bg-white/[0.1]"
     >
-      <Send className="size-4 text-amber-700 dark:text-gold-100" />
-      <span className="hidden sm:inline">{label}</span>
-    </a>
+      <LifeBuoy className="size-4 text-amber-700 dark:text-gold-100" />
+      <span className="hidden sm:inline">{LABELS[locale]}</span>
+    </Link>
   );
 }

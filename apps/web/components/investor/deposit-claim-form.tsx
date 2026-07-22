@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
 import { CheckCircle2, Send } from "lucide-react";
 import type { Locale } from "@otiz/lib";
@@ -27,6 +28,7 @@ const STRINGS = {
     cancel: "Cancel",
     successTitle: "Notification sent",
     successBody: "Your manager will verify the incoming transfer and get back to you.",
+    track: "Track status",
     another: "Report another transfer",
     errAmount: "Enter a valid amount.",
     errFallback: "Could not send the notification. Please try again."
@@ -50,6 +52,7 @@ const STRINGS = {
     cancel: "Отмена",
     successTitle: "Уведомление отправлено",
     successBody: "Менеджер проверит поступление и свяжется с вами.",
+    track: "Следить за статусом",
     another: "Сообщить о ещё одном переводе",
     errAmount: "Введите корректную сумму.",
     errFallback: "Не удалось отправить уведомление. Попробуйте ещё раз."
@@ -73,6 +76,7 @@ const STRINGS = {
     cancel: "Cancelar",
     successTitle: "Notificación enviada",
     successBody: "Su gestor verificará la transferencia entrante y se pondrá en contacto con usted.",
+    track: "Seguir el estado",
     another: "Informar de otra transferencia",
     errAmount: "Introduzca un importe válido.",
     errFallback: "No se pudo enviar la notificación. Vuelva a intentarlo."
@@ -96,6 +100,7 @@ const STRINGS = {
     cancel: "Abbrechen",
     successTitle: "Benachrichtigung gesendet",
     successBody: "Ihr Manager prüft die eingehende Überweisung und meldet sich bei Ihnen.",
+    track: "Status verfolgen",
     another: "Weitere Überweisung melden",
     errAmount: "Geben Sie einen gültigen Betrag ein.",
     errFallback: "Die Benachrichtigung konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
@@ -119,6 +124,7 @@ const STRINGS = {
     cancel: "取消",
     successTitle: "通知已发送",
     successBody: "您的经理将核实到账的转账并与您联系。",
+    track: "查看状态",
     another: "报告另一笔转账",
     errAmount: "请输入有效的金额。",
     errFallback: "无法发送通知。请重试。"
@@ -190,16 +196,10 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
               {t.successTitle}
             </p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.successBody}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setSubmitted(false);
-                setIsOpen(true);
-              }}
-              className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {t.another}
-            </button>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href={`/${locale}/investor/history`} className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background">{t.track}</Link>
+              <button type="button" onClick={() => { setSubmitted(false); setIsOpen(true); }} className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground dark:border-white/10">{t.another}</button>
+            </div>
           </div>
         ) : !isOpen ? (
           <Button type="button" onClick={() => setIsOpen(true)} className="gap-2">

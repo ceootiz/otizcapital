@@ -1,34 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Download, FileSpreadsheet, FileText, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
-import { ActiveInvestorCount } from "./active-investor-count";
-
-// Anonymized active-investor count label (single string; kept inline rather than
-// threaded through the large INVESTOR_STRINGS dict).
-const ACTIVE_INVESTORS_LABEL: Record<string, string> = {
-  en: "Active investors on the platform:",
-  ru: "Активных инвесторов на платформе:",
-  es: "Inversores activos en la plataforma:",
-  de: "Aktive Investoren auf der Plattform:",
-  zh: "平台活跃投资者："
-};
-
-// Effective annual yield-rate line (single strings kept inline). {rate} is the
-// numeric percent; the personal tag shows when the investor has a promo override.
-const YIELD_RATE_LABEL: Record<string, string> = {
-  en: "Your annual yield rate:",
-  ru: "Ваша годовая ставка доходности:",
-  es: "Su tasa de rendimiento anual:",
-  de: "Ihr jährlicher Renditesatz:",
-  zh: "您的年化收益率："
-};
-const YIELD_RATE_PERSONAL_TAG: Record<string, string> = {
-  en: "personal rate",
-  ru: "персональная ставка",
-  es: "tasa personal",
-  de: "persönlicher Satz",
-  zh: "专属费率"
-};
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress, WithdrawalLockStatus } from "@otiz/database";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
@@ -38,7 +10,7 @@ import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton,
 import { ContactManagerButton } from "./contact-manager-button";
 import { DepositClaimForm } from "./deposit-claim-form";
 
-type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "settings";
+type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "support" | "settings";
 
 export type InvestorPaymentView = {
   id: string;
@@ -78,7 +50,7 @@ const INVESTOR_STRINGS = {
     backHome: "Back to homepage",
     brand: "OTIZ INVESTOR",
     investorLabel: "Investor",
-    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", history: "History", withdrawals: "Withdrawals", reinvest: "Reinvest", settings: "Settings" },
+    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", history: "History", withdrawals: "Withdrawals", reinvest: "Reinvest", support: "Support", settings: "Settings" },
     pages: {
       dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
       deposit: { eyebrow: "Account funding", title: "Deposit", description: "Send funds to the address below and notify your manager." },
@@ -95,6 +67,20 @@ const INVESTOR_STRINGS = {
       activeCapital: "Active capital", totalInvested: "Total invested", realizedProfit: "Realized profit", expectedProfit: "Expected profit",
       totalPayouts: "Total payouts", pendingPayouts: "Pending payouts", activeAllocations: "Active allocations", completedAllocations: "Completed allocations",
       currentAverageRoi: "Current average ROI", nextExpectedPayout: "Next expected payout"
+    },
+    summary: {
+      total: "Total capital", totalHint: "Free funds, working capital and confirmed profit, less completed withdrawals.",
+      free: "Free funds", freeHint: "Available for a future deal or withdrawal when eligible.",
+      working: "Working capital", workingHint: "Currently assigned to active deals.",
+      pending: "Expected", pendingHint: "Expected profit and payouts still awaiting confirmation. Not included until confirmed."
+    },
+    nextAction: {
+      label: "What happens next", open: "Open",
+      payoutTitle: "Your payout is being prepared", payoutDesc: "Open withdrawals to see the current status and expected date.",
+      reportTitle: "Your latest report is ready", reportDesc: "Review the result, linked deal and available documents.",
+      workingTitle: "Your capital is working", workingDesc: "Open the active deal to see its stage, latest update and supporting documents.",
+      allocationTitle: "Funds are ready for allocation", allocationDesc: "Your manager can assign the available capital to the next suitable deal.",
+      depositTitle: "Fund your account", depositDesc: "Open the deposit page, send funds and submit the transfer for confirmation."
     },
     dash: {
       activeTitle: "Active allocations", activeDesc: "Current capital assigned to managed electronics procurement, logistics, and marketplace sale operations.",
@@ -177,7 +163,7 @@ const INVESTOR_STRINGS = {
     backHome: "На главную",
     brand: "OTIZ INVESTOR",
     investorLabel: "Инвестор",
-    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", history: "История", withdrawals: "Выводы", reinvest: "Реинвест", settings: "Настройки" },
+    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", history: "История", withdrawals: "Выводы", reinvest: "Реинвест", support: "Поддержка", settings: "Настройки" },
     pages: {
       dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
       deposit: { eyebrow: "Пополнение счёта", title: "Пополнение", description: "Отправьте средства на указанный адрес и уведомите менеджера." },
@@ -194,6 +180,20 @@ const INVESTOR_STRINGS = {
       activeCapital: "Активный капитал", totalInvested: "Всего инвестировано", realizedProfit: "Реализованная прибыль", expectedProfit: "Ожидаемая прибыль",
       totalPayouts: "Всего выплат", pendingPayouts: "Ожидающие выплаты", activeAllocations: "Активные аллокации", completedAllocations: "Завершённые аллокации",
       currentAverageRoi: "Текущий средний ROI", nextExpectedPayout: "Следующая ожидаемая выплата"
+    },
+    summary: {
+      total: "Общий капитал", totalHint: "Свободные средства, капитал в работе и подтверждённая прибыль за вычетом завершённых выводов.",
+      free: "Свободно", freeHint: "Можно направить в новую сделку или вывести, когда вывод доступен.",
+      working: "В работе", workingHint: "Сейчас участвует в активных сделках.",
+      pending: "Ожидается", pendingHint: "Ожидаемая прибыль и выплаты на подтверждении. Они не учитываются как подтверждённые."
+    },
+    nextAction: {
+      label: "Что дальше", open: "Открыть",
+      payoutTitle: "Выплата готовится", payoutDesc: "Откройте выводы, чтобы посмотреть статус и ожидаемую дату.",
+      reportTitle: "Новый отчёт готов", reportDesc: "Проверьте результат, связанную сделку и доступные документы.",
+      workingTitle: "Капитал работает", workingDesc: "Откройте активную сделку: там указан этап, последнее обновление и документы.",
+      allocationTitle: "Средства готовы к размещению", allocationDesc: "Менеджер может направить свободный капитал в следующую подходящую сделку.",
+      depositTitle: "Пополните счёт", depositDesc: "Откройте пополнение, отправьте средства и передайте перевод на подтверждение."
     },
     dash: {
       activeTitle: "Активные аллокации", activeDesc: "Текущий капитал, назначенный на управляемую закупку электроники, логистику и продажи на маркетплейсах.",
@@ -274,6 +274,90 @@ const INVESTOR_STRINGS = {
   }
 } as const;
 
+const LOCALIZED_INVESTOR_STRINGS = {
+  en: INVESTOR_STRINGS.en,
+  ru: INVESTOR_STRINGS.ru,
+  es: {
+    ...INVESTOR_STRINGS.en,
+    backHome: "Volver al inicio", investorLabel: "Inversor",
+    nav: { dashboard: "Resumen", deposit: "Depósito", allocations: "Operaciones", reports: "Informes", documents: "Documentos", history: "Historial", withdrawals: "Retiros", reinvest: "Reinvertir", support: "Soporte", settings: "Ajustes" },
+    pages: {
+      dashboard: { eyebrow: "Su capital", title: "Resumen del inversor", description: "Vea cuánto capital está disponible, cuánto está trabajando y qué ocurrirá después." },
+      deposit: { eyebrow: "Añadir capital", title: "Depósito", description: "Envíe los fondos a la dirección indicada y presente la transferencia para su confirmación." },
+      allocations: { eyebrow: "Operaciones activas", title: "Operaciones", description: "Consulte dónde trabaja su capital, el estado de cada operación y la última actualización." },
+      reports: { eyebrow: "Resultados", title: "Informes", description: "Consulte los resultados publicados, los pagos y los documentos relacionados." },
+      documents: { eyebrow: "Acuerdos y archivos", title: "Documentos", description: "Consulte y firme los documentos preparados para su cuenta." },
+      history: { eyebrow: "Movimiento del capital", title: "Historial", description: "Consulte los resultados mensuales publicados para su cuenta." },
+      withdrawals: { eyebrow: "Recibir fondos", title: "Retiros", description: "Solicite un retiro y siga su revisión, programación y pago." },
+      reinvest: { eyebrow: "Su elección", title: "Reinvertir", description: "Indique si desea usar los resultados disponibles en futuras operaciones." },
+      settings: { eyebrow: "Su cuenta", title: "Ajustes", description: "Gestione el idioma, las notificaciones, los monederos y los datos de su cuenta." }
+    },
+    kpi: { totalBalance: "Saldo", availableBalance: "Pendiente de asignación", workingCapital: "En operaciones", retainedProfit: "Beneficio conservado", activeCapital: "Capital activo", totalInvested: "Total invertido", realizedProfit: "Beneficio confirmado", expectedProfit: "Beneficio previsto", totalPayouts: "Total pagado", pendingPayouts: "Pagos pendientes", activeAllocations: "Operaciones activas", completedAllocations: "Operaciones completadas", currentAverageRoi: "ROI medio", nextExpectedPayout: "Próximo pago previsto" },
+    summary: { total: "Capital total", totalHint: "Fondos libres, capital en operaciones y beneficio confirmado, menos los retiros pagados.", free: "Disponible", freeHint: "Puede destinarse a una nueva operación o retirarse cuando esté disponible.", working: "En operaciones", workingHint: "Actualmente participa en operaciones activas.", pending: "Pendiente", pendingHint: "Beneficio previsto y pagos aún por confirmar. No se incluyen hasta su confirmación." },
+    nextAction: { label: "Qué ocurre después", open: "Abrir", payoutTitle: "Su pago se está preparando", payoutDesc: "Abra Retiros para consultar el estado y la fecha prevista.", reportTitle: "Su último informe está listo", reportDesc: "Revise el resultado, la operación relacionada y los documentos disponibles.", workingTitle: "Su capital está trabajando", workingDesc: "Abra la operación activa para ver la etapa, la última actualización y los documentos.", allocationTitle: "Los fondos están listos para asignarse", allocationDesc: "Su gestor puede asignar el capital disponible a la siguiente operación adecuada.", depositTitle: "Añada capital", depositDesc: "Abra Depósito, envíe los fondos y presente la transferencia para su confirmación." },
+    dash: { activeTitle: "Operaciones activas", activeDesc: "Capital actualmente asignado a compras, logística y ventas.", latestTitle: "Último informe", latestDesc: "El informe publicado explica el resultado y sus documentos.", publishedPrefix: "Publicado", reinvestPreference: "Preferencia de reinversión", enabled: "Activada", disabled: "Desactivada", riskNote: "Riesgo", riskNoteValue: "Los resultados dependen de la ejecución de cada operación. La rentabilidad no está garantizada.", noActiveTitle: "Aún no hay operaciones activas.", noActiveDesc: "Las operaciones aparecerán cuando su gestor asigne el capital disponible.", noReportTitle: "Aún no hay informes publicados.", noReportDesc: "El informe aparecerá después de la revisión del gestor." },
+    alloc: { noActiveTitle: "Aún no hay operaciones activas.", noActiveDesc: "Su cuenta está activa. Las operaciones aparecerán cuando se asigne capital.", lifecycleProgress: "Progreso", invested: "Capital asignado", expectedReturn: "Resultado previsto", expectedPayout: "Pago previsto", updated: "Actualizado", proofHealth: "Estado de documentos", riskVisibility: "Nivel de atención", started: "Inicio", latestProof: "Último documento", latestReport: "Último informe", riskNote: "Nota", underManagerReview: "En revisión", noProofYet: "Aún no hay documentos disponibles.", noReportYet: "Aún no hay informe publicado.", managerReviewRequired: "Requiere revisión del gestor.", normalMonitoring: "Seguimiento normal." },
+    reportsList: { noReportsTitle: "Aún no hay informes publicados.", noReportsDesc: "Los informes aparecerán después de su revisión y publicación.", published: "Publicado", afterManagerReview: "tras la revisión", summary: "Resumen", performance: "Resultado", payouts: "Pagos", proofCategories: "Documentos", noPerformance: "No hay resultado publicado.", noPayout: "No hay información de pago.", noProofCats: "No hay documentos disponibles en este informe." },
+    withdraw: { availabilityTitle: "Disponibilidad", availabilityDesc: "Cada solicitud es revisada antes de programar el pago.", available: "Disponible para retirar", pendingPayouts: "Pagos pendientes", scheduledNext: "Próximo pago", historyTitle: "Historial de retiros", historyDesc: "Estado e historial de sus solicitudes.", noRequestsTitle: "Aún no hay solicitudes de retiro.", noRequestsDesc: "Las solicitudes y los pagos aparecerán aquí.", pendingReview: "En revisión", scheduledPayouts: "Pagos programados", paidHistory: "Pagados", noPending: "No hay solicitudes pendientes.", noScheduled: "No hay pagos programados.", noPaid: "Aún no hay retiros pagados.", requested: "Solicitado", scheduled: "Programado", paid: "Pagado", method: "Método", destination: "Destino", investorNote: "Nota", noNote: "Sin nota.", notSet: "No indicado" },
+    reinvest: { approachTitle: "Cómo funciona", approachDesc: "La reinversión puede destinar resultados disponibles a futuras operaciones tras la revisión del gestor.", whatChanges: "Qué cambia", whatChangesVal: "Los fondos elegibles pueden usarse en futuras operaciones en lugar de retirarse.", whatNotChanges: "Qué no cambia", whatNotChangesVal: "No garantiza disponibilidad, plazos ni resultados.", reviewModel: "Confirmación", reviewModelVal: "El gestor confirma el cambio antes de aplicarlo." },
+    deposit: { instructionTitle: "Cómo depositar", instruction: "Envíe fondos a la dirección indicada y presente la transferencia para su confirmación.", emptyTitle: "No hay direcciones disponibles.", emptyDesc: "Contacte con su gestor para recibir instrucciones." },
+    files: { title: "Archivos del informe", desc: "Archivos publicados disponibles para descargar.", emptyTitle: "Los informes aparecerán después de publicarse.", download: "Descargar", uploaded: "Cargado" },
+    welcome: { title: "Bienvenido", subtitle: "Su cuenta está activa. El siguiente paso es añadir capital o esperar su asignación.", depositTitle: "Añada capital", depositDesc: "Envíe los fondos y presente la transferencia para su confirmación.", timelineTitle: "Cómo funciona", steps: { deposit: "Depósito", allocation: "Operación", reporting: "Informe", payout: "Pago" } },
+    timeline: { title: "Estado", hint: "Plazo habitual: 3–5 días laborables.", steps: { received: "Recibida", review: "En revisión", approved: "Aprobada", scheduled: "Programada", paid: "Pagada" } },
+    moneyWork: { active: "Activa", daysWorking: (days: number) => `${days} ${days === 1 ? "día" : "días"} en operación` },
+    howItWorks: { title: "Cómo funciona", steps: [{ name: "Depósito", desc: "Envía los fondos y confirma la transferencia" }, { name: "Operación", desc: "El gestor asigna el capital a una operación" }, { name: "Venta", desc: "El capital participa en comercio de productos" }, { name: "Informe", desc: "Recibe un informe con el resultado" }, { name: "Pago o reinversión", desc: "Elige retirar o reinvertir el resultado" }] },
+    payoutHint: "La fecha es una estimación y puede cambiar según el desarrollo de la operación.",
+    history: { totalsProfit: "Beneficio total", totalsPayout: "Total pagado", totalsReinvested: "Total reinvertido", colMonth: "Mes", colProfit: "Beneficio", colPayout: "Pago", colReinvested: "Reinvertido", colRoi: "ROI %", emptyTitle: "El historial aparecerá después del primer informe.", emptyDesc: "Los resultados publicados se añadirán aquí automáticamente." },
+    common: { notScheduled: "No programado", notAvailable: "No disponible" }
+  },
+  de: {
+    ...INVESTOR_STRINGS.en,
+    backHome: "Zur Startseite", investorLabel: "Investor",
+    nav: { dashboard: "Übersicht", deposit: "Einzahlung", allocations: "Geschäfte", reports: "Berichte", documents: "Dokumente", history: "Verlauf", withdrawals: "Auszahlungen", reinvest: "Reinvestieren", support: "Support", settings: "Einstellungen" },
+    pages: { dashboard: { eyebrow: "Ihr Kapital", title: "Investor-Übersicht", description: "Sehen Sie verfügbares Kapital, laufende Geschäfte und den nächsten Schritt." }, deposit: { eyebrow: "Kapital einzahlen", title: "Einzahlung", description: "Senden Sie den Betrag an die angegebene Adresse und reichen Sie die Überweisung zur Bestätigung ein." }, allocations: { eyebrow: "Laufende Geschäfte", title: "Geschäfte", description: "Sehen Sie, wo Ihr Kapital arbeitet, den Status und die letzte Aktualisierung." }, reports: { eyebrow: "Ergebnisse", title: "Berichte", description: "Sehen Sie veröffentlichte Ergebnisse, Auszahlungen und zugehörige Dokumente." }, documents: { eyebrow: "Verträge und Dateien", title: "Dokumente", description: "Prüfen und unterzeichnen Sie die für Ihr Konto bereitgestellten Dokumente." }, history: { eyebrow: "Kapitalbewegungen", title: "Verlauf", description: "Sehen Sie die veröffentlichten Monatsergebnisse Ihres Kontos." }, withdrawals: { eyebrow: "Geld erhalten", title: "Auszahlungen", description: "Beantragen Sie eine Auszahlung und verfolgen Sie Prüfung, Planung und Zahlung." }, reinvest: { eyebrow: "Ihre Auswahl", title: "Reinvestieren", description: "Legen Sie fest, ob verfügbare Ergebnisse in künftige Geschäfte fließen sollen." }, settings: { eyebrow: "Ihr Konto", title: "Einstellungen", description: "Verwalten Sie Sprache, Benachrichtigungen, Wallets und Kontodaten." } },
+    kpi: { totalBalance: "Guthaben", availableBalance: "Zur Zuweisung", workingCapital: "In Geschäften", retainedProfit: "Einbehaltener Gewinn", activeCapital: "Aktives Kapital", totalInvested: "Insgesamt investiert", realizedProfit: "Bestätigter Gewinn", expectedProfit: "Erwarteter Gewinn", totalPayouts: "Ausgezahlt", pendingPayouts: "Ausstehende Zahlungen", activeAllocations: "Aktive Geschäfte", completedAllocations: "Abgeschlossene Geschäfte", currentAverageRoi: "Durchschnittlicher ROI", nextExpectedPayout: "Nächste erwartete Zahlung" },
+    summary: { total: "Gesamtkapital", totalHint: "Freie Mittel, arbeitendes Kapital und bestätigter Gewinn abzüglich abgeschlossener Auszahlungen.", free: "Verfügbar", freeHint: "Kann einem neuen Geschäft zugewiesen oder bei Verfügbarkeit ausgezahlt werden.", working: "In Geschäften", workingHint: "Derzeit aktiven Geschäften zugewiesen.", pending: "Ausstehend", pendingHint: "Erwarteter Gewinn und Zahlungen, die noch nicht bestätigt sind." },
+    nextAction: { label: "Nächster Schritt", open: "Öffnen", payoutTitle: "Ihre Auszahlung wird vorbereitet", payoutDesc: "Öffnen Sie Auszahlungen für Status und erwartetes Datum.", reportTitle: "Ihr neuester Bericht ist bereit", reportDesc: "Prüfen Sie Ergebnis, Geschäft und verfügbare Dokumente.", workingTitle: "Ihr Kapital arbeitet", workingDesc: "Öffnen Sie das aktive Geschäft für Status, Aktualisierung und Dokumente.", allocationTitle: "Mittel sind zur Zuweisung bereit", allocationDesc: "Ihr Manager kann das verfügbare Kapital dem nächsten passenden Geschäft zuweisen.", depositTitle: "Kapital einzahlen", depositDesc: "Öffnen Sie Einzahlung, senden Sie den Betrag und reichen Sie ihn zur Bestätigung ein." },
+    dash: { activeTitle: "Aktive Geschäfte", activeDesc: "Kapital, das derzeit Einkauf, Logistik und Verkauf zugewiesen ist.", latestTitle: "Neuester Bericht", latestDesc: "Der veröffentlichte Bericht erklärt Ergebnis und Dokumente.", publishedPrefix: "Veröffentlicht", reinvestPreference: "Reinvestitionswunsch", enabled: "Aktiv", disabled: "Inaktiv", riskNote: "Risiko", riskNoteValue: "Ergebnisse hängen von der Durchführung des Geschäfts ab. Renditen sind nicht garantiert.", noActiveTitle: "Noch keine aktiven Geschäfte.", noActiveDesc: "Geschäfte erscheinen, sobald Ihr Manager Kapital zuweist.", noReportTitle: "Noch kein Bericht veröffentlicht.", noReportDesc: "Der Bericht erscheint nach Prüfung durch den Manager." },
+    alloc: { noActiveTitle: "Noch keine aktiven Geschäfte.", noActiveDesc: "Ihr Konto ist aktiv. Geschäfte erscheinen nach der Kapitalzuweisung.", lifecycleProgress: "Fortschritt", invested: "Zugewiesenes Kapital", expectedReturn: "Erwartetes Ergebnis", expectedPayout: "Erwartete Zahlung", updated: "Aktualisiert", proofHealth: "Dokumentstatus", riskVisibility: "Aufmerksamkeitsstufe", started: "Beginn", latestProof: "Neuestes Dokument", latestReport: "Neuester Bericht", riskNote: "Hinweis", underManagerReview: "In Prüfung", noProofYet: "Noch keine Dokumente verfügbar.", noReportYet: "Noch kein Bericht veröffentlicht.", managerReviewRequired: "Prüfung durch den Manager erforderlich.", normalMonitoring: "Normale Begleitung." },
+    reportsList: { noReportsTitle: "Noch keine Berichte veröffentlicht.", noReportsDesc: "Berichte erscheinen nach Prüfung und Veröffentlichung.", published: "Veröffentlicht", afterManagerReview: "nach Prüfung", summary: "Zusammenfassung", performance: "Ergebnis", payouts: "Zahlungen", proofCategories: "Dokumente", noPerformance: "Kein Ergebnis veröffentlicht.", noPayout: "Keine Zahlungsangabe.", noProofCats: "Keine Dokumente in diesem Bericht." },
+    withdraw: { availabilityTitle: "Verfügbarkeit", availabilityDesc: "Jeder Antrag wird vor der Zahlungsplanung geprüft.", available: "Auszahlbar", pendingPayouts: "Ausstehende Zahlungen", scheduledNext: "Nächste Zahlung", historyTitle: "Auszahlungsverlauf", historyDesc: "Status und Verlauf Ihrer Anträge.", noRequestsTitle: "Noch keine Auszahlungsanträge.", noRequestsDesc: "Anträge und Zahlungen erscheinen hier.", pendingReview: "In Prüfung", scheduledPayouts: "Geplante Zahlungen", paidHistory: "Bezahlt", noPending: "Keine offenen Anträge.", noScheduled: "Keine geplanten Zahlungen.", noPaid: "Noch keine Auszahlungen.", requested: "Beantragt", scheduled: "Geplant", paid: "Bezahlt", method: "Methode", destination: "Ziel", investorNote: "Hinweis", noNote: "Kein Hinweis.", notSet: "Nicht angegeben" },
+    reinvest: { approachTitle: "So funktioniert es", approachDesc: "Verfügbare Ergebnisse können nach Prüfung künftigen Geschäften zugewiesen werden.", whatChanges: "Was sich ändert", whatChangesVal: "Geeignete Mittel können statt einer Auszahlung in künftige Geschäfte fließen.", whatNotChanges: "Was gleich bleibt", whatNotChangesVal: "Verfügbarkeit, Zeitplan und Ergebnis sind nicht garantiert.", reviewModel: "Bestätigung", reviewModelVal: "Der Manager bestätigt die Änderung vor der Anwendung." },
+    deposit: { instructionTitle: "So zahlen Sie ein", instruction: "Senden Sie den Betrag und reichen Sie die Überweisung zur Bestätigung ein.", emptyTitle: "Keine Einzahlungsadresse verfügbar.", emptyDesc: "Kontaktieren Sie Ihren Manager für Anweisungen." },
+    files: { title: "Berichtsdateien", desc: "Veröffentlichte Dateien zum Herunterladen.", emptyTitle: "Berichte erscheinen nach der Veröffentlichung.", download: "Herunterladen", uploaded: "Hochgeladen" },
+    welcome: { title: "Willkommen", subtitle: "Ihr Konto ist aktiv. Zahlen Sie Kapital ein oder warten Sie auf die Zuweisung.", depositTitle: "Kapital einzahlen", depositDesc: "Senden Sie den Betrag und reichen Sie ihn zur Bestätigung ein.", timelineTitle: "So funktioniert es", steps: { deposit: "Einzahlung", allocation: "Geschäft", reporting: "Bericht", payout: "Zahlung" } },
+    timeline: { title: "Status", hint: "Übliche Bearbeitung: 3–5 Werktage.", steps: { received: "Eingegangen", review: "In Prüfung", approved: "Genehmigt", scheduled: "Geplant", paid: "Bezahlt" } },
+    moneyWork: { active: "Aktiv", daysWorking: (days: number) => `${days} ${days === 1 ? "Tag" : "Tage"} im Geschäft` },
+    howItWorks: { title: "So funktioniert es", steps: [{ name: "Einzahlung", desc: "Sie senden den Betrag und bestätigen die Überweisung" }, { name: "Geschäft", desc: "Der Manager weist das Kapital einem Geschäft zu" }, { name: "Verkauf", desc: "Das Kapital arbeitet im Warenhandel" }, { name: "Bericht", desc: "Sie erhalten einen Bericht zum Ergebnis" }, { name: "Zahlung oder Reinvestition", desc: "Sie wählen Auszahlung oder Reinvestition" }] },
+    payoutHint: "Das Datum ist eine Schätzung und kann sich je nach Geschäftsverlauf ändern.",
+    history: { totalsProfit: "Gesamtgewinn", totalsPayout: "Ausgezahlt", totalsReinvested: "Reinvestiert", colMonth: "Monat", colProfit: "Gewinn", colPayout: "Zahlung", colReinvested: "Reinvestiert", colRoi: "ROI %", emptyTitle: "Der Verlauf erscheint nach dem ersten Bericht.", emptyDesc: "Veröffentlichte Ergebnisse werden automatisch hinzugefügt." },
+    common: { notScheduled: "Nicht geplant", notAvailable: "Nicht verfügbar" }
+  },
+  zh: {
+    ...INVESTOR_STRINGS.en,
+    backHome: "返回首页", investorLabel: "投资者",
+    nav: { dashboard: "概览", deposit: "入金", allocations: "项目", reports: "报告", documents: "文件", history: "记录", withdrawals: "提现", reinvest: "再投资", support: "支持", settings: "设置" },
+    pages: { dashboard: { eyebrow: "您的资金", title: "投资者概览", description: "查看可用资金、运作中的资金以及下一步安排。" }, deposit: { eyebrow: "增加资金", title: "入金", description: "向指定地址转账，并提交转账以供确认。" }, allocations: { eyebrow: "进行中的项目", title: "项目", description: "查看资金所在项目、当前阶段和最新进展。" }, reports: { eyebrow: "项目结果", title: "报告", description: "查看已发布的结果、付款和相关文件。" }, documents: { eyebrow: "协议与文件", title: "文件", description: "查看并签署为您的账户准备的文件。" }, history: { eyebrow: "资金记录", title: "记录", description: "查看已发布的月度结果。" }, withdrawals: { eyebrow: "接收资金", title: "提现", description: "提交提现申请，并查看审核、安排和付款状态。" }, reinvest: { eyebrow: "您的选择", title: "再投资", description: "选择是否将可用结果用于未来项目。" }, settings: { eyebrow: "您的账户", title: "设置", description: "管理语言、通知、钱包和账户信息。" } },
+    kpi: { totalBalance: "余额", availableBalance: "待分配", workingCapital: "运作中", retainedProfit: "留存利润", activeCapital: "活跃资金", totalInvested: "累计投入", realizedProfit: "已确认利润", expectedProfit: "预计利润", totalPayouts: "累计支付", pendingPayouts: "待支付", activeAllocations: "进行中项目", completedAllocations: "已完成项目", currentAverageRoi: "平均回报率", nextExpectedPayout: "下次预计付款" },
+    summary: { total: "总资金", totalHint: "可用资金、运作中资金和已确认利润，扣除已完成提现。", free: "可用", freeHint: "可用于新项目，或在满足条件时提现。", working: "运作中", workingHint: "目前已分配至进行中的项目。", pending: "待确认", pendingHint: "尚未确认的预计利润和付款，确认前不计入已确认金额。" },
+    nextAction: { label: "下一步", open: "打开", payoutTitle: "您的付款正在准备", payoutDesc: "打开提现页面查看状态和预计日期。", reportTitle: "最新报告已准备好", reportDesc: "查看结果、相关项目和可用文件。", workingTitle: "您的资金正在运作", workingDesc: "打开进行中的项目，查看阶段、最新进展和文件。", allocationTitle: "资金可以分配", allocationDesc: "您的经理可以将可用资金分配到下一个合适项目。", depositTitle: "增加资金", depositDesc: "打开入金页面，完成转账并提交确认。" },
+    dash: { activeTitle: "进行中的项目", activeDesc: "目前用于采购、物流和销售的资金。", latestTitle: "最新报告", latestDesc: "已发布报告会说明结果和相关文件。", publishedPrefix: "发布时间", reinvestPreference: "再投资选择", enabled: "已开启", disabled: "已关闭", riskNote: "风险说明", riskNoteValue: "结果取决于每个项目的执行情况，不保证收益。", noActiveTitle: "暂无进行中的项目。", noActiveDesc: "经理分配资金后，项目将显示在这里。", noReportTitle: "暂无已发布报告。", noReportDesc: "经理审核后，报告将显示在这里。" },
+    alloc: { noActiveTitle: "暂无进行中的项目。", noActiveDesc: "您的账户已激活，资金分配后会显示项目。", lifecycleProgress: "进度", invested: "分配资金", expectedReturn: "预计结果", expectedPayout: "预计付款", updated: "更新时间", proofHealth: "文件状态", riskVisibility: "关注级别", started: "开始时间", latestProof: "最新文件", latestReport: "最新报告", riskNote: "说明", underManagerReview: "审核中", noProofYet: "暂无可用文件。", noReportYet: "暂无已发布报告。", managerReviewRequired: "需要经理审核。", normalMonitoring: "正常跟进。" },
+    reportsList: { noReportsTitle: "暂无已发布报告。", noReportsDesc: "报告将在审核并发布后显示。", published: "已发布", afterManagerReview: "审核后", summary: "摘要", performance: "结果", payouts: "付款", proofCategories: "文件", noPerformance: "暂无已发布结果。", noPayout: "暂无付款信息。", noProofCats: "本报告暂无文件。" },
+    withdraw: { availabilityTitle: "提现可用性", availabilityDesc: "每个申请都会在安排付款前审核。", available: "可提现", pendingPayouts: "待支付", scheduledNext: "下次付款", historyTitle: "提现记录", historyDesc: "查看申请状态和历史。", noRequestsTitle: "暂无提现申请。", noRequestsDesc: "申请和付款会显示在这里。", pendingReview: "审核中", scheduledPayouts: "已安排", paidHistory: "已支付", noPending: "没有待处理申请。", noScheduled: "没有已安排付款。", noPaid: "暂无已支付提现。", requested: "申请时间", scheduled: "安排时间", paid: "支付时间", method: "方式", destination: "收款地址", investorNote: "说明", noNote: "无说明。", notSet: "未设置" },
+    reinvest: { approachTitle: "运作方式", approachDesc: "经经理确认后，可将可用结果用于未来项目。", whatChanges: "会改变什么", whatChangesVal: "符合条件的资金可用于未来项目，而不是提现。", whatNotChanges: "不会改变什么", whatNotChangesVal: "不保证项目供应、时间或结果。", reviewModel: "确认", reviewModelVal: "经理会在执行前确认变更。" },
+    deposit: { instructionTitle: "如何入金", instruction: "向指定地址转账，并提交转账以供确认。", emptyTitle: "暂无入金地址。", emptyDesc: "请联系经理获取入金说明。" },
+    files: { title: "报告文件", desc: "可下载的已发布文件。", emptyTitle: "报告发布后会显示在这里。", download: "下载", uploaded: "上传时间" },
+    welcome: { title: "欢迎", subtitle: "您的账户已激活。下一步是增加资金或等待分配。", depositTitle: "增加资金", depositDesc: "完成转账并提交确认。", timelineTitle: "运作方式", steps: { deposit: "入金", allocation: "项目", reporting: "报告", payout: "付款" } },
+    timeline: { title: "状态", hint: "通常审核时间：3至5个工作日。", steps: { received: "已收到", review: "审核中", approved: "已批准", scheduled: "已安排", paid: "已支付" } },
+    moneyWork: { active: "进行中", daysWorking: (days: number) => `已运作 ${days} 天` },
+    howItWorks: { title: "运作方式", steps: [{ name: "入金", desc: "转账并提交确认" }, { name: "项目", desc: "经理将资金分配到项目" }, { name: "销售", desc: "资金用于商品交易" }, { name: "报告", desc: "您会收到项目结果报告" }, { name: "付款或再投资", desc: "选择提现或再投资" }] },
+    payoutHint: "该日期为预计时间，可能因项目进展而变化。",
+    history: { totalsProfit: "累计利润", totalsPayout: "累计支付", totalsReinvested: "累计再投资", colMonth: "月份", colProfit: "利润", colPayout: "付款", colReinvested: "再投资", colRoi: "回报率", emptyTitle: "首份报告发布后会显示记录。", emptyDesc: "已发布结果将自动添加到这里。" },
+    common: { notScheduled: "未安排", notAvailable: "暂无" }
+  }
+} as const;
+
 // Russian day pluralization for the "N дней в работе" money-is-working line.
 function pluralizeDaysRu(days: number) {
   const mod100 = days % 100;
@@ -287,7 +371,7 @@ function pluralizeDaysRu(days: number) {
 type InvestorStrings = typeof INVESTOR_STRINGS.en;
 
 export function getInvestorStrings(locale: Locale): InvestorStrings {
-  return (INVESTOR_STRINGS as unknown as Record<string, InvestorStrings>)[locale] ?? INVESTOR_STRINGS.en;
+  return (LOCALIZED_INVESTOR_STRINGS as unknown as Record<string, InvestorStrings>)[locale] ?? INVESTOR_STRINGS.en;
 }
 
 function makeFormatters(locale: Locale, t: InvestorStrings) {
@@ -396,15 +480,11 @@ export function InvestorDashboardHome({
   data,
   investorName = "",
   depositAddresses = [],
-  annualRatePercent,
-  hasCustomRate = false
 }: {
   locale: Locale;
   data: InvestorDashboardData;
   investorName?: string;
   depositAddresses?: SerializedDepositAddress[];
-  annualRatePercent?: number;
-  hasCustomRate?: boolean;
 }) {
   const t = getInvestorStrings(locale);
   const f = makeFormatters(locale, t);
@@ -414,13 +494,39 @@ export function InvestorDashboardHome({
   // hollow "$0"s. Allocation counters always show their real number.
   const moneyMetric = (value: number) => (value === 0 && !data.summary.hasHistory ? "—" : f.money(value));
 
+  const expectedAmount = data.summary.expectedProfit + data.summary.pendingPayouts;
+  const nextAction = data.summary.pendingPayouts > 0
+    ? { title: t.nextAction.payoutTitle, description: t.nextAction.payoutDesc, href: `/${locale}/investor/withdrawals` }
+    : data.latestPublishedMonthlyReport
+      ? { title: t.nextAction.reportTitle, description: t.nextAction.reportDesc, href: `/${locale}/investor/reports/${data.latestPublishedMonthlyReport.id}` }
+      : data.activeAllocations[0]
+        ? { title: t.nextAction.workingTitle, description: t.nextAction.workingDesc, href: `/${locale}/investor/allocations/${data.activeAllocations[0].id}` }
+        : data.summary.availableBalance > 0
+          ? { title: t.nextAction.allocationTitle, description: t.nextAction.allocationDesc, href: `/${locale}/investor/allocations` }
+          : { title: t.nextAction.depositTitle, description: t.nextAction.depositDesc, href: `/${locale}/investor/deposit` };
+
   const balanceCards = (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalBalance} value={moneyMetric(data.summary.availableBalance)} />
-      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.availableBalance} value={moneyMetric(data.summary.awaitingAllocation)} />
-      <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.workingCapital} value={moneyMetric(data.summary.workingCapital)} />
-      <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.retainedProfit} value={moneyMetric(data.summary.retainedProfit)} />
+      <KpiCard icon={<WalletCards className="size-5" />} label={t.summary.total} value={moneyMetric(data.summary.totalBalance)} hint={t.summary.totalHint} href={`/${locale}/investor/history`} />
+      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.summary.free} value={moneyMetric(data.summary.availableBalance)} hint={t.summary.freeHint} href={`/${locale}/investor/deposit`} />
+      <KpiCard icon={<BarChart3 className="size-5" />} label={t.summary.working} value={moneyMetric(data.summary.workingCapital)} hint={t.summary.workingHint} href={`/${locale}/investor/allocations`} />
+      <KpiCard icon={<CalendarClock className="size-5" />} label={t.summary.pending} value={moneyMetric(expectedAmount)} hint={t.summary.pendingHint} href={data.summary.pendingPayouts > 0 ? `/${locale}/investor/withdrawals` : `/${locale}/investor/reports`} />
     </div>
+  );
+
+  const nextActionCard = (
+    <Card className="rounded-[1.35rem] border-gold-200/35 bg-gold-300/10 dark:bg-gold-200/[0.06]">
+      <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-gold-100">{t.nextAction.label}</p>
+          <p className="mt-2 text-lg font-semibold text-foreground">{nextAction.title}</p>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{nextAction.description}</p>
+        </div>
+        <Link href={nextAction.href} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-gold-200/40 bg-gold-300/20 px-4 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-gold-300/30 dark:bg-gold-200/10 dark:text-gold-100">
+          {t.nextAction.open}<ArrowRight className="size-4" />
+        </Link>
+      </CardContent>
+    </Card>
   );
 
   // Zero-allocation onboarding view: no capital assigned yet.
@@ -428,6 +534,7 @@ export function InvestorDashboardHome({
     return (
       <div className="grid gap-6">
         {balanceCards}
+        {nextActionCard}
         <InvestorWelcome locale={locale} name={investorName} addresses={depositAddresses} />
       </div>
     );
@@ -436,35 +543,7 @@ export function InvestorDashboardHome({
   return (
     <div className="grid gap-6">
       {balanceCards}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.activeCapital} value={moneyMetric(data.summary.activeCapital)} />
-        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.totalInvested} value={moneyMetric(data.summary.totalInvested)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.realizedProfit} value={moneyMetric(data.summary.realizedProfit)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.expectedProfit} value={moneyMetric(data.summary.expectedProfit)} />
-        <KpiCard icon={<WalletCards className="size-5" />} label={t.kpi.totalPayouts} value={moneyMetric(data.summary.totalPayouts)} />
-        <KpiCard icon={<CalendarClock className="size-5" />} label={t.kpi.pendingPayouts} value={moneyMetric(data.summary.pendingPayouts)} />
-        <KpiCard icon={<PackageCheck className="size-5" />} label={t.kpi.activeAllocations} value={f.number(data.summary.activeAllocationsCount)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.kpi.completedAllocations} value={f.number(data.summary.completedAllocationsCount)} />
-        <KpiCard icon={<BarChart3 className="size-5" />} label={t.kpi.currentAverageRoi} value={f.percent(data.summary.currentAverageRoi)} />
-        <KpiCard icon={<FileText className="size-5" />} label={t.kpi.nextExpectedPayout} value={f.date(data.summary.nextExpectedPayoutDate)} hint={t.payoutHint} />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        {typeof annualRatePercent === "number" ? (
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {YIELD_RATE_LABEL[locale] ?? YIELD_RATE_LABEL.en} {f.number(annualRatePercent)}%
-            {hasCustomRate ? (
-              <span className="ml-2 rounded-full border border-gold-200/40 bg-gold-300/15 px-2 py-0.5 text-[0.6rem] text-amber-700 dark:text-gold-100">
-                {YIELD_RATE_PERSONAL_TAG[locale] ?? YIELD_RATE_PERSONAL_TAG.en}
-              </span>
-            ) : null}
-          </span>
-        ) : null}
-        <ActiveInvestorCount
-          label={ACTIVE_INVESTORS_LABEL[locale] ?? ACTIVE_INVESTORS_LABEL.en}
-          className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-        />
-      </div>
+      {nextActionCard}
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
@@ -502,7 +581,6 @@ export function InvestorDashboardHome({
         </Card>
       </div>
 
-      <HowItWorksSection locale={locale} />
     </div>
   );
 }
@@ -799,8 +877,8 @@ export function InvestorReinvestPage({ locale, enabled, persistenceEnabled }: { 
   );
 }
 
-function KpiCard({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: string; hint?: string }) {
-  return (
+function KpiCard({ icon, label, value, hint, href }: { icon: React.ReactNode; label: string; value: string; hint?: string; href?: string }) {
+  const card = (
     <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <div className="mb-5 flex size-10 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">{icon}</div>
@@ -810,6 +888,7 @@ function KpiCard({ icon, label, value, hint }: { icon: React.ReactNode; label: s
       </CardContent>
     </Card>
   );
+  return href ? <Link href={href} className="block rounded-[1.35rem] transition-transform hover:-translate-y-0.5">{card}</Link> : card;
 }
 
 // F4: permanent "how it works" cycle — horizontal on desktop, vertical on
@@ -860,8 +939,8 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
             <h3 className="mt-2 text-lg font-semibold text-foreground">{allocation.product}</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge>{enumLabel("allocationStatus", allocation.currentStage, locale)}</Badge>
-            <Badge variant="secondary">{enumLabel("riskLevel", allocation.riskLevel, locale)}</Badge>
+            <Badge>{enumLabel("allocationStatus", allocation.currentStage.toUpperCase(), locale)}</Badge>
+            <Badge variant="secondary">{enumLabel("riskLevel", allocation.riskLevel.toUpperCase(), locale)}</Badge>
           </div>
         </div>
         <div className="mt-5">
@@ -875,11 +954,11 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
         </div>
         <div className={`mt-5 grid gap-3 ${compact ? "sm:grid-cols-2" : "md:grid-cols-4"}`}>
           <ProofLine label={t.alloc.invested} value={f.money(allocation.investedAmount)} />
-          <ProofLine label={t.alloc.expectedReturn} value={allocation.expectedReturnNote} />
+          <ProofLine label={t.alloc.expectedReturn} value={allocation.expectedReturn === null ? t.common.notAvailable : f.money(allocation.expectedReturn)} />
           <ProofLine label={t.alloc.expectedPayout} value={f.date(allocation.expectedPayoutAt)} />
           <ProofLine label={t.alloc.updated} value={f.date(allocation.updatedAt)} />
-          <ProofLine label={t.alloc.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : t.alloc.underManagerReview} />
-          <ProofLine label={t.alloc.riskVisibility} value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : t.alloc.underManagerReview} />
+          <ProofLine label={t.alloc.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.score}%` : t.alloc.underManagerReview} />
+          <ProofLine label={t.alloc.riskVisibility} value={allocation.riskHealth ? enumLabel("riskLevel", allocation.riskHealth.level, locale) : t.alloc.underManagerReview} />
           {!compact ? <ProofLine label={t.alloc.started} value={f.date(allocation.startedAt)} /> : null}
           {!compact ? <ProofLine label={t.alloc.latestProof} value={allocation.latestProofReference ? `${enumLabel("proofType", allocation.latestProofReference.type, locale)}: ${allocation.latestProofReference.title}` : t.alloc.noProofYet} /> : null}
           {!compact ? <ProofLine label={t.alloc.latestReport} value={allocation.latestReportReference ? allocation.latestReportReference.title : t.alloc.noReportYet} /> : null}

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
-import { getInvestorLedger, getInvestorPaymentTotals, isProductFeatureEnabled, listInvestorPayments, serializeInvestorPayment } from "@otiz/database";
-import { InvestorHistoryPage, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
+import { getInvestorLedger, getInvestorPaymentTotals, isProductFeatureEnabled } from "@otiz/database";
+import { InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
 import { InvestorMoneyMovementPage } from "@/components/investor/investor-money-movement-page";
 import { requireInvestorSession } from "@/lib/investor-session";
 
@@ -29,39 +29,21 @@ export default async function InvestorHistoryRoute(
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const [enabled, statementsEnabled, performanceEnabled] = await Promise.all([
-    isProductFeatureEnabled("money-movement"),
+  const [statementsEnabled, performanceEnabled, totals] = await Promise.all([
     isProductFeatureEnabled("account-statements"),
-    isProductFeatureEnabled("performance-charts")
-  ]);
-  const [payments, totals] = await Promise.all([
-    listInvestorPayments(investor.id),
+    isProductFeatureEnabled("performance-charts"),
     getInvestorPaymentTotals(investor.id)
   ]);
   const page = getInvestorStrings(params.locale).pages.history;
+  const type = first(searchParams.type);
+  const from = first(searchParams.from);
+  const to = first(searchParams.to);
+  const [ledger, performanceLedger] = await Promise.all([
+    getInvestorLedger(investor.id, { type, from, to: to ? `${to}T23:59:59.999Z` : null, page: first(searchParams.page) }),
+    performanceEnabled ? getInvestorLedger(investor.id, { pageSize: 10000 }) : Promise.resolve(null)
+  ]);
 
-  if (enabled) {
-    const type = first(searchParams.type);
-    const from = first(searchParams.from);
-    const to = first(searchParams.to);
-    const [ledger, performanceLedger] = await Promise.all([
-      getInvestorLedger(investor.id, {
-        type,
-        from,
-        to: to ? `${to}T23:59:59.999Z` : null,
-        page: first(searchParams.page)
-      }),
-      performanceEnabled ? getInvestorLedger(investor.id, { pageSize: 10000 }) : Promise.resolve(null)
-    ]);
-
-    return <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} performanceEnabled={performanceEnabled} performanceEntries={performanceLedger?.entries ?? []} />
-    </InvestorShell>;
-  }
-
-  return (
-    <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-      <InvestorHistoryPage locale={params.locale} payments={payments.map(serializeInvestorPayment)} totals={totals} />
-    </InvestorShell>
-  );
+  return <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
+    <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} performanceEnabled={performanceEnabled} performanceEntries={performanceLedger?.entries ?? []} />
+  </InvestorShell>;
 }

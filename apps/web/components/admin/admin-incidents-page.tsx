@@ -45,6 +45,12 @@ const STRINGS = {
     RESOLVE: "Resolve",
     INCIDENT_ACKNOWLEDGED: "Incident acknowledged.",
     INCIDENT_RESOLVED: "Incident resolved.",
+    SUPPORT_REPLY: "Reply to investor",
+    SUPPORT_REPLY_PLACEHOLDER: "Write a clear answer or next step for the investor.",
+    SEND_REPLY: "Send reply",
+    SENDING_REPLY: "Sending...",
+    REPLY_SENT: "Reply sent to the investor.",
+    REPLY_REQUIRED: "Write a reply before sending.",
     UNABLE_TO_UPDATE: "Unable to update incident.",
     UNABLE_TO_LOAD: "Unable to load incident detail.",
     INCIDENT_DETAIL: "Incident detail",
@@ -104,6 +110,12 @@ const STRINGS = {
     RESOLVE: "Решить",
     INCIDENT_ACKNOWLEDGED: "Инцидент принят.",
     INCIDENT_RESOLVED: "Инцидент решён.",
+    SUPPORT_REPLY: "Ответ инвестору",
+    SUPPORT_REPLY_PLACEHOLDER: "Напишите понятный ответ или следующий шаг для инвестора.",
+    SEND_REPLY: "Отправить ответ",
+    SENDING_REPLY: "Отправка...",
+    REPLY_SENT: "Ответ отправлен инвестору.",
+    REPLY_REQUIRED: "Напишите ответ перед отправкой.",
     UNABLE_TO_UPDATE: "Не удалось обновить инцидент.",
     UNABLE_TO_LOAD: "Не удалось загрузить данные инцидента.",
     INCIDENT_DETAIL: "Детали инцидента",
@@ -259,6 +271,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
   const [selectedDetailId, setSelectedDetailId] = React.useState<string | null>(null);
   const [pendingDetailId, setPendingDetailId] = React.useState<string | null>(null);
   const [detailsById, setDetailsById] = React.useState<Record<string, IncidentDetail>>({});
+  const [replyDrafts, setReplyDrafts] = React.useState<Record<string, string>>({});
   const [notice, setNotice] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -315,6 +328,38 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
       setError(requestError instanceof Error ? requestError.message : t.UNABLE_TO_LOAD);
     } finally {
       setPendingDetailId(null);
+    }
+  }
+
+  async function sendSupportReply(incident: Incident) {
+    const message = (replyDrafts[incident.id] || "").trim();
+    if (!message) {
+      setError(t.REPLY_REQUIRED);
+      return;
+    }
+
+    setPendingId(incident.id);
+    setNotice(null);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/incidents/${incident.id}/reply`, {
+        method: "POST",
+        headers: getAdminMutationHeaders(),
+        body: JSON.stringify({ message })
+      });
+      const payload = (await response.json()) as { ok: boolean; data?: Pick<Incident, "status" | "acknowledgedAt" | "acknowledgedBy">; error?: string };
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.UNABLE_TO_UPDATE);
+      setIncidents((current) => current.map((item) => item.id === incident.id ? { ...item, ...payload.data } : item));
+      setReplyDrafts((current) => ({ ...current, [incident.id]: "" }));
+      setDetailsById((current) => {
+        const { [incident.id]: _stale, ...rest } = current;
+        return rest;
+      });
+      setNotice(t.REPLY_SENT);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : t.UNABLE_TO_UPDATE);
+    } finally {
+      setPendingId(null);
     }
   }
 
@@ -402,6 +447,26 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
                       <Button type="button" size="sm" disabled={pendingId === incident.id || incident.status === "RESOLVED"} onClick={() => runAction(incident, "resolve")}>{t.RESOLVE}</Button>
                     </div>
                   </div>
+                  {incident.incidentType === "SUPPORT_REQUEST" && incident.investorId && incident.status !== "RESOLVED" ? (
+                    <div className="grid gap-3 rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20">
+                      <label className="grid gap-2 text-sm font-semibold text-foreground">
+                        <span>{t.SUPPORT_REPLY}</span>
+                        <textarea
+                          value={replyDrafts[incident.id] || ""}
+                          onChange={(event) => setReplyDrafts((current) => ({ ...current, [incident.id]: event.target.value }))}
+                          maxLength={1200}
+                          rows={4}
+                          placeholder={t.SUPPORT_REPLY_PLACEHOLDER}
+                          className="rounded-xl border border-border bg-background p-4 text-sm font-normal text-foreground outline-none focus:border-gold-300 dark:border-white/10"
+                        />
+                      </label>
+                      <div>
+                        <Button type="button" size="sm" disabled={pendingId === incident.id || !(replyDrafts[incident.id] || "").trim()} onClick={() => sendSupportReply(incident)}>
+                          {pendingId === incident.id ? t.SENDING_REPLY : t.SEND_REPLY}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                   {detailsOpen ? <IncidentDetailDrawer locale={locale} detail={detail} loading={pendingDetailId === incident.id} t={t} formatters={formatters} /> : null}
                 </CardContent>
               </Card>

@@ -57,11 +57,11 @@ const STRINGS = {
     reinvestDecision: "Reinvest decision",
     started: "Started",
     completed: "Completed",
-    proofHealth: "Proof health",
+    proofHealth: "Document status",
     underManagerReview: "Under manager review",
     evidenceSummary: "Evidence summary",
     evidenceCoverageReview: "Evidence coverage is under manager review.",
-    riskVisibility: "Risk visibility",
+    riskVisibility: "Attention level",
     riskSummary: "Risk summary",
     operationalRiskReview: "Operational risk is under manager review.",
     operationalTimeline: "Operational timeline",
@@ -89,11 +89,11 @@ const STRINGS = {
     reinvestDecision: "Решение о реинвесте",
     started: "Начато",
     completed: "Завершено",
-    proofHealth: "Состояние подтверждений",
+    proofHealth: "Статус документов",
     underManagerReview: "На проверке у менеджера",
     evidenceSummary: "Сводка по подтверждениям",
     evidenceCoverageReview: "Полнота подтверждений на проверке у менеджера.",
-    riskVisibility: "Видимость рисков",
+    riskVisibility: "Уровень внимания",
     riskSummary: "Сводка по рискам",
     operationalRiskReview: "Операционный риск на проверке у менеджера.",
     operationalTimeline: "Операционный таймлайн",
@@ -235,9 +235,9 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
             <ProofLine label={t.reinvestDecision} value={enumLabel("reinvestDecision", allocation.reinvestDecision, locale)} />
             <ProofLine label={t.started} value={fmt.date(allocation.startedAt)} />
             <ProofLine label={t.completed} value={fmt.date(allocation.completedAt)} />
-            <ProofLine label={t.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.state} · ${allocation.proofHealth.score}%` : t.underManagerReview} />
+            <ProofLine label={t.proofHealth} value={allocation.proofHealth ? `${enumLabel("proofCompletenessState", allocation.proofHealth.state, locale)} · ${allocation.proofHealth.score}%` : t.underManagerReview} />
             <ProofLine label={t.evidenceSummary} value={allocation.proofHealth?.investorSafeSummary || t.evidenceCoverageReview} />
-            <ProofLine label={t.riskVisibility} value={allocation.riskHealth ? `${allocation.riskHealth.level} · ${allocation.riskHealth.score}/100` : t.underManagerReview} />
+            <ProofLine label={t.riskVisibility} value={allocation.riskHealth ? `${enumLabel("riskLevel", allocation.riskHealth.level, locale)} · ${allocation.riskHealth.score}/100` : t.underManagerReview} />
             <ProofLine label={t.riskSummary} value={allocation.riskHealth?.summary || t.operationalRiskReview} />
           </CardContent>
         </Card>

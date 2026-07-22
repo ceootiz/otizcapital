@@ -20,7 +20,7 @@ type AboutContent = {
   title: string;
   intro: string;
   sections: Section[];
-  team: { heading: string; label: string; mission: string; note: string };
+  closing: { heading: string; label: string; body: string; note: string };
 };
 
 const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
@@ -28,216 +28,216 @@ const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
     back: "Back to home",
     meta: {
       title: "About OTIZ CAPITAL",
-      description:
-        "OTIZ CAPITAL is a private commerce capital platform allocating into real electronics inventory, marketplace operations, and audited reporting."
+      description: "OTIZ CAPITAL uses private capital in electronics trading deals and shows investors how funds move from deposit to report and payout."
     },
     title: "About OTIZ CAPITAL",
-    intro:
-      "OTIZ CAPITAL connects private capital to real electronics commerce. Instead of speculative exposure, we build allocations around tangible inventory, marketplace sales cycles, logistics, and disciplined operational reporting.",
+    intro: "OTIZ CAPITAL uses investor capital to buy electronics, move goods through logistics, sell them through marketplaces, and report the result under agreed terms.",
     sections: [
       {
-        heading: "Who we are",
+        heading: "What OTIZ does",
         paragraphs: [
-          "We are an operations-led commerce capital platform. Our work sits at the intersection of procurement, logistics, and marketplace execution, where capital is deployed into physical electronics inventory rather than financial instruments.",
-          "The platform is intentionally private and reviewed. We work with a limited number of qualified participants who value documentation, clarity, and measured communication over marketing narratives and performance hype."
+          "We organize the purchase, logistics and sale of electronics. Investor capital is assigned to a specific deal, not placed into a public market instrument or shown as an unexplained account number."
         ]
       },
       {
-        heading: "Our approach",
+        heading: "How money moves",
         paragraphs: [
-          "Every allocation follows a defined cycle: capital is assigned to a commerce mandate, inventory is sourced and verified, products move through established marketplace channels, and results are settled and reported.",
-          "Transparency is designed into the operating model. Investors can follow shipment records, warehouse media, marketplace statements, and payout proofs rather than watching price screens. No return is guaranteed, and we communicate operational risk plainly."
+          "After a deposit is confirmed, the funds remain available until they are assigned to a deal. The deal then moves through purchase, logistics, sale and reporting. The confirmed result can be paid out or left for reinvestment, depending on the investor's instruction."
         ]
       },
       {
-        heading: "Why electronics commerce",
+        heading: "How the result is created",
         paragraphs: [
-          "Electronics commerce offers short, measurable cycles with real customer demand and clear settlement records. Products move, sales settle, and each step generates operational proof.",
-          "This tangibility is the point. It keeps capital connected to genuine economic activity, shortens feedback loops, and makes performance easier to document and understand than in purely speculative strategies."
+          "A trading result appears when goods are sold for more than their purchase price and the related costs. Purchase costs, logistics, marketplace fees, returns and other deal expenses affect the final result.",
+          "OTIZ organizes the trading process and receives the remuneration agreed for the completed commercial result. The exact calculation, costs and distribution terms must be stated in the investor's agreement before funding."
+        ]
+      },
+      {
+        heading: "What the investor can verify",
+        paragraphs: [
+          "The investor account shows the status of the deposit, free and working capital, the related deal, published reports, available documents and payout history. When a source document is available, it is linked to the relevant deal or report."
         ]
       }
     ],
-    team: {
-      heading: "Team",
-      label: "Founding team",
-      mission:
-        "Our mission is to make real commerce a calm, documented, and accessible place for private capital, held to an operational standard rather than a promotional one.",
-      note:
-        "Leadership and team details are shared directly during the investor review process, alongside operating documentation and references."
+    closing: {
+      heading: "Before investing",
+      label: "Important",
+      body: "Returns are not guaranteed. Sales, logistics, returns and marketplace settlements can change the timing and result of a deal.",
+      note: "Before funding, review the agreement, how costs and results are calculated, withdrawal terms, and which documents will be available for your deal."
     }
   },
   ru: {
     back: "На главную",
     meta: {
-      title: "О OTIZ CAPITAL",
-      description:
-        "OTIZ CAPITAL — приватная платформа коммерческого капитала, направляющая средства в реальный товарный запас электроники, операции на маркетплейсах и проверяемую отчётность."
+      title: "Об OTIZ CAPITAL",
+      description: "OTIZ CAPITAL использует частный капитал в торговых сделках с электроникой и показывает путь средств от пополнения до отчёта и выплаты."
     },
-    title: "О OTIZ CAPITAL",
-    intro:
-      "OTIZ CAPITAL соединяет частный капитал с реальной торговлей электроникой. Вместо спекулятивной экспозиции мы выстраиваем аллокации вокруг материального товарного запаса, циклов продаж на маркетплейсах, логистики и дисциплинированной операционной отчётности.",
+    title: "Об OTIZ CAPITAL",
+    intro: "OTIZ CAPITAL использует капитал инвесторов для закупки электроники, организации логистики, продажи товаров через маркетплейсы и отражения результата на согласованных условиях.",
     sections: [
       {
-        heading: "Кто мы",
+        heading: "Что делает OTIZ",
         paragraphs: [
-          "Мы — платформа коммерческого капитала, ориентированная на операции. Наша работа находится на стыке закупок, логистики и исполнения на маркетплейсах, где капитал направляется в физический товарный запас электроники, а не в финансовые инструменты.",
-          "Платформа намеренно приватна и работает после рассмотрения. Мы сотрудничаем с ограниченным числом квалифицированных участников, которые ценят документацию, ясность и взвешенную коммуникацию выше маркетинговых нарративов и хайпа о доходности."
+          "Мы организуем закупку, логистику и продажу электроники. Капитал инвестора связывается с конкретной сделкой, а не с публичным финансовым инструментом или необъяснимой цифрой в кабинете."
         ]
       },
       {
-        heading: "Наш подход",
+        heading: "Как движутся деньги",
         paragraphs: [
-          "Каждая аллокация проходит определённый цикл: капитал назначается на коммерческий мандат, товар закупается и проверяется, продукция проходит через устоявшиеся каналы маркетплейсов, а результаты рассчитываются и отражаются в отчётности.",
-          "Прозрачность встроена в операционную модель. Инвесторы могут отслеживать записи об отгрузках, складские материалы, выписки маркетплейсов и подтверждения выплат вместо наблюдения за ценовыми экранами. Доходность не гарантируется, и мы прямо говорим об операционных рисках."
+          "После подтверждения пополнения средства остаются свободными до назначения на сделку. Затем сделка проходит закупку, логистику, продажу и отчёт. Подтверждённый результат можно получить выплатой или оставить для реинвестирования."
         ]
       },
       {
-        heading: "Почему торговля электроникой",
+        heading: "Откуда берётся результат",
         paragraphs: [
-          "Торговля электроникой предлагает короткие, измеримые циклы с реальным потребительским спросом и понятными записями о расчётах. Товар движется, продажи рассчитываются, и каждый шаг создаёт операционное подтверждение.",
-          "Именно эта материальность и есть суть. Она удерживает капитал в связи с подлинной экономической активностью, сокращает циклы обратной связи и делает результаты проще для документирования и понимания, чем в чисто спекулятивных стратегиях."
+          "Торговый результат появляется, когда товар продан дороже стоимости его закупки и связанных расходов. На итог влияют закупочная цена, логистика, комиссии маркетплейсов, возвраты и другие расходы конкретной сделки.",
+          "OTIZ организует торговый процесс и получает вознаграждение, согласованное для завершённого коммерческого результата. Точный расчёт, расходы и порядок распределения должны быть указаны в соглашении инвестора до пополнения."
+        ]
+      },
+      {
+        heading: "Что может проверить инвестор",
+        paragraphs: [
+          "В кабинете видны статус пополнения, свободный капитал и капитал в работе, связанная сделка, опубликованные отчёты, доступные документы и история выплат. Если подтверждающий документ доступен, он связывается с соответствующей сделкой или отчётом."
         ]
       }
     ],
-    team: {
-      heading: "Команда",
-      label: "Команда основателей",
-      mission:
-        "Наша миссия — сделать реальную торговлю спокойным, задокументированным и доступным пространством для частного капитала, соответствующим операционному, а не рекламному стандарту.",
-      note:
-        "Информация о руководстве и команде предоставляется напрямую в ходе процесса рассмотрения инвестора вместе с операционной документацией и рекомендациями."
+    closing: {
+      heading: "До инвестирования",
+      label: "Важно",
+      body: "Доходность не гарантируется. Продажи, логистика, возвраты и расчёты маркетплейсов могут изменить срок и результат сделки.",
+      note: "До пополнения изучите соглашение, порядок расчёта расходов и результата, условия вывода и перечень документов по вашей сделке."
     }
   },
   es: {
     back: "Volver al inicio",
     meta: {
       title: "Acerca de OTIZ CAPITAL",
-      description:
-        "OTIZ CAPITAL es una plataforma privada de capital comercial que asigna recursos a inventario real de electrónica, operaciones en marketplaces e informes auditados."
+      description: "OTIZ CAPITAL utiliza capital privado en operaciones de electrónica y muestra el recorrido de los fondos desde el depósito hasta el informe y el pago."
     },
     title: "Acerca de OTIZ CAPITAL",
-    intro:
-      "OTIZ CAPITAL conecta el capital privado con el comercio real de electrónica. En lugar de una exposición especulativa, construimos asignaciones en torno a inventario tangible, ciclos de venta en marketplaces, logística y una disciplinada elaboración de informes operativos.",
+    intro: "OTIZ CAPITAL utiliza el capital de los inversores para comprar electrónica, organizar la logística, vender a través de marketplaces e informar del resultado según las condiciones acordadas.",
     sections: [
       {
-        heading: "Quiénes somos",
+        heading: "Qué hace OTIZ",
         paragraphs: [
-          "Somos una plataforma de capital comercial orientada a las operaciones. Nuestra labor se sitúa en la intersección de las compras, la logística y la ejecución en marketplaces, donde el capital se destina a inventario físico de electrónica en lugar de a instrumentos financieros.",
-          "La plataforma es deliberadamente privada y sujeta a revisión. Trabajamos con un número limitado de participantes cualificados que valoran la documentación, la claridad y una comunicación mesurada por encima de las narrativas de marketing y la exaltación de la rentabilidad."
+          "Organizamos la compra, la logística y la venta de electrónica. El capital del inversor se vincula a una operación concreta, no a un instrumento financiero público ni a una cifra sin explicación."
         ]
       },
       {
-        heading: "Nuestro enfoque",
+        heading: "Cómo se mueve el dinero",
         paragraphs: [
-          "Cada asignación sigue un ciclo definido: el capital se destina a un mandato comercial, el inventario se adquiere y se verifica, los productos circulan a través de canales de marketplace establecidos y los resultados se liquidan y se informan.",
-          "La transparencia está integrada en el modelo operativo. Los inversores pueden seguir los registros de envío, el material de almacén, los extractos de los marketplaces y los comprobantes de pago, en lugar de observar pantallas de cotización. No se garantiza rentabilidad alguna y comunicamos el riesgo operativo con claridad."
+          "Tras confirmar el depósito, los fondos permanecen disponibles hasta que se asignan a una operación. Después pasan por compra, logística, venta e informe. El resultado confirmado puede pagarse o conservarse para reinvertir."
         ]
       },
       {
-        heading: "Por qué el comercio de electrónica",
+        heading: "Cómo se crea el resultado",
         paragraphs: [
-          "El comercio de electrónica ofrece ciclos cortos y medibles, con una demanda real de los clientes y registros de liquidación claros. Los productos circulan, las ventas se liquidan y cada paso genera una prueba operativa.",
-          "Esa tangibilidad es precisamente el objetivo. Mantiene el capital vinculado a una actividad económica genuina, acorta los ciclos de retroalimentación y hace que el desempeño sea más fácil de documentar y comprender que en estrategias puramente especulativas."
+          "El resultado comercial aparece cuando los productos se venden por encima de su precio de compra y de los costes relacionados. El precio de compra, la logística, las comisiones de marketplaces, las devoluciones y otros gastos afectan al resultado final.",
+          "OTIZ organiza el proceso y recibe la remuneración acordada para el resultado comercial completado. El cálculo, los costes y las condiciones de reparto deben constar en el acuerdo antes de la financiación."
+        ]
+      },
+      {
+        heading: "Qué puede verificar el inversor",
+        paragraphs: [
+          "La cuenta muestra el estado del depósito, el capital disponible y en operaciones, la operación relacionada, los informes publicados, los documentos disponibles y el historial de pagos."
         ]
       }
     ],
-    team: {
-      heading: "Equipo",
-      label: "Equipo fundador",
-      mission:
-        "Nuestra misión es hacer del comercio real un espacio sereno, documentado y accesible para el capital privado, sujeto a un estándar operativo y no promocional.",
-      note:
-        "Los detalles sobre la dirección y el equipo se comparten directamente durante el proceso de revisión del inversor, junto con la documentación operativa y las referencias."
+    closing: {
+      heading: "Antes de invertir",
+      label: "Importante",
+      body: "La rentabilidad no está garantizada. Las ventas, la logística, las devoluciones y las liquidaciones pueden cambiar el plazo y el resultado.",
+      note: "Revise el acuerdo, el cálculo de costes y resultados, las condiciones de retiro y los documentos disponibles antes de depositar."
     }
   },
   de: {
     back: "Zurück zur Startseite",
     meta: {
       title: "Über OTIZ CAPITAL",
-      description:
-        "OTIZ CAPITAL ist eine private Plattform für Handelskapital, die Mittel in reale Elektronikbestände, Marktplatzbetrieb und geprüfte Berichterstattung allokiert."
+      description: "OTIZ CAPITAL setzt privates Kapital in Elektronikgeschäften ein und zeigt den Weg der Mittel von der Einzahlung bis zum Bericht und zur Auszahlung."
     },
     title: "Über OTIZ CAPITAL",
-    intro:
-      "OTIZ CAPITAL verbindet privates Kapital mit realem Elektronikhandel. Anstelle spekulativer Positionen strukturieren wir Allokationen rund um materielle Bestände, Verkaufszyklen auf Marktplätzen, Logistik und eine disziplinierte operative Berichterstattung.",
+    intro: "OTIZ CAPITAL nutzt Investorenkapital für den Einkauf von Elektronik, die Logistik, den Verkauf über Marktplätze und die Berichterstattung nach vereinbarten Bedingungen.",
     sections: [
       {
-        heading: "Wer wir sind",
+        heading: "Was OTIZ macht",
         paragraphs: [
-          "Wir sind eine operativ ausgerichtete Plattform für Handelskapital. Unsere Tätigkeit liegt an der Schnittstelle von Beschaffung, Logistik und Marktplatzausführung, wo Kapital in physische Elektronikbestände statt in Finanzinstrumente eingesetzt wird.",
-          "Die Plattform ist bewusst privat und geprüft. Wir arbeiten mit einer begrenzten Zahl qualifizierter Teilnehmer zusammen, die Dokumentation, Klarheit und eine besonnene Kommunikation höher schätzen als Marketingerzählungen und Renditeversprechen."
+          "Wir organisieren Einkauf, Logistik und Verkauf von Elektronik. Das Kapital des Investors wird einem konkreten Geschäft zugeordnet, nicht einem öffentlichen Finanzinstrument oder einer unerklärten Kontozahl."
         ]
       },
       {
-        heading: "Unser Ansatz",
+        heading: "Wie sich das Geld bewegt",
         paragraphs: [
-          "Jede Allokation folgt einem definierten Zyklus: Kapital wird einem Handelsmandat zugewiesen, Bestände werden beschafft und verifiziert, Produkte durchlaufen etablierte Marktplatzkanäle, und die Ergebnisse werden abgerechnet und berichtet.",
-          "Transparenz ist im Betriebsmodell angelegt. Investoren können Versandnachweise, Lagermedien, Marktplatzauszüge und Auszahlungsbelege verfolgen, anstatt Kursanzeigen zu beobachten. Es wird keine Rendite garantiert, und wir kommunizieren operative Risiken offen."
+          "Nach Bestätigung der Einzahlung bleiben die Mittel verfügbar, bis sie einem Geschäft zugewiesen werden. Danach folgen Einkauf, Logistik, Verkauf und Bericht. Das bestätigte Ergebnis kann ausgezahlt oder reinvestiert werden."
         ]
       },
       {
-        heading: "Warum Elektronikhandel",
+        heading: "Wie das Ergebnis entsteht",
         paragraphs: [
-          "Der Elektronikhandel bietet kurze, messbare Zyklen mit realer Kundennachfrage und klaren Abrechnungsnachweisen. Produkte bewegen sich, Verkäufe werden abgerechnet, und jeder Schritt erzeugt einen operativen Nachweis.",
-          "Genau diese Greifbarkeit ist entscheidend. Sie hält das Kapital mit echter wirtschaftlicher Aktivität verbunden, verkürzt die Rückkopplungsschleifen und macht die Wertentwicklung leichter dokumentierbar und verständlicher als bei rein spekulativen Strategien."
+          "Ein Handelsergebnis entsteht, wenn Waren über ihrem Einkaufspreis und den zugehörigen Kosten verkauft werden. Einkauf, Logistik, Marktplatzgebühren, Rückgaben und weitere Kosten beeinflussen das Ergebnis.",
+          "OTIZ organisiert den Prozess und erhält die für das abgeschlossene Handelsergebnis vereinbarte Vergütung. Berechnung, Kosten und Verteilung müssen vor der Einzahlung im Vertrag stehen."
+        ]
+      },
+      {
+        heading: "Was der Investor prüfen kann",
+        paragraphs: [
+          "Das Konto zeigt Einzahlungsstatus, verfügbares und eingesetztes Kapital, das zugehörige Geschäft, veröffentlichte Berichte, verfügbare Dokumente und Auszahlungen."
         ]
       }
     ],
-    team: {
-      heading: "Team",
-      label: "Gründungsteam",
-      mission:
-        "Unsere Mission ist es, realen Handel zu einem ruhigen, dokumentierten und zugänglichen Ort für privates Kapital zu machen, der einem operativen und nicht einem werblichen Maßstab verpflichtet ist.",
-      note:
-        "Angaben zur Führung und zum Team werden direkt im Rahmen des Investorenprüfungsprozesses gemeinsam mit der operativen Dokumentation und Referenzen mitgeteilt."
+    closing: {
+      heading: "Vor der Investition",
+      label: "Wichtig",
+      body: "Renditen sind nicht garantiert. Verkauf, Logistik, Rückgaben und Marktplatzabrechnungen können Zeitplan und Ergebnis verändern.",
+      note: "Prüfen Sie vor der Einzahlung den Vertrag, die Kosten- und Ergebnisberechnung, Auszahlungsbedingungen und verfügbaren Dokumente."
     }
   },
   zh: {
     back: "返回首页",
     meta: {
       title: "关于 OTIZ CAPITAL",
-      description:
-        "OTIZ CAPITAL 是一家私募商贸资本平台，将资金配置于真实的电子产品库存、电商平台运营及经审计的报告。"
+      description: "OTIZ CAPITAL 将私人资金用于电子产品交易，并展示资金从入金到报告和付款的过程。"
     },
     title: "关于 OTIZ CAPITAL",
-    intro:
-      "OTIZ CAPITAL 将私人资本与真实的电子产品商贸相连接。我们不追求投机性敞口，而是围绕实物库存、电商平台销售周期、物流以及严谨的运营报告来构建资金配置。",
+    intro: "OTIZ CAPITAL 使用投资者资金采购电子产品、安排物流、通过电商平台销售，并按约定条件报告结果。",
     sections: [
       {
-        heading: "关于我们",
+        heading: "OTIZ 做什么",
         paragraphs: [
-          "我们是一家以运营为主导的商贸资本平台。业务处于采购、物流与电商平台执行的交汇点，资本投入实物电子产品库存，而非金融工具。",
-          "本平台刻意保持私密并经审核。我们仅与数量有限的合格参与者合作，他们更看重文档、清晰度与稳健的沟通，而非营销叙事与收益炒作。"
+          "我们负责电子产品的采购、物流和销售。投资者资金会对应具体项目，而不是公共金融工具或无法解释的账户数字。"
         ]
       },
       {
-        heading: "我们的方法",
+        heading: "资金如何流动",
         paragraphs: [
-          "每一笔资金配置都遵循既定周期：资本分配至商贸授权，库存经采购并核实，产品通过成熟的电商平台渠道流通，结果随后结算并报告。",
-          "透明度已融入运营模式。投资者可查阅发货记录、仓储影像、电商平台对账单及付款凭证，而无需盯着价格屏幕。我们不保证任何收益，并如实说明运营风险。"
+          "入金确认后，资金保持可用，直到分配到具体项目。项目随后经过采购、物流、销售和报告。已确认结果可以付款，也可以按投资者选择用于再投资。"
         ]
       },
       {
-        heading: "为何选择电子产品商贸",
+        heading: "结果如何产生",
         paragraphs: [
-          "电子产品商贸提供周期短、可衡量的运作，具有真实的客户需求与清晰的结算记录。产品流通、销售结算，每一步都产生运营凭证。",
-          "这种实物属性正是关键所在。它使资本与真实的经济活动相连，缩短反馈周期，并使业绩比纯投机策略更易于记录与理解。"
+          "当商品销售收入高于采购价格和相关成本时，项目产生交易结果。采购、物流、电商平台费用、退货及其他成本都会影响最终结果。",
+          "OTIZ 负责组织交易流程，并按协议从已完成项目的商业结果中获得报酬。计算方式、成本和分配条款必须在入金前写入投资者协议。"
+        ]
+      },
+      {
+        heading: "投资者可以核实什么",
+        paragraphs: [
+          "账户会显示入金状态、可用资金和运作中资金、相关项目、已发布报告、可用文件和付款记录。"
         ]
       }
     ],
-    team: {
-      heading: "团队",
-      label: "创始团队",
-      mission:
-        "我们的使命是让真实商贸成为私人资本可依循的、有据可查且可及的稳健之地，恪守运营标准而非宣传标准。",
-      note:
-        "管理层与团队的详细信息将在投资者审核流程中，连同运营文档与推荐资料一并直接提供。"
+    closing: {
+      heading: "投资前",
+      label: "重要提示",
+      body: "不保证收益。销售、物流、退货和电商平台结算可能改变项目时间和结果。",
+      note: "入金前请查看协议、成本和结果的计算方式、提现条件以及项目可提供的文件。"
     }
   }
 };
 
 function getContent(locale: Locale): AboutContent {
-  return CONTENT[locale as "en" | "ru"] ?? CONTENT.en;
+  return CONTENT[locale] ?? CONTENT.en;
 }
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -317,12 +317,12 @@ export default async function AboutRoute(props: { params: Promise<{ locale: Loca
 
             <div className="mt-16">
               <h2 className="font-display text-3xl font-medium tracking-[-0.035em] text-foreground sm:text-4xl">
-                {content.team.heading}
+                {content.closing.heading}
               </h2>
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-100">{content.team.label}</p>
-                <p className="mt-5 text-base leading-8 text-foreground">{content.team.mission}</p>
-                <p className="mt-5 text-sm leading-7 text-muted-foreground">{content.team.note}</p>
+              <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-8 dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-gold-100">{content.closing.label}</p>
+                <p className="mt-5 text-base leading-8 text-foreground">{content.closing.body}</p>
+                <p className="mt-5 text-sm leading-7 text-muted-foreground">{content.closing.note}</p>
               </div>
             </div>
           </div>

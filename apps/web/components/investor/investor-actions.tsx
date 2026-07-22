@@ -372,8 +372,8 @@ export function InvestorWithdrawalForm({
   if (submitted) {
     return (
       <div className="rounded-[1.35rem] border border-emerald-400/25 bg-emerald-400/10 p-5">
-        <p className="font-semibold text-emerald-200">{t.successTitle}</p>
-        <p className="mt-2 text-sm leading-6 text-emerald-100/90">{t.successBody}</p>
+        <p className="font-semibold text-emerald-700 dark:text-emerald-200">{t.successTitle}</p>
+        <p className="mt-2 text-sm leading-6 text-emerald-700/90 dark:text-emerald-100/90">{t.successBody}</p>
         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => { setSubmitted(false); setAmount(""); setNote(""); }}>
           {t.another}
         </Button>
@@ -459,7 +459,7 @@ export function InvestorWithdrawalForm({
         <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="resize-none rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-3 text-sm leading-6 text-foreground outline-none transition-colors focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15" />
       </label>
 
-      {error ? <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p> : null}
+      {error ? <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-700 dark:text-red-200">{error}</p> : null}
 
       <Button type="submit" className="mt-5 w-full sm:w-auto" disabled={isSubmitting || wallets.length === 0}>
         {isSubmitting ? t.submitting : t.submit}
@@ -569,7 +569,8 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
     WITHDRAWAL_APPROVED: "Withdrawal request approved",
     WITHDRAWAL_SCHEDULED: "Payout scheduled",
     WITHDRAWAL_PAID: "Payout completed",
-    WITHDRAWAL_REJECTED: "Withdrawal request declined"
+    WITHDRAWAL_REJECTED: "Withdrawal request declined",
+    SUPPORT_REPLY: "Support replied"
   },
   ru: {
     ALLOCATION_UPDATED: "Ваша аллокация обновлена",
@@ -578,7 +579,8 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
     WITHDRAWAL_APPROVED: "Запрос на вывод одобрен",
     WITHDRAWAL_SCHEDULED: "Выплата запланирована",
     WITHDRAWAL_PAID: "Выплата произведена",
-    WITHDRAWAL_REJECTED: "Запрос на вывод отклонён"
+    WITHDRAWAL_REJECTED: "Запрос на вывод отклонён",
+    SUPPORT_REPLY: "Ответ поддержки"
   },
   es: {
     ALLOCATION_UPDATED: "Asignación actualizada",
@@ -587,7 +589,8 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
     WITHDRAWAL_APPROVED: "Solicitud de retiro aprobada",
     WITHDRAWAL_SCHEDULED: "Pago programado",
     WITHDRAWAL_PAID: "Pago completado",
-    WITHDRAWAL_REJECTED: "Solicitud de retiro rechazada"
+    WITHDRAWAL_REJECTED: "Solicitud de retiro rechazada",
+    SUPPORT_REPLY: "Respuesta de soporte"
   },
   de: {
     ALLOCATION_UPDATED: "Allokation aktualisiert",
@@ -596,7 +599,8 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
     WITHDRAWAL_APPROVED: "Auszahlungsantrag genehmigt",
     WITHDRAWAL_SCHEDULED: "Auszahlung geplant",
     WITHDRAWAL_PAID: "Auszahlung abgeschlossen",
-    WITHDRAWAL_REJECTED: "Auszahlungsantrag abgelehnt"
+    WITHDRAWAL_REJECTED: "Auszahlungsantrag abgelehnt",
+    SUPPORT_REPLY: "Antwort vom Support"
   },
   zh: {
     ALLOCATION_UPDATED: "资金配置已更新",
@@ -605,7 +609,8 @@ const NOTIFICATION_TITLES: Record<Locale, Record<string, string>> = {
     WITHDRAWAL_APPROVED: "提现申请已批准",
     WITHDRAWAL_SCHEDULED: "付款已安排",
     WITHDRAWAL_PAID: "付款已完成",
-    WITHDRAWAL_REJECTED: "提现申请已拒绝"
+    WITHDRAWAL_REJECTED: "提现申请已拒绝",
+    SUPPORT_REPLY: "支持团队已回复"
   }
 };
 

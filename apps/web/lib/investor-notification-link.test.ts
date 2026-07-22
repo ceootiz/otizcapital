@@ -13,4 +13,13 @@ describe("getInvestorNotificationHref", () => {
   it("adds the locale to links stored without one", () => {
     expect(getInvestorNotificationHref("en", "/investor/reports/report-1")).toBe("/en/investor/reports/report-1");
   });
+
+  it("sends legacy document detail links to the existing documents page", () => {
+    expect(getInvestorNotificationHref("ru", "/investor/documents/document-1")).toBe("/ru/investor/documents");
+  });
+
+  it("does not send an investor to an unknown or external route", () => {
+    expect(getInvestorNotificationHref("de", "/investor/missing-page")).toBe("/de/investor/dashboard");
+    expect(getInvestorNotificationHref("de", "https://example.com")).toBe("/de/investor/dashboard");
+  });
 });
