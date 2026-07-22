@@ -828,7 +828,14 @@ function AdminNotice({ tone, message }: { tone: "success" | "error"; message: st
 // XLSX report files + agreement status (Blocks B & C)
 // ---------------------------------------------------------------------------
 
-type FileReport = { id: string; fileName: string; month: string; uploadedAt: string; parsedRows?: number };
+type FileReport = {
+  id: string;
+  fileName: string;
+  month: string;
+  uploadedAt: string;
+  parsedRows?: number;
+  credit: { profitTotal: number; creditedProfit: number; uncreditedProfit: number };
+};
 
 // Russian pluralization for extracted row counts (строка/строки/строк).
 function pluralizeRowsRu(n: number) {
@@ -857,13 +864,20 @@ const REPORTS_STRINGS = {
     colFile: "File",
     colMonth: "Month",
     colDate: "Uploaded",
+    colProfit: "Profit balance",
     download: "Download",
+    creditProfit: "Credit to balance",
+    creditingProfit: "Crediting...",
+    creditedProfit: "Credited",
+    pendingProfit: "Awaiting credit",
+    noProfit: "No profit to credit",
     agreementTitle: "Agreement",
     agreementPending: "Awaiting signature",
     agreementSigned: "Signed",
     agreementNone: "No agreement generated yet.",
     errFile: "Select an .xlsx file and a month.",
-    errUpload: "Upload failed. Please try again."
+    errUpload: "Upload failed. Please try again.",
+    errCredit: "Unable to credit report profit."
   },
   ru: {
     title: "Файлы отчётов (XLSX)",
@@ -880,13 +894,20 @@ const REPORTS_STRINGS = {
     colFile: "Файл",
     colMonth: "Месяц",
     colDate: "Загружено",
+    colProfit: "Баланс прибыли",
     download: "Скачать",
+    creditProfit: "Зачислить на баланс",
+    creditingProfit: "Зачисляем...",
+    creditedProfit: "Зачислено",
+    pendingProfit: "Ожидает зачисления",
+    noProfit: "Нет прибыли для зачисления",
     agreementTitle: "Соглашение",
     agreementPending: "ожидает подписания",
     agreementSigned: "подписано",
     agreementNone: "Соглашение ещё не сформировано.",
     errFile: "Выберите файл .xlsx и укажите месяц.",
-    errUpload: "Не удалось загрузить. Попробуйте ещё раз."
+    errUpload: "Не удалось загрузить. Попробуйте ещё раз.",
+    errCredit: "Не удалось зачислить прибыль из отчёта."
   }
 } as const;
 
@@ -898,6 +919,7 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
   const [month, setMonth] = React.useState("");
   const [file, setFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
+  const [creditingId, setCreditingId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -947,6 +969,24 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
       setError(uploadError instanceof Error ? uploadError.message : t.errUpload);
     } finally {
       setIsUploading(false);
+    }
+  }
+
+  async function creditProfit(report: FileReport) {
+    setCreditingId(report.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/investors/${investorId}/reports/${report.id}/credit`, {
+        method: "POST",
+        headers: getAdminMutationHeaders()
+      });
+      const payload = (await response.json()) as { ok: boolean; error?: string };
+      if (!response.ok || !payload.ok) throw new Error(payload.error || t.errCredit);
+      await load();
+    } catch (creditError) {
+      setError(creditError instanceof Error ? creditError.message : t.errCredit);
+    } finally {
+      setCreditingId(null);
     }
   }
 
@@ -1009,6 +1049,7 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
                   <th className="pb-3 pr-4">{t.colFile}</th>
                   <th className="pb-3 pr-4">{t.colMonth}</th>
                   <th className="pb-3 pr-4">{t.colDate}</th>
+                  <th className="pb-3 pr-4">{t.colProfit}</th>
                   <th className="pb-3" />
                 </tr>
               </thead>
@@ -1023,6 +1064,20 @@ function AdminInvestorReportsSection({ locale, investorId }: { locale: Locale; i
                     </td>
                     <td className="py-3 pr-4 text-muted-foreground">{report.month}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{fmt.date(new Date(report.uploadedAt))}</td>
+                    <td className="py-3 pr-4">
+                      {report.credit.profitTotal <= 0 ? (
+                        <span className="text-xs text-muted-foreground">{t.noProfit}</span>
+                      ) : report.credit.uncreditedProfit <= 0 ? (
+                        <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{t.creditedProfit} · {fmt.currency(report.credit.creditedProfit)}</span>
+                      ) : (
+                        <div className="flex flex-col items-start gap-2">
+                          <span className="text-xs text-amber-700 dark:text-gold-100">{t.pendingProfit} · {fmt.currency(report.credit.uncreditedProfit)}</span>
+                          <Button type="button" size="sm" disabled={creditingId === report.id} onClick={() => creditProfit(report)}>
+                            {creditingId === report.id ? t.creditingProfit : t.creditProfit}
+                          </Button>
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 text-right">
                       <a href={`/api/admin/investors/${investorId}/reports/${report.id}/download`} className="font-semibold text-amber-700 dark:text-gold-100 hover:underline">{t.download}</a>
                     </td>

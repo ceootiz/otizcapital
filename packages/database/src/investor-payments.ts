@@ -41,20 +41,199 @@ export async function createInvestorPaymentsFromReport(input: {
   investorId: string;
   fileReportId: string;
   rows: InvestorPaymentRowInput[];
+  autoCredit: boolean;
+  actor: string;
 }) {
-  if (input.rows.length === 0) return { count: 0 };
-  return prisma.investorPayment.createMany({
-    data: input.rows.map((row) => ({
-      investorId: input.investorId,
-      fileReportId: input.fileReportId,
-      month: row.month,
-      period: row.period,
-      profit: new Prisma.Decimal(row.profit),
-      payout: new Prisma.Decimal(row.payout),
-      reinvested: new Prisma.Decimal(row.reinvested),
-      roiPercent: row.roiPercent === null ? null : new Prisma.Decimal(row.roiPercent),
-      source: "XLSX_REPORT"
-    }))
+  if (input.rows.length === 0) return { count: 0, creditedAmount: 0, duplicatesSkipped: 0 };
+
+  return prisma.$transaction(async (transaction) => {
+    let count = 0;
+    let creditedAmount = 0;
+    let duplicatesSkipped = 0;
+
+    for (const row of input.rows) {
+      const profit = new Prisma.Decimal(row.profit);
+      const payout = new Prisma.Decimal(row.payout);
+      const reinvested = new Prisma.Decimal(row.reinvested);
+      const duplicate = await transaction.investorPayment.findFirst({
+        where: {
+          investorId: input.investorId,
+          month: row.month,
+          period: row.period,
+          profit,
+          payout,
+          reinvested
+        },
+        select: { id: true }
+      });
+
+      if (duplicate) {
+        duplicatesSkipped += 1;
+        continue;
+      }
+
+      const payment = await transaction.investorPayment.create({
+        data: {
+          investorId: input.investorId,
+          fileReportId: input.fileReportId,
+          month: row.month,
+          period: row.period,
+          profit,
+          payout,
+          reinvested,
+          roiPercent: row.roiPercent === null ? null : new Prisma.Decimal(row.roiPercent),
+          source: "XLSX_REPORT"
+        }
+      });
+      count += 1;
+
+      if (input.autoCredit && row.profit > 0) {
+        await transaction.ledgerEntry.upsert({
+          where: { id: `balance-profit-${payment.id}` },
+          update: {},
+          create: {
+            id: `balance-profit-${payment.id}`,
+            ledgerType: "INVESTOR_BALANCE",
+            investorId: input.investorId,
+            entryType: "PROFIT",
+            amount: String(row.profit),
+            currency: "USD",
+            occurredAt: new Date(),
+            sourceType: "INVESTOR_PAYMENT",
+            sourceId: payment.id,
+            description: `Retained profit from ${row.month}`,
+            createdBy: input.actor
+          }
+        });
+        creditedAmount += row.profit;
+      }
+    }
+
+    if (creditedAmount > 0) {
+      await transaction.auditLog.create({
+        data: {
+          actor: input.actor,
+          action: "AUTO_CREDIT_REPORT_PROFIT",
+          entityType: "InvestorFileReport",
+          entityId: input.fileReportId,
+          afterJson: JSON.stringify({ investorId: input.investorId, creditedAmount })
+        }
+      });
+    }
+
+    return { count, creditedAmount: Number(creditedAmount.toFixed(2)), duplicatesSkipped };
+  });
+}
+
+export type ReportProfitCreditSummary = {
+  profitTotal: number;
+  creditedProfit: number;
+  uncreditedProfit: number;
+};
+
+export function summarizeReportProfitCredits(
+  payments: Array<{ id: string; fileReportId: string | null; profit: unknown }>,
+  credits: Array<{ sourceId: string | null; amount: unknown }>
+): Record<string, ReportProfitCreditSummary> {
+  const creditedByPayment = new Map(credits.map((credit) => [credit.sourceId, Number(credit.amount)]));
+  const summaries: Record<string, ReportProfitCreditSummary> = {};
+
+  for (const payment of payments) {
+    if (!payment.fileReportId) continue;
+    const summary = summaries[payment.fileReportId] ?? { profitTotal: 0, creditedProfit: 0, uncreditedProfit: 0 };
+    const profit = Number(payment.profit);
+    const credited = creditedByPayment.get(payment.id) ?? 0;
+    summary.profitTotal += profit;
+    summary.creditedProfit += credited;
+    summary.uncreditedProfit += Math.max(0, profit - credited);
+    summaries[payment.fileReportId] = summary;
+  }
+
+  return Object.fromEntries(Object.entries(summaries).map(([id, summary]) => [id, {
+    profitTotal: Number(summary.profitTotal.toFixed(2)),
+    creditedProfit: Number(summary.creditedProfit.toFixed(2)),
+    uncreditedProfit: Number(summary.uncreditedProfit.toFixed(2))
+  }]));
+}
+
+export async function getReportProfitCreditSummaries(investorId: string): Promise<Record<string, ReportProfitCreditSummary>> {
+  const payments = await prisma.investorPayment.findMany({
+    where: { investorId, fileReportId: { not: null } },
+    select: { id: true, fileReportId: true, profit: true }
+  });
+  const paymentIds = payments.map((payment) => payment.id);
+  const credits = paymentIds.length > 0
+    ? await prisma.ledgerEntry.findMany({
+        where: {
+          investorId,
+          ledgerType: "INVESTOR_BALANCE",
+          entryType: "PROFIT",
+          sourceType: "INVESTOR_PAYMENT",
+          sourceId: { in: paymentIds },
+          isReversal: false,
+          voidedAt: null
+        },
+        select: { sourceId: true, amount: true }
+      })
+    : [];
+  return summarizeReportProfitCredits(payments, credits);
+}
+
+export async function creditInvestorReportProfit(input: {
+  investorId: string;
+  fileReportId: string;
+  actor: string;
+}) {
+  return prisma.$transaction(async (transaction) => {
+    const report = await transaction.investorFileReport.findFirst({
+      where: { id: input.fileReportId, investorId: input.investorId },
+      select: { id: true, month: true }
+    });
+    if (!report) return { ok: false as const, status: 404 as const, error: "Report not found." };
+
+    const payments = await transaction.investorPayment.findMany({
+      where: { investorId: input.investorId, fileReportId: report.id },
+      select: { id: true, month: true, profit: true }
+    });
+    let creditedAmount = 0;
+
+    for (const payment of payments) {
+      const profit = Number(payment.profit);
+      if (profit <= 0) continue;
+      const ledgerId = `balance-profit-${payment.id}`;
+      const existing = await transaction.ledgerEntry.findUnique({ where: { id: ledgerId }, select: { id: true } });
+      if (existing) continue;
+      await transaction.ledgerEntry.create({
+        data: {
+          id: ledgerId,
+          ledgerType: "INVESTOR_BALANCE",
+          investorId: input.investorId,
+          entryType: "PROFIT",
+          amount: String(profit),
+          currency: "USD",
+          occurredAt: new Date(),
+          sourceType: "INVESTOR_PAYMENT",
+          sourceId: payment.id,
+          description: `Retained profit from ${payment.month}`,
+          createdBy: input.actor
+        }
+      });
+      creditedAmount += profit;
+    }
+
+    if (creditedAmount > 0) {
+      await transaction.auditLog.create({
+        data: {
+          actor: input.actor,
+          action: "MANUAL_CREDIT_REPORT_PROFIT",
+          entityType: "InvestorFileReport",
+          entityId: report.id,
+          afterJson: JSON.stringify({ investorId: input.investorId, creditedAmount })
+        }
+      });
+    }
+
+    return { ok: true as const, creditedAmount: Number(creditedAmount.toFixed(2)) };
   });
 }
 
