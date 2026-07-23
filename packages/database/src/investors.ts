@@ -43,8 +43,28 @@ export async function findInvestorByEmail(email: string) {
 }
 
 // Stores a pre-hashed password (hashing happens in the app layer via bcrypt).
-export async function updateInvestorPasswordHash(id: string, passwordHash: string) {
-  return prisma.investor.update({ where: { id }, data: { passwordHash } });
+export async function updateInvestorPasswordHash(id: string, passwordHash: string, currentSessionId?: string) {
+  return prisma.$transaction(async (transaction) => {
+    const investor = await transaction.investor.update({ where: { id }, data: { passwordHash } });
+    const revoked = await transaction.investorSession.updateMany({
+      where: {
+        investorId: id,
+        isActive: true,
+        ...(currentSessionId ? { id: { not: currentSessionId } } : {})
+      },
+      data: { isActive: false }
+    });
+    await transaction.auditLog.create({
+      data: {
+        actor: `investor:${id}`,
+        action: "CHANGE_INVESTOR_PASSWORD",
+        entityType: "Investor",
+        entityId: id,
+        afterJson: JSON.stringify({ otherSessionsRevoked: revoked.count })
+      }
+    });
+    return investor;
+  });
 }
 
 export async function updateInvestorEmailNotifications(id: string, enabled: boolean) {

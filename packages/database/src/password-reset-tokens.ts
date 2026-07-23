@@ -28,16 +28,43 @@ export async function getPasswordResetToken(
 // outstanding reset link stays live after a successful reset).
 export async function consumePasswordResetToken(input: {
   investorId: string;
+  token: string;
   passwordHash: string;
 }) {
-  await prisma.$transaction([
-    prisma.investor.update({
+  return prisma.$transaction(async (transaction) => {
+    const usedAt = new Date();
+    const consumed = await transaction.passwordResetToken.updateMany({
+      where: {
+        token: input.token,
+        investorId: input.investorId,
+        usedAt: null,
+        expiresAt: { gt: usedAt }
+      },
+      data: { usedAt }
+    });
+    if (consumed.count !== 1) return false;
+
+    await transaction.investor.update({
       where: { id: input.investorId },
       data: { passwordHash: input.passwordHash }
-    }),
-    prisma.passwordResetToken.updateMany({
+    });
+    await transaction.passwordResetToken.updateMany({
       where: { investorId: input.investorId, usedAt: null },
-      data: { usedAt: new Date() }
-    })
-  ]);
+      data: { usedAt }
+    });
+    await transaction.investorSession.updateMany({
+      where: { investorId: input.investorId, isActive: true },
+      data: { isActive: false }
+    });
+    await transaction.auditLog.create({
+      data: {
+        actor: `investor:${input.investorId}`,
+        action: "RESET_INVESTOR_PASSWORD",
+        entityType: "Investor",
+        entityId: input.investorId,
+        afterJson: JSON.stringify({ sessionsRevoked: true })
+      }
+    });
+    return true;
+  });
 }

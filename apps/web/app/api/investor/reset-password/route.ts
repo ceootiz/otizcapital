@@ -54,7 +54,10 @@ export async function POST(request: Request) {
   const passwordHash = await bcrypt.hash(newPassword, 12);
   // Sets the new hash, marks this token used, and invalidates all other unused
   // tokens for the investor (single transaction).
-  await consumePasswordResetToken({ investorId: record.investorId, passwordHash });
+  const consumed = await consumePasswordResetToken({ investorId: record.investorId, token, passwordHash });
+  if (!consumed) {
+    return NextResponse.json({ ok: false, error: "used" }, { status: 409 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   }
 
   const hash = await bcrypt.hash(newPassword, 12);
-  await updateInvestorPasswordHash(auth.investor.id, hash);
+  await updateInvestorPasswordHash(auth.investor.id, hash, auth.session.sessionId);
 
   return NextResponse.json({ ok: true });
 }
