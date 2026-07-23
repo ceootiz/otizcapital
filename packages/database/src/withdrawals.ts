@@ -149,6 +149,10 @@ export function isWithdrawalPendingStatus(value: string): value is WithdrawalPen
   return WITHDRAWAL_PENDING_STATUSES.includes(value as WithdrawalPendingStatus);
 }
 
+export function canInvestorCancelWithdrawal(status: string) {
+  return status === "REQUESTED";
+}
+
 export function toMoneyNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return 0;
   const numeric = Number(String(value).replace(/[^0-9.-]/g, ""));
@@ -389,5 +393,26 @@ export async function cancelWithdrawalRequest(input: { id: string; actor: string
     data: { status: "CANCELLED", adminNote: input.adminNote ?? mutable.existing.adminNote }
   });
   await writeWithdrawalAudit({ actor: input.actor, action: "CANCEL_WITHDRAWAL_REQUEST", before: mutable.existing, after: request });
+  return { ok: true as const, request };
+}
+
+export async function cancelInvestorWithdrawalRequest(input: { id: string; investorId: string }) {
+  const existing = await prisma.withdrawalRequest.findFirst({
+    where: { id: input.id, investorId: input.investorId }
+  });
+  if (!existing) return { ok: false as const, status: 404 as const, error: "Withdrawal request not found." };
+  if (!canInvestorCancelWithdrawal(existing.status)) {
+    return { ok: false as const, status: 409 as const, error: "Only a request awaiting review can be cancelled directly." };
+  }
+  const request = await prisma.withdrawalRequest.update({
+    where: { id: existing.id },
+    data: { status: "CANCELLED" }
+  });
+  await writeWithdrawalAudit({
+    actor: `investor:${input.investorId}`,
+    action: "INVESTOR_CANCEL_WITHDRAWAL_REQUEST",
+    before: existing,
+    after: request
+  });
   return { ok: true as const, request };
 }

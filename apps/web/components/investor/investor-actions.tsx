@@ -45,6 +45,10 @@ const STRINGS = {
     errExceeds: "Amount exceeds your available balance.",
     errAddress: "Destination address is required.",
     errGeneric: "Unable to submit withdrawal request.",
+    previewTitle: "Before you submit",
+    requestedAmount: "Requested amount",
+    remainingAmount: "Available after request",
+    previewNote: "This is a request preview. Final timing is confirmed after manager review.",
     lockTitle: "Withdrawals locked (90-day period)",
     lockBodyWithDate: "Funds can be withdrawn after a 90-day holding period from your first allocation. Withdrawals unlock on {date}.",
     lockBodyNoDate: "Withdrawals unlock 90 days after your first capital allocation begins."
@@ -82,6 +86,10 @@ const STRINGS = {
     errExceeds: "Сумма превышает доступный баланс.",
     errAddress: "Укажите адрес назначения.",
     errGeneric: "Не удалось отправить запрос на вывод.",
+    previewTitle: "Перед отправкой",
+    requestedAmount: "Сумма заявки",
+    remainingAmount: "Останется доступно",
+    previewNote: "Это предварительный расчёт. Срок выплаты подтверждается после проверки менеджером.",
     lockTitle: "Выводы заблокированы (90-дневный период)",
     lockBodyWithDate: "Средства можно вывести после 90-дневного периода удержания с момента первой аллокации. Вывод станет доступен {date}.",
     lockBodyNoDate: "Выводы станут доступны через 90 дней после начала первой аллокации капитала."
@@ -119,6 +127,10 @@ const STRINGS = {
     errExceeds: "El importe supera su saldo disponible.",
     errAddress: "La dirección de destino es obligatoria.",
     errGeneric: "No se pudo enviar la solicitud de retiro.",
+    previewTitle: "Antes de enviar",
+    requestedAmount: "Importe solicitado",
+    remainingAmount: "Disponible después de la solicitud",
+    previewNote: "Este es un cálculo previo. El plazo final se confirma tras la revisión del gestor.",
     lockTitle: "Retiros bloqueados (periodo de 90 días)",
     lockBodyWithDate: "Los fondos pueden retirarse tras un periodo de retención de 90 días desde su primera asignación. Los retiros se desbloquean el {date}.",
     lockBodyNoDate: "Los retiros se desbloquean 90 días después del inicio de su primera asignación de capital."
@@ -156,6 +168,10 @@ const STRINGS = {
     errExceeds: "Der Betrag übersteigt Ihr verfügbares Guthaben.",
     errAddress: "Die Zieladresse ist erforderlich.",
     errGeneric: "Der Auszahlungsantrag konnte nicht eingereicht werden.",
+    previewTitle: "Vor dem Absenden",
+    requestedAmount: "Beantragter Betrag",
+    remainingAmount: "Danach verfügbar",
+    previewNote: "Dies ist eine Vorschau. Der endgültige Termin wird nach der Prüfung durch den Manager bestätigt.",
     lockTitle: "Auszahlungen gesperrt (90-Tage-Frist)",
     lockBodyWithDate: "Guthaben kann nach einer Haltefrist von 90 Tagen ab Ihrer ersten Allokation ausgezahlt werden. Auszahlungen werden am {date} freigegeben.",
     lockBodyNoDate: "Auszahlungen werden 90 Tage nach Beginn Ihrer ersten Kapitalallokation freigegeben."
@@ -193,6 +209,10 @@ const STRINGS = {
     errExceeds: "金额超出您的可用余额。",
     errAddress: "目标地址为必填项。",
     errGeneric: "无法提交提现申请。",
+    previewTitle: "提交前确认",
+    requestedAmount: "申请金额",
+    remainingAmount: "申请后可用",
+    previewNote: "这是预估结果。最终付款时间将在经理审核后确认。",
     lockTitle: "提现已锁定（90 天期限）",
     lockBodyWithDate: "资金可在自首次资金配置起 90 天持有期后提现。提现将于 {date} 解锁。",
     lockBodyNoDate: "提现将在您首次资金配置开始 90 天后解锁。"
@@ -428,6 +448,7 @@ export function InvestorWithdrawalForm({
 
   const inputClass =
     "h-[3rem] rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 px-4 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/55 focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15";
+  const previewAmount = Math.max(0, Number(amount.replace(/[^0-9.]/g, "")) || 0);
 
   return (
     <form className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-5" onSubmit={onSubmit} noValidate>
@@ -459,6 +480,15 @@ export function InvestorWithdrawalForm({
           )}
         </label>
       </div>
+
+      {previewAmount > 0 ? <div className="mt-4 rounded-2xl border border-border bg-background/45 p-4 dark:border-white/10">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.previewTitle}</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <p className="text-sm text-muted-foreground">{t.requestedAmount}<strong className="mt-1 block text-foreground">{fmt.currency(previewAmount)}</strong></p>
+          <p className="text-sm text-muted-foreground">{t.remainingAmount}<strong className="mt-1 block text-foreground">{fmt.currency(Math.max(0, availableAmount - previewAmount))}</strong></p>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">{t.previewNote}</p>
+      </div> : null}
 
       <label className="mt-4 flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.noteLabel}</span>

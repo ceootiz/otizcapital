@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 import { ContactManagerButton } from "./contact-manager-button";
 import { DepositClaimForm } from "./deposit-claim-form";
+import { InvestorWithdrawalCancelButton } from "./investor-withdrawal-cancel-button";
 
 type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "calendar" | "support" | "settings";
 
@@ -1073,6 +1074,7 @@ function WithdrawalGroup({ locale, title, withdrawals, emptyText }: { locale: Lo
             <Badge variant="secondary">{enumLabel("withdrawalStatus", withdrawal.status, locale)}</Badge>
           </div>
           <WithdrawalTimeline locale={locale} status={withdrawal.status} />
+          {withdrawal.status === "REQUESTED" ? <InvestorWithdrawalCancelButton locale={locale} withdrawalId={withdrawal.id} /> : null}
           <Separator className="my-4" />
           <div className="grid gap-3 sm:grid-cols-2">
             <ProofLine label={t.withdraw.requested} value={f.date(withdrawal.requestedAt)} />

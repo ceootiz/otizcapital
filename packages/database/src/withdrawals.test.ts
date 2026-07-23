@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInvestorPayoutSummary, calculateWithdrawalLockStatus, filterInvestorWithdrawalRequests, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
+import { buildInvestorPayoutSummary, calculateWithdrawalLockStatus, canInvestorCancelWithdrawal, filterInvestorWithdrawalRequests, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
 
 const baseDate = new Date("2026-05-10T00:00:00.000Z");
 
@@ -69,6 +69,13 @@ describe("withdrawal requests", () => {
   it("never returns full destination details", () => {
     expect(maskWithdrawalDestination("US88 FULL BANK ACCOUNT 123456789")).toBe("•••• 6789");
     expect(maskWithdrawalDestination("")).toBeNull();
+  });
+
+  it("allows direct investor cancellation only before approval", () => {
+    expect(canInvestorCancelWithdrawal("REQUESTED")).toBe(true);
+    expect(canInvestorCancelWithdrawal("APPROVED")).toBe(false);
+    expect(canInvestorCancelWithdrawal("SCHEDULED")).toBe(false);
+    expect(canInvestorCancelWithdrawal("PAID")).toBe(false);
   });
 
   it("keeps withdrawals locked during the 90-day holding period", () => {
