@@ -228,10 +228,10 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <ProofLine label={t.allocationAmount} value={fmt.currency(Number(allocation.allocationAmount || 0))} />
+            <ProofLine label={t.allocationAmount} value={fmt.currency(Number(allocation.allocationAmount || 0))} privateValue />
             <ProofLine label={t.expectedCycle} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.days}` : t.notSet} />
-            <ProofLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} />
-            <ProofLine label={t.actualProfit} value={allocation.status === "COMPLETED" && allocation.actualProfit ? fmt.currency(Number(allocation.actualProfit || 0)) : t.visibleAfterCompletion} />
+            <ProofLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} privateValue={Boolean(allocation.estimatedResult)} />
+            <ProofLine label={t.actualProfit} value={allocation.status === "COMPLETED" && allocation.actualProfit ? fmt.currency(Number(allocation.actualProfit || 0)) : t.visibleAfterCompletion} privateValue={allocation.status === "COMPLETED" && Boolean(allocation.actualProfit)} />
             <ProofLine label={t.payoutStatus} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
             <ProofLine label={t.reinvestDecision} value={enumLabel("reinvestDecision", allocation.reinvestDecision, locale)} />
             <ProofLine label={t.started} value={fmt.date(allocation.startedAt)} />
@@ -266,4 +266,4 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
   );
 }
 
-function ProofLine({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>; }
+function ProofLine({ label, value, privateValue = false }: { label: string; value: string; privateValue?: boolean }) { return <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4"><p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p><p data-private-amount={privateValue || undefined} className="mt-2 text-sm leading-6 text-foreground">{value}</p></div>; }

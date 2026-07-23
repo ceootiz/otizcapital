@@ -455,7 +455,7 @@ export function InvestorWithdrawalForm({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.requestTitle}</p>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.requestSubtitle}</p>
       <p className="mt-3 text-sm text-foreground">
-        {t.available}: <span className="font-semibold text-amber-700 dark:text-gold-100">{fmt.currency(availableAmount)}</span>
+        {t.available}: <span data-private-amount className="font-semibold text-amber-700 dark:text-gold-100">{fmt.currency(availableAmount)}</span>
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -484,8 +484,8 @@ export function InvestorWithdrawalForm({
       {previewAmount > 0 ? <div className="mt-4 rounded-2xl border border-border bg-background/45 p-4 dark:border-white/10">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t.previewTitle}</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <p className="text-sm text-muted-foreground">{t.requestedAmount}<strong className="mt-1 block text-foreground">{fmt.currency(previewAmount)}</strong></p>
-          <p className="text-sm text-muted-foreground">{t.remainingAmount}<strong className="mt-1 block text-foreground">{fmt.currency(Math.max(0, availableAmount - previewAmount))}</strong></p>
+          <p className="text-sm text-muted-foreground">{t.requestedAmount}<strong data-private-amount className="mt-1 block text-foreground">{fmt.currency(previewAmount)}</strong></p>
+          <p className="text-sm text-muted-foreground">{t.remainingAmount}<strong data-private-amount className="mt-1 block text-foreground">{fmt.currency(Math.max(0, availableAmount - previewAmount))}</strong></p>
         </div>
         <p className="mt-3 text-xs leading-5 text-muted-foreground">{t.previewNote}</p>
       </div> : null}

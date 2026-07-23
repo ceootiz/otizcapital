@@ -470,9 +470,9 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
                 </div>
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-4">
-                <ReportLine label={t.investedAmount} value={formatMoney(allocation.allocationAmount, allocation.currency)} />
+                <ReportLine label={t.investedAmount} value={formatMoney(allocation.allocationAmount, allocation.currency)} privateValue />
                 <ReportLine label={t.expectedCycle} value={allocation.expectedCycleDays ? `${allocation.expectedCycleDays} ${t.days}` : t.notSet} />
-                <ReportLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} />
+                <ReportLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} privateValue={Boolean(allocation.estimatedResult)} />
                 <ReportLine label={t.payoutState} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
                 <ReportLine label={t.proofHealth} value={allocation.proofCompleteness ? `${enumLabel("proofCompletenessState", allocation.proofCompleteness.state, locale)} · ${allocation.proofCompleteness.score}%` : t.underManagerReview} />
                 <ReportLine label={t.evidenceSummary} value={allocation.proofCompleteness ? localizeProofSummary(locale, allocation.proofCompleteness.state, allocation.proofCompleteness.score) : t.evidenceUnderReview} />
@@ -496,11 +496,11 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
   );
 }
 
-function ReportLine({ label, value }: { label: string; value: string }) {
+function ReportLine({ label, value, privateValue = false }: { label: string; value: string; privateValue?: boolean }) {
   return (
     <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>
+      <p data-private-amount={privateValue || undefined} className="mt-2 text-sm leading-6 text-foreground">{value}</p>
     </div>
   );
 }

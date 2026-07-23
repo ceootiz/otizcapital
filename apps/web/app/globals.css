@@ -147,3 +147,10 @@
   animation-duration: 0.01ms !important;
   transition-duration: 0.01ms !important;
 }
+
+/* Investor privacy mode is a visual convenience, not an access-control layer. */
+html.otiz-investor-privacy [data-private-amount] {
+  filter: blur(7px);
+  pointer-events: none;
+  user-select: none;
+}

@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/home/theme-toggle";
 import { InvestorDepositAddresses, InvestorLocaleSwitcher, InvestorLogoutButton, InvestorNotificationBell, InvestorWithdrawalForm, ReinvestPreferenceControl } from "./investor-actions";
 import { ContactManagerButton } from "./contact-manager-button";
 import { DepositClaimForm } from "./deposit-claim-form";
+import { InvestorPrivacyToggle } from "./investor-privacy-toggle";
 import { InvestorWithdrawalCancelButton } from "./investor-withdrawal-cancel-button";
 
 type InvestorPageKey = "dashboard" | "deposit" | "allocations" | "reports" | "documents" | "history" | "withdrawals" | "reinvest" | "calendar" | "support" | "settings";
@@ -434,6 +435,7 @@ export function InvestorShell({
               <ContactManagerButton locale={locale} context={contactContext} />
               <InvestorLocaleSwitcher locale={locale} />
               <InvestorNotificationBell locale={locale} />
+              <InvestorPrivacyToggle locale={locale} />
               <ThemeToggle />
               <InvestorLogoutButton locale={locale} />
             </div>
@@ -518,10 +520,10 @@ export function InvestorDashboardHome({
 
   const balanceCards = (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard icon={<WalletCards className="size-5" />} label={t.summary.total} value={moneyMetric(data.summary.totalBalance)} hint={t.summary.totalHint} href={`/${locale}/investor/history`} />
-      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.summary.free} value={moneyMetric(data.summary.availableBalance)} hint={t.summary.freeHint} href={`/${locale}/investor/deposit`} />
-      <KpiCard icon={<BarChart3 className="size-5" />} label={t.summary.working} value={moneyMetric(data.summary.workingCapital)} hint={t.summary.workingHint} href={`/${locale}/investor/allocations`} />
-      <KpiCard icon={<CalendarClock className="size-5" />} label={t.summary.pending} value={moneyMetric(expectedAmount)} hint={t.summary.pendingHint} href={data.summary.pendingPayouts > 0 ? `/${locale}/investor/withdrawals` : `/${locale}/investor/reports`} />
+      <KpiCard icon={<WalletCards className="size-5" />} label={t.summary.total} value={moneyMetric(data.summary.totalBalance)} hint={t.summary.totalHint} href={`/${locale}/investor/history`} privateValue />
+      <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.summary.free} value={moneyMetric(data.summary.availableBalance)} hint={t.summary.freeHint} href={`/${locale}/investor/deposit`} privateValue />
+      <KpiCard icon={<BarChart3 className="size-5" />} label={t.summary.working} value={moneyMetric(data.summary.workingCapital)} hint={t.summary.workingHint} href={`/${locale}/investor/allocations`} privateValue />
+      <KpiCard icon={<CalendarClock className="size-5" />} label={t.summary.pending} value={moneyMetric(expectedAmount)} hint={t.summary.pendingHint} href={data.summary.pendingPayouts > 0 ? `/${locale}/investor/withdrawals` : `/${locale}/investor/reports`} privateValue />
     </div>
   );
 
@@ -827,8 +829,8 @@ export function InvestorWithdrawalsPage({
           <CardDescription>{t.withdraw.availabilityDesc}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <ProofLine label={t.withdraw.available} value={f.money(available)} />
-          <ProofLine label={t.withdraw.pendingPayouts} value={f.money(summary.pendingPayouts)} />
+          <ProofLine label={t.withdraw.available} value={f.money(available)} privateValue />
+          <ProofLine label={t.withdraw.pendingPayouts} value={f.money(summary.pendingPayouts)} privateValue />
           <ProofLine label={t.withdraw.scheduledNext} value={f.date(summary.nextExpectedPayoutDate)} />
           <InvestorWithdrawalForm locale={locale} availableAmount={available} locked={withdrawalAccess.locked} unlockDate={withdrawalAccess.unlockDate} />
         </CardContent>
@@ -874,9 +876,9 @@ export function InvestorHistoryPage({
   return (
     <div className="grid gap-6">
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard icon={<BarChart3 className="size-5" />} label={t.history.totalsProfit} value={f.money(totals.profit)} />
-        <KpiCard icon={<WalletCards className="size-5" />} label={t.history.totalsPayout} value={f.money(totals.payout)} />
-        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.history.totalsReinvested} value={f.money(totals.reinvested)} />
+        <KpiCard icon={<BarChart3 className="size-5" />} label={t.history.totalsProfit} value={f.money(totals.profit)} privateValue />
+        <KpiCard icon={<WalletCards className="size-5" />} label={t.history.totalsPayout} value={f.money(totals.payout)} privateValue />
+        <KpiCard icon={<CheckCircle2 className="size-5" />} label={t.history.totalsReinvested} value={f.money(totals.reinvested)} privateValue />
       </div>
 
       <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
@@ -899,9 +901,9 @@ export function InvestorHistoryPage({
                       <span className="font-medium text-foreground">{payment.month}</span>
                       {payment.period ? <span className="ml-2 text-xs text-muted-foreground">{payment.period}</span> : null}
                     </td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.profit)}</td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.payout)}</td>
-                    <td className="py-3 pr-4 text-right text-foreground">{f.money(payment.reinvested)}</td>
+                    <td data-private-amount className="py-3 pr-4 text-right text-foreground">{f.money(payment.profit)}</td>
+                    <td data-private-amount className="py-3 pr-4 text-right text-foreground">{f.money(payment.payout)}</td>
+                    <td data-private-amount className="py-3 pr-4 text-right text-foreground">{f.money(payment.reinvested)}</td>
                     <td className="py-3 text-right text-muted-foreground">{payment.roiPercent === null ? "—" : f.percent(payment.roiPercent)}</td>
                   </tr>
                 ))}
@@ -943,13 +945,13 @@ export function InvestorReinvestPage({ locale, enabled, persistenceEnabled }: { 
   );
 }
 
-function KpiCard({ icon, label, value, hint, href }: { icon: React.ReactNode; label: string; value: string; hint?: string; href?: string }) {
+function KpiCard({ icon, label, value, hint, href, privateValue = false }: { icon: React.ReactNode; label: string; value: string; hint?: string; href?: string; privateValue?: boolean }) {
   const card = (
     <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardContent className="p-5">
         <div className="mb-5 flex size-10 items-center justify-center rounded-full border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 text-amber-700 dark:text-gold-100">{icon}</div>
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-        <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
+        <p data-private-amount={privateValue || undefined} className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">{value}</p>
         {hint ? <p className="mt-2 text-[0.7rem] leading-4 text-muted-foreground/80">{hint}</p> : null}
       </CardContent>
     </Card>
@@ -1019,8 +1021,8 @@ function AllocationCard({ locale, allocation, compact = false }: { locale: Local
           </div>
         </div>
         <div className={`mt-5 grid gap-3 ${compact ? "sm:grid-cols-2" : "md:grid-cols-4"}`}>
-          <ProofLine label={t.alloc.invested} value={f.money(allocation.investedAmount)} />
-          <ProofLine label={t.alloc.expectedReturn} value={allocation.expectedReturn === null ? t.common.notAvailable : f.money(allocation.expectedReturn)} />
+          <ProofLine label={t.alloc.invested} value={f.money(allocation.investedAmount)} privateValue />
+          <ProofLine label={t.alloc.expectedReturn} value={allocation.expectedReturn === null ? t.common.notAvailable : f.money(allocation.expectedReturn)} privateValue={allocation.expectedReturn !== null} />
           <ProofLine label={t.alloc.expectedPayout} value={f.date(allocation.expectedPayoutAt)} />
           <ProofLine label={t.alloc.updated} value={f.date(allocation.updatedAt)} />
           <ProofLine label={t.alloc.proofHealth} value={allocation.proofHealth ? `${allocation.proofHealth.score}%` : t.alloc.underManagerReview} />
@@ -1152,11 +1154,11 @@ function WithdrawalTimeline({ locale, status }: { locale: Locale; status: string
   );
 }
 
-function ProofLine({ label, value }: { label: string; value: string }) {
+function ProofLine({ label, value, privateValue = false }: { label: string; value: string; privateValue?: boolean }) {
   return (
     <div className="rounded-2xl border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-foreground">{value}</p>
+      <p data-private-amount={privateValue || undefined} className="mt-2 text-sm leading-6 text-foreground">{value}</p>
     </div>
   );
 }
