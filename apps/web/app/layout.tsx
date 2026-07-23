@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, Newsreader } from "next/font/google";
+import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
 const sans = Manrope({
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
   },
   description:
     "A premium commerce capital platform built around real electronics operations, marketplace sales, logistics, reporting, and allocation transparency.",
-  icons: { icon: "/favicon.ico", shortcut: "/favicon.ico" },
+  icons: { icon: "/favicon.ico", shortcut: "/favicon.ico", apple: "/otiz-icon.svg" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "OTIZ" },
   openGraph: {
     title: "OTIZ CAPITAL",
     description: "Invest in real electronics commerce with operational transparency.",
@@ -35,6 +38,13 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: ["/og.png"]
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f1e8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0f12" }
+  ]
 };
 
 // Applies the theme before paint so there is no light/dark flash. Priority:
@@ -53,7 +63,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: CONNECTION_INIT_SCRIPT }} />
       </head>
-      <body className={`${sans.variable} ${display.variable} font-sans`}>{children}</body>
+      <body className={`${sans.variable} ${display.variable} font-sans`}>
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }

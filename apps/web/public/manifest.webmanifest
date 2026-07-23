@@ -1,0 +1,18 @@
+{
+  "name": "OTIZ Capital",
+  "short_name": "OTIZ",
+  "description": "Investor access to OTIZ Capital deals, reports, documents and account activity.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
+  "icons": [
+    {
+      "src": "/otiz-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
