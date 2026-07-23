@@ -221,6 +221,12 @@ export function InvestorLogoutButton({ locale }: { locale: Locale }) {
   async function logout() {
     setIsLoggingOut(true);
     await fetch("/api/investor/logout", { method: "POST" }).catch(() => undefined);
+    try {
+      localStorage.removeItem("otiz-investor-offline-summary");
+      navigator.serviceWorker?.controller?.postMessage({ type: "CLEAR_PRIVATE_DATA" });
+    } catch {
+      // Logout must continue even if local storage is unavailable.
+    }
     router.push(`/${locale}/investor/login`);
     router.refresh();
   }

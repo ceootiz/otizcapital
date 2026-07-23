@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { preferredLocale } from "@/lib/preferred-locale";
 
 // Locales kept in sync with packages/lib/src/i18n.ts. Hard-coded here because
 // middleware runs on the Edge runtime and must stay free of heavier imports.
@@ -60,14 +61,13 @@ export function middleware(request: NextRequest) {
     return response;
   };
 
-  // First-visit language detection: a bare "/" (no locale prefix) redirects to
-  // /ru for Russian-preferring browsers, otherwise /en. Locale-prefixed paths
+  // First-visit language detection: a bare "/" (no locale prefix) uses the
+  // browser's best supported language. Locale-prefixed paths
   // (/ru, /en, /es, /de, /zh, ...) are never touched, so an explicit choice is
-  // always respected. Runs before the auth gates below.
+  // always respected. IP and inferred country are deliberately ignored.
   if (request.nextUrl.pathname === "/") {
-    const acceptsRussian = (request.headers.get("accept-language") || "").trim().toLowerCase().startsWith("ru");
     const url = request.nextUrl.clone();
-    url.pathname = acceptsRussian ? "/ru" : "/en";
+    url.pathname = `/${preferredLocale(request.headers.get("accept-language"))}`;
     return withReferral(NextResponse.redirect(url));
   }
 
