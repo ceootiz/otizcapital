@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { READINESS_POLICY_AUDIT_ACTIONS, serializeReadinessPolicyAuditEvent } from "./audit-logs";
+import {
+  READINESS_POLICY_AUDIT_ACTIONS,
+  buildInvestorFileAccessAudit,
+  serializeReadinessPolicyAuditEvent
+} from "./audit-logs";
 
 describe("readiness policy audit configuration", () => {
   it("tracks the actual readiness policy audit action names", () => {
@@ -34,5 +38,25 @@ describe("readiness policy audit configuration", () => {
     expect(JSON.stringify(event.metadata)).not.toContain("sessionSecret");
     expect("beforeJson" in event).toBe(false);
     expect("afterJson" in event).toBe(false);
+  });
+});
+
+describe("investor file access audit", () => {
+  it("builds a source-specific event without exposing file contents", () => {
+    const event = buildInvestorFileAccessAudit({
+      investorId: "investor-1",
+      entityType: "InvestorDocument",
+      entityId: "document-1",
+      accessedAt: new Date("2026-07-23T12:00:00.000Z")
+    });
+
+    expect(event).toEqual({
+      actor: "investor:investor-1",
+      action: "INVESTOR_ACCESSED_FILE",
+      entityType: "InvestorDocument",
+      entityId: "document-1",
+      afterJson: JSON.stringify({ accessedAt: "2026-07-23T12:00:00.000Z" })
+    });
+    expect(event.afterJson).not.toContain("fileData");
   });
 });

@@ -27,6 +27,56 @@ export async function createAuditLogEntry(input: {
   }
 }
 
+export type InvestorFileAccessType = "InvestorDocument" | "InvestorFileReport";
+
+export function buildInvestorFileAccessAudit(input: {
+  investorId: string;
+  entityType: InvestorFileAccessType;
+  entityId: string;
+  accessedAt: Date;
+}) {
+  return {
+    actor: `investor:${input.investorId}`,
+    action: "INVESTOR_ACCESSED_FILE",
+    entityType: input.entityType,
+    entityId: input.entityId,
+    afterJson: JSON.stringify({ accessedAt: input.accessedAt.toISOString() })
+  };
+}
+
+// Records the first successful access to an investor-owned file. Access
+// tracking is best-effort so an audit outage never blocks an authorized
+// document or report download.
+export async function recordInvestorFileAccess(input: {
+  investorId: string;
+  entityType: InvestorFileAccessType;
+  entityId: string;
+  accessedAt?: Date;
+}) {
+  const audit = buildInvestorFileAccessAudit({
+    ...input,
+    accessedAt: input.accessedAt ?? new Date()
+  });
+
+  try {
+    return await prisma.$transaction(async (transaction) => {
+      const existing = await transaction.auditLog.findFirst({
+        where: {
+          actor: audit.actor,
+          action: audit.action,
+          entityType: audit.entityType,
+          entityId: audit.entityId
+        },
+        select: { id: true }
+      });
+      if (existing) return existing;
+      return transaction.auditLog.create({ data: audit });
+    });
+  } catch {
+    return null;
+  }
+}
+
 type LedgerCsvExportAuditFilters = {
   ledgerType?: string | null;
   entryType?: string | null;

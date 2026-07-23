@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getInvestorFileReportForInvestor } from "@otiz/database";
+import { getInvestorFileReportForInvestor, recordInvestorFileAccess } from "@otiz/database";
 import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,12 @@ export async function GET(_request: Request, props: { params: Promise<{ id: stri
   if (!report) {
     return NextResponse.json({ ok: false, error: "Report not found." }, { status: 404 });
   }
+
+  await recordInvestorFileAccess({
+    investorId: auth.investor.id,
+    entityType: "InvestorFileReport",
+    entityId: report.id
+  });
 
   const buffer = Buffer.from(report.fileData, "base64");
   const asciiName = report.fileName.replace(/[^\x20-\x7E]+/g, "_").replace(/"/g, "'");
