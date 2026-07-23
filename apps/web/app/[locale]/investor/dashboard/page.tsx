@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@otiz/lib";
 import { getInvestorOnboardingStatus, isProductFeatureEnabled, listActiveDepositAddresses, serializeDepositAddress } from "@otiz/database";
 import { InvestorDashboardHome, InvestorShell, getInvestorStrings } from "@/components/investor/investor-pages";
+import { InvestorAutoRefresh } from "@/components/investor/investor-auto-refresh";
 import { InvestorOnboardingStatusCard } from "@/components/investor/investor-onboarding-status";
 import { getInvestorDashboardData } from "@/lib/investor-dashboard-data";
 import { requireInvestorSession } from "@/lib/investor-session";
@@ -23,9 +24,10 @@ export default async function InvestorDashboardRoute(props: { params: Promise<{ 
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const [data, onboardingEnabled] = await Promise.all([
+  const [data, onboardingEnabled, liveRefreshEnabled] = await Promise.all([
     getInvestorDashboardData(investor),
-    isProductFeatureEnabled("onboarding-status")
+    isProductFeatureEnabled("onboarding-status"),
+    isProductFeatureEnabled("investor-live-refresh")
   ]);
   const onboardingStatus = onboardingEnabled ? await getInvestorOnboardingStatus(investor.id) : null;
   const page = getInvestorStrings(params.locale).pages.dashboard;
@@ -37,6 +39,7 @@ export default async function InvestorDashboardRoute(props: { params: Promise<{ 
   return (
     <InvestorShell locale={params.locale} investor={investor} active="dashboard" eyebrow={page.eyebrow} title={page.title} description={page.description}>
       <div className="space-y-8">
+        {liveRefreshEnabled ? <InvestorAutoRefresh locale={params.locale} /> : null}
         {onboardingStatus ? <InvestorOnboardingStatusCard locale={params.locale} status={onboardingStatus} /> : null}
         <InvestorDashboardHome
           locale={params.locale}

@@ -3,7 +3,7 @@ import { PRODUCT_FEATURE_KEYS, isProductFeatureKey, parseProductFeatureFlagData 
 
 describe("product feature flag registry", () => {
   it("contains one key for every approved capability except the control page itself", () => {
-    expect(PRODUCT_FEATURE_KEYS).toHaveLength(24);
+    expect(PRODUCT_FEATURE_KEYS).toHaveLength(25);
     expect(new Set(PRODUCT_FEATURE_KEYS).size).toBe(PRODUCT_FEATURE_KEYS.length);
   });
 

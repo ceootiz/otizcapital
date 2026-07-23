@@ -10,6 +10,7 @@ export const PRODUCT_FEATURE_KEYS = [
   "onboarding-status",
   "support-requests",
   "notification-center",
+  "investor-live-refresh",
   "display-currency",
   "referral-share",
   "performance-charts",
