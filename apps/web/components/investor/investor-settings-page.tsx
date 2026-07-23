@@ -44,6 +44,13 @@ const STRINGS = {
       saved: "Saved",
       error: "Could not save your preference. Please try again."
     },
+    requests: {
+      title: "Account requests", desc: "Ask the team to review a change to your personal details, pause your account or close it.", type: "Request type",
+      options: { PROFILE_CHANGE: "Change personal details", ACCOUNT_PAUSE: "Pause account", ACCOUNT_CLOSE: "Close account" },
+      details: "Details", placeholder: "Explain what should change and how the team can verify it. Do not include passwords, recovery codes or wallet keys.",
+      submit: "Send for review", submitting: "Sending...", success: "Your request was sent. Track it in My requests.",
+      note: "Nothing changes automatically. The team reviews every request before taking action.", errDetails: "Please provide at least 10 characters.", error: "Could not send your request. Please try again."
+    },
     sessions: {
       title: "Session history",
       desc: "Recent sign-ins to your investor cabinet, with device and network details.",
@@ -121,6 +128,13 @@ const STRINGS = {
       label: "Получать уведомления на email",
       saved: "Сохранено",
       error: "Не удалось сохранить настройку. Попробуйте ещё раз."
+    },
+    requests: {
+      title: "Заявки по аккаунту", desc: "Отправьте на проверку изменение персональных данных, приостановку или закрытие аккаунта.", type: "Тип заявки",
+      options: { PROFILE_CHANGE: "Изменить персональные данные", ACCOUNT_PAUSE: "Приостановить аккаунт", ACCOUNT_CLOSE: "Закрыть аккаунт" },
+      details: "Подробности", placeholder: "Опишите, что нужно изменить и как команда может это проверить. Не указывайте пароли, коды восстановления и ключи кошельков.",
+      submit: "Отправить на проверку", submitting: "Отправка...", success: "Заявка отправлена. Следите за ней в разделе «Мои обращения».",
+      note: "Ничего не меняется автоматически. Команда проверяет каждую заявку до выполнения.", errDetails: "Добавьте описание не короче 10 символов.", error: "Не удалось отправить заявку. Попробуйте ещё раз."
     },
     sessions: {
       title: "История сессий",
@@ -200,6 +214,13 @@ const STRINGS = {
       saved: "Guardado",
       error: "No se pudo guardar su preferencia. Vuelva a intentarlo."
     },
+    requests: {
+      title: "Solicitudes de cuenta", desc: "Solicite la revisión de un cambio de datos personales, una pausa o el cierre de la cuenta.", type: "Tipo de solicitud",
+      options: { PROFILE_CHANGE: "Cambiar datos personales", ACCOUNT_PAUSE: "Pausar la cuenta", ACCOUNT_CLOSE: "Cerrar la cuenta" },
+      details: "Detalles", placeholder: "Explique qué debe cambiar y cómo puede verificarlo el equipo. No incluya contraseñas, códigos de recuperación ni claves de carteras.",
+      submit: "Enviar a revisión", submitting: "Enviando...", success: "Solicitud enviada. Siga su estado en Mis solicitudes.",
+      note: "Nada cambia automáticamente. El equipo revisa cada solicitud antes de actuar.", errDetails: "Añada una explicación de al menos 10 caracteres.", error: "No se pudo enviar la solicitud. Vuelva a intentarlo."
+    },
     sessions: {
       title: "Historial de sesiones",
       desc: "Inicios de sesión recientes en su gabinete de inversor, con detalles de dispositivo y red.",
@@ -278,6 +299,13 @@ const STRINGS = {
       saved: "Gespeichert",
       error: "Ihre Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
     },
+    requests: {
+      title: "Kontoanfragen", desc: "Bitten Sie um Prüfung einer Änderung persönlicher Daten, einer Kontopause oder Kontoschließung.", type: "Anfragetyp",
+      options: { PROFILE_CHANGE: "Persönliche Daten ändern", ACCOUNT_PAUSE: "Konto pausieren", ACCOUNT_CLOSE: "Konto schließen" },
+      details: "Details", placeholder: "Beschreiben Sie die gewünschte Änderung und wie das Team sie prüfen kann. Geben Sie keine Passwörter, Wiederherstellungscodes oder Wallet-Schlüssel an.",
+      submit: "Zur Prüfung senden", submitting: "Wird gesendet...", success: "Anfrage gesendet. Den Status finden Sie unter Meine Anfragen.",
+      note: "Es wird nichts automatisch geändert. Das Team prüft jede Anfrage vor der Ausführung.", errDetails: "Geben Sie mindestens 10 Zeichen ein.", error: "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    },
     sessions: {
       title: "Sitzungsverlauf",
       desc: "Kürzliche Anmeldungen in Ihrem Investor-Bereich, mit Geräte- und Netzwerkdetails.",
@@ -355,6 +383,13 @@ const STRINGS = {
       label: "接收邮件通知",
       saved: "已保存",
       error: "无法保存您的偏好设置。请重试。"
+    },
+    requests: {
+      title: "账户申请", desc: "申请审核个人资料变更、暂停账户或关闭账户。", type: "申请类型",
+      options: { PROFILE_CHANGE: "更改个人资料", ACCOUNT_PAUSE: "暂停账户", ACCOUNT_CLOSE: "关闭账户" },
+      details: "详细说明", placeholder: "说明需要更改的内容以及团队如何核实。请勿填写密码、恢复代码或钱包密钥。",
+      submit: "提交审核", submitting: "正在提交……", success: "申请已提交，可在“我的请求”中查看状态。",
+      note: "任何变更都不会自动执行。团队会先审核每项申请。", errDetails: "请至少填写 10 个字符。", error: "无法提交申请，请重试。"
     },
     sessions: {
       title: "会话历史",
@@ -493,6 +528,13 @@ export function InvestorSettingsPage({
   const [emailEnabled, setEmailEnabled] = useState(emailNotificationsEnabled);
   const [notificationsSaved, setNotificationsSaved] = useState(false);
   const [notificationsError, setNotificationsError] = useState<string | null>(null);
+
+  // --- Account requests state ---
+  const [accountRequestType, setAccountRequestType] = useState<"PROFILE_CHANGE" | "ACCOUNT_PAUSE" | "ACCOUNT_CLOSE">("PROFILE_CHANGE");
+  const [accountRequestDetails, setAccountRequestDetails] = useState("");
+  const [accountRequestBusy, setAccountRequestBusy] = useState(false);
+  const [accountRequestSuccess, setAccountRequestSuccess] = useState(false);
+  const [accountRequestError, setAccountRequestError] = useState<string | null>(null);
 
   // --- Sessions state ---
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -745,6 +787,34 @@ export function InvestorSettingsPage({
     }
   }, [emailEnabled, t.notifications.error]);
 
+  const handleAccountRequest = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAccountRequestSuccess(false);
+    setAccountRequestError(null);
+    const details = accountRequestDetails.replace(/\s+/gu, " ").trim();
+    if (details.length < 10) {
+      setAccountRequestError(t.requests.errDetails);
+      return;
+    }
+
+    setAccountRequestBusy(true);
+    try {
+      const response = await fetch("/api/investor/account-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: accountRequestType, details })
+      });
+      const payload = await response.json().catch(() => null) as { ok?: boolean } | null;
+      if (!response.ok || !payload?.ok) throw new Error("request failed");
+      setAccountRequestDetails("");
+      setAccountRequestSuccess(true);
+    } catch {
+      setAccountRequestError(t.requests.error);
+    } finally {
+      setAccountRequestBusy(false);
+    }
+  }, [accountRequestDetails, accountRequestType, t.requests.errDetails, t.requests.error]);
+
   // --- Terminate other sessions ---
   const handleTerminate = useCallback(async () => {
     if (typeof window !== "undefined" && !window.confirm(t.terminate.confirm)) return;
@@ -940,6 +1010,34 @@ export function InvestorSettingsPage({
             />
           </button>
         </div>
+      </section>
+
+      {/* 3.25) ACCOUNT REQUESTS — reviewed, never applied automatically */}
+      <section className={cardClass}>
+        <div className="mb-5">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.02em] text-foreground">{t.requests.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t.requests.desc}</p>
+        </div>
+        <form className="grid gap-4" onSubmit={handleAccountRequest} noValidate>
+          <label className="grid gap-2">
+            <span className={labelClass}>{t.requests.type}</span>
+            <select value={accountRequestType} onChange={(event) => setAccountRequestType(event.target.value as typeof accountRequestType)} className={inputClass}>
+              {(Object.keys(t.requests.options) as Array<keyof typeof t.requests.options>).map((type) => <option key={type} value={type}>{t.requests.options[type]}</option>)}
+            </select>
+          </label>
+          <label className="grid gap-2">
+            <span className={labelClass}>{t.requests.details}</span>
+            <textarea value={accountRequestDetails} onChange={(event) => setAccountRequestDetails(event.target.value)} maxLength={1200} rows={5} placeholder={t.requests.placeholder} className="rounded-2xl border border-border bg-muted/30 p-4 text-sm leading-6 text-foreground outline-none focus:border-gold-200/45 focus:ring-2 focus:ring-gold-200/15 dark:border-white/10 dark:bg-black/20" />
+          </label>
+          <p className="text-xs leading-5 text-muted-foreground">{t.requests.note}</p>
+          {accountRequestSuccess ? <p role="status" className="text-sm text-emerald-700 dark:text-emerald-200">{t.requests.success}</p> : null}
+          {accountRequestError ? <p role="alert" className="text-sm text-red-700 dark:text-red-200">{accountRequestError}</p> : null}
+          <div>
+            <button type="submit" disabled={accountRequestBusy} className="inline-flex h-[3rem] items-center justify-center rounded-2xl bg-gold-200 px-6 text-sm font-semibold text-graphite-950 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+              {accountRequestBusy ? t.requests.submitting : t.requests.submit}
+            </button>
+          </div>
+        </form>
       </section>
 
       {/* 3.5) WALLETS — Withdrawal wallets */}

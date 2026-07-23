@@ -447,7 +447,7 @@ export function AdminIncidentsPage({ locale, incidents: initialIncidents }: { lo
                       <Button type="button" size="sm" disabled={pendingId === incident.id || incident.status === "RESOLVED"} onClick={() => runAction(incident, "resolve")}>{t.RESOLVE}</Button>
                     </div>
                   </div>
-                  {incident.incidentType === "SUPPORT_REQUEST" && incident.investorId && incident.status !== "RESOLVED" ? (
+                  {["SUPPORT_REQUEST", "PROFILE_CHANGE_REQUEST", "ACCOUNT_PAUSE_REQUEST", "ACCOUNT_CLOSE_REQUEST"].includes(incident.incidentType) && incident.investorId && incident.status !== "RESOLVED" ? (
                     <div className="grid gap-3 rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20">
                       <label className="grid gap-2 text-sm font-semibold text-foreground">
                         <span>{t.SUPPORT_REPLY}</span>

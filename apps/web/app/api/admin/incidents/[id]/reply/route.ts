@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@otiz/database";
 import { verifyAdminCsrfToken } from "@/lib/admin-session";
 
+const INVESTOR_REQUEST_TYPES = new Set(["SUPPORT_REQUEST", "PROFILE_CHANGE_REQUEST", "ACCOUNT_PAUSE_REQUEST", "ACCOUNT_CLOSE_REQUEST"]);
+
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const csrf = verifyAdminCsrfToken(request);
   if (!csrf.ok) return NextResponse.json({ ok: false, error: csrf.error }, { status: csrf.status });
@@ -16,8 +18,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     select: { id: true, incidentType: true, investorId: true, status: true, acknowledgedAt: true, acknowledgedBy: true }
   });
   if (!incident) return NextResponse.json({ ok: false, error: "Incident not found." }, { status: 404 });
-  if (incident.incidentType !== "SUPPORT_REQUEST" || !incident.investorId) {
-    return NextResponse.json({ ok: false, error: "This incident is not an investor support request." }, { status: 409 });
+  if (!INVESTOR_REQUEST_TYPES.has(incident.incidentType) || !incident.investorId) {
+    return NextResponse.json({ ok: false, error: "This incident is not an investor request." }, { status: 409 });
   }
   if (incident.status === "RESOLVED") return NextResponse.json({ ok: false, error: "Resolved requests cannot receive a new reply." }, { status: 409 });
 
@@ -31,7 +33,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       data: {
         investorId: incident.investorId as string,
         type: "SUPPORT_REPLY",
-        title: "Support replied",
+        title: "OTIZ",
         body: message,
         linkHref: "/investor/support"
       }
