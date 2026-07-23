@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Download, FileSpreadsheet, FileText, PackageCheck, WalletCards } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Download, FileSpreadsheet, FileText, LifeBuoy, PackageCheck, WalletCards } from "lucide-react";
 import type { Investor } from "@prisma/client";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import type { SerializedDepositAddress, WithdrawalLockStatus } from "@otiz/database";
@@ -50,7 +50,7 @@ const INVESTOR_STRINGS = {
     backHome: "Back to homepage",
     brand: "OTIZ INVESTOR",
     investorLabel: "Investor",
-    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", history: "History", withdrawals: "Withdrawals", reinvest: "Reinvest", support: "Support", settings: "Settings" },
+    nav: { dashboard: "Dashboard", deposit: "Deposit", allocations: "Allocations", reports: "Reports", documents: "Documents", history: "History", withdrawals: "Withdrawals", reinvest: "Reinvest", support: "My requests", settings: "Settings" },
     pages: {
       dashboard: { eyebrow: "Operational commerce capital", title: "Investor dashboard", description: "A calm view of active capital, commerce cycles, reporting posture, and pending payout instructions." },
       deposit: { eyebrow: "Account funding", title: "Deposit", description: "Send funds to the address below and notify your manager." },
@@ -163,7 +163,7 @@ const INVESTOR_STRINGS = {
     backHome: "На главную",
     brand: "OTIZ INVESTOR",
     investorLabel: "Инвестор",
-    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", history: "История", withdrawals: "Выводы", reinvest: "Реинвест", support: "Поддержка", settings: "Настройки" },
+    nav: { dashboard: "Панель", deposit: "Пополнение", allocations: "Аллокации", reports: "Отчёты", documents: "Документы", history: "История", withdrawals: "Выводы", reinvest: "Реинвест", support: "Мои обращения", settings: "Настройки" },
     pages: {
       dashboard: { eyebrow: "Операционный торговый капитал", title: "Панель инвестора", description: "Спокойный обзор активного капитала, торговых циклов, состояния отчётности и запланированных выплат." },
       deposit: { eyebrow: "Пополнение счёта", title: "Пополнение", description: "Отправьте средства на указанный адрес и уведомите менеджера." },
@@ -280,7 +280,7 @@ const LOCALIZED_INVESTOR_STRINGS = {
   es: {
     ...INVESTOR_STRINGS.en,
     backHome: "Volver al inicio", investorLabel: "Inversor",
-    nav: { dashboard: "Resumen", deposit: "Depósito", allocations: "Operaciones", reports: "Informes", documents: "Documentos", history: "Historial", withdrawals: "Retiros", reinvest: "Reinvertir", support: "Soporte", settings: "Ajustes" },
+    nav: { dashboard: "Resumen", deposit: "Depósito", allocations: "Operaciones", reports: "Informes", documents: "Documentos", history: "Historial", withdrawals: "Retiros", reinvest: "Reinvertir", support: "Mis solicitudes", settings: "Ajustes" },
     pages: {
       dashboard: { eyebrow: "Su capital", title: "Resumen del inversor", description: "Vea cuánto capital está disponible, cuánto está trabajando y qué ocurrirá después." },
       deposit: { eyebrow: "Añadir capital", title: "Depósito", description: "Envíe los fondos a la dirección indicada y presente la transferencia para su confirmación." },
@@ -313,7 +313,7 @@ const LOCALIZED_INVESTOR_STRINGS = {
   de: {
     ...INVESTOR_STRINGS.en,
     backHome: "Zur Startseite", investorLabel: "Investor",
-    nav: { dashboard: "Übersicht", deposit: "Einzahlung", allocations: "Geschäfte", reports: "Berichte", documents: "Dokumente", history: "Verlauf", withdrawals: "Auszahlungen", reinvest: "Reinvestieren", support: "Support", settings: "Einstellungen" },
+    nav: { dashboard: "Übersicht", deposit: "Einzahlung", allocations: "Geschäfte", reports: "Berichte", documents: "Dokumente", history: "Verlauf", withdrawals: "Auszahlungen", reinvest: "Reinvestieren", support: "Meine Anfragen", settings: "Einstellungen" },
     pages: { dashboard: { eyebrow: "Ihr Kapital", title: "Investor-Übersicht", description: "Sehen Sie verfügbares Kapital, laufende Geschäfte und den nächsten Schritt." }, deposit: { eyebrow: "Kapital einzahlen", title: "Einzahlung", description: "Senden Sie den Betrag an die angegebene Adresse und reichen Sie die Überweisung zur Bestätigung ein." }, allocations: { eyebrow: "Laufende Geschäfte", title: "Geschäfte", description: "Sehen Sie, wo Ihr Kapital arbeitet, den Status und die letzte Aktualisierung." }, reports: { eyebrow: "Ergebnisse", title: "Berichte", description: "Sehen Sie veröffentlichte Ergebnisse, Auszahlungen und zugehörige Dokumente." }, documents: { eyebrow: "Verträge und Dateien", title: "Dokumente", description: "Prüfen und unterzeichnen Sie die für Ihr Konto bereitgestellten Dokumente." }, history: { eyebrow: "Kapitalbewegungen", title: "Verlauf", description: "Sehen Sie die veröffentlichten Monatsergebnisse Ihres Kontos." }, withdrawals: { eyebrow: "Geld erhalten", title: "Auszahlungen", description: "Beantragen Sie eine Auszahlung und verfolgen Sie Prüfung, Planung und Zahlung." }, reinvest: { eyebrow: "Ihre Auswahl", title: "Reinvestieren", description: "Legen Sie fest, ob verfügbare Ergebnisse in künftige Geschäfte fließen sollen." }, settings: { eyebrow: "Ihr Konto", title: "Einstellungen", description: "Verwalten Sie Sprache, Benachrichtigungen, Wallets und Kontodaten." } },
     kpi: { totalBalance: "Guthaben", availableBalance: "Zur Zuweisung", workingCapital: "In Geschäften", retainedProfit: "Einbehaltener Gewinn", activeCapital: "Aktives Kapital", totalInvested: "Insgesamt investiert", realizedProfit: "Bestätigter Gewinn", expectedProfit: "Erwarteter Gewinn", totalPayouts: "Ausgezahlt", pendingPayouts: "Ausstehende Zahlungen", activeAllocations: "Aktive Geschäfte", completedAllocations: "Abgeschlossene Geschäfte", currentAverageRoi: "Durchschnittlicher ROI", nextExpectedPayout: "Nächste erwartete Zahlung" },
     summary: { total: "Gesamtkapital", totalHint: "Freie Mittel, arbeitendes Kapital und bestätigter Gewinn abzüglich abgeschlossener Auszahlungen.", free: "Verfügbar", freeHint: "Kann einem neuen Geschäft zugewiesen oder bei Verfügbarkeit ausgezahlt werden.", working: "In Geschäften", workingHint: "Derzeit aktiven Geschäften zugewiesen.", pending: "Ausstehend", pendingHint: "Erwarteter Gewinn und Zahlungen, die noch nicht bestätigt sind." },
@@ -336,7 +336,7 @@ const LOCALIZED_INVESTOR_STRINGS = {
   zh: {
     ...INVESTOR_STRINGS.en,
     backHome: "返回首页", investorLabel: "投资者",
-    nav: { dashboard: "概览", deposit: "入金", allocations: "项目", reports: "报告", documents: "文件", history: "记录", withdrawals: "提现", reinvest: "再投资", support: "支持", settings: "设置" },
+    nav: { dashboard: "概览", deposit: "入金", allocations: "项目", reports: "报告", documents: "文件", history: "记录", withdrawals: "提现", reinvest: "再投资", support: "我的请求", settings: "设置" },
     pages: { dashboard: { eyebrow: "您的资金", title: "投资者概览", description: "查看可用资金、运作中的资金以及下一步安排。" }, deposit: { eyebrow: "增加资金", title: "入金", description: "向指定地址转账，并提交转账以供确认。" }, allocations: { eyebrow: "进行中的项目", title: "项目", description: "查看资金所在项目、当前阶段和最新进展。" }, reports: { eyebrow: "项目结果", title: "报告", description: "查看已发布的结果、付款和相关文件。" }, documents: { eyebrow: "协议与文件", title: "文件", description: "查看并签署为您的账户准备的文件。" }, history: { eyebrow: "资金记录", title: "记录", description: "查看已发布的月度结果。" }, withdrawals: { eyebrow: "接收资金", title: "提现", description: "提交提现申请，并查看审核、安排和付款状态。" }, reinvest: { eyebrow: "您的选择", title: "再投资", description: "选择是否将可用结果用于未来项目。" }, settings: { eyebrow: "您的账户", title: "设置", description: "管理语言、通知、钱包和账户信息。" } },
     kpi: { totalBalance: "余额", availableBalance: "待分配", workingCapital: "运作中", retainedProfit: "留存利润", activeCapital: "活跃资金", totalInvested: "累计投入", realizedProfit: "已确认利润", expectedProfit: "预计利润", totalPayouts: "累计支付", pendingPayouts: "待支付", activeAllocations: "进行中项目", completedAllocations: "已完成项目", currentAverageRoi: "平均回报率", nextExpectedPayout: "下次预计付款" },
     summary: { total: "总资金", totalHint: "可用资金、运作中资金和已确认利润，扣除已完成提现。", free: "可用", freeHint: "可用于新项目，或在满足条件时提现。", working: "运作中", workingHint: "目前已分配至进行中的项目。", pending: "待确认", pendingHint: "尚未确认的预计利润和付款，确认前不计入已确认金额。" },
@@ -471,6 +471,14 @@ export function InvestorShell({
           {children}
         </div>
       </section>
+      <Link
+        href={`/${locale}/investor/support#new-request`}
+        aria-label={t.nav.support}
+        title={t.nav.support}
+        className="fixed bottom-5 right-5 z-50 flex size-14 items-center justify-center rounded-full border border-gold-200/35 bg-foreground text-background shadow-[0_18px_50px_rgba(0,0,0,0.28)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 sm:bottom-7 sm:right-7"
+      >
+        <LifeBuoy className="size-6" aria-hidden="true" />
+      </Link>
     </main>
   );
 }

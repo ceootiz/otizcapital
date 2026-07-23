@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, PackageCheck } from "lucide-react";
 import type { Investor } from "@prisma/client";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
+import { localizeProofSummary, localizeRiskSummary } from "@/lib/investor-health-copy";
 import { InvestorShell } from "./investor-pages";
 
 type Proof = { id: string; type: string; title: string; description: string | null; proofUrl: string | null; status: string; createdAt: string; updatedAt: string };
@@ -70,7 +71,8 @@ const STRINGS = {
     proofPlaceholdersDesc: "Only available or verified proof metadata is visible here.",
     noProofsTitle: "No available proofs yet",
     noProofsBody: "Shipment documentation, warehouse media, marketplace reporting, and serial verification placeholders appear after manager review.",
-    availableProofMetadata: "Available proof metadata."
+    availableProofMetadata: "Available proof metadata.",
+    contactContext: (code: string) => `Hello, I have a question about deal ${code}.`
   },
   ru: {
     eyebrow: "Видимость аллокации",
@@ -102,7 +104,8 @@ const STRINGS = {
     proofPlaceholdersDesc: "Здесь видны только доступные или проверенные метаданные подтверждений.",
     noProofsTitle: "Пока нет доступных подтверждений",
     noProofsBody: "Заготовки для документов об отгрузке, складских материалов, отчётов маркетплейса и проверки серийных номеров появятся после проверки менеджером.",
-    availableProofMetadata: "Доступные метаданные подтверждения."
+    availableProofMetadata: "Доступные метаданные подтверждения.",
+    contactContext: (code: string) => `Здравствуйте, у меня вопрос по сделке ${code}.`
   },
   es: {
     eyebrow: "Visibilidad de la asignación",
@@ -134,7 +137,8 @@ const STRINGS = {
     proofPlaceholdersDesc: "Aquí solo son visibles los metadatos de pruebas disponibles o verificadas.",
     noProofsTitle: "Aún no hay pruebas disponibles",
     noProofsBody: "Los marcadores de documentación de envío, material de almacén, informes del marketplace y verificación de números de serie aparecen tras la revisión del gestor.",
-    availableProofMetadata: "Metadatos de prueba disponibles."
+    availableProofMetadata: "Metadatos de prueba disponibles.",
+    contactContext: (code: string) => `Hola, tengo una pregunta sobre la operación ${code}.`
   },
   de: {
     eyebrow: "Transparenz der Allokation",
@@ -166,7 +170,8 @@ const STRINGS = {
     proofPlaceholdersDesc: "Hier sind nur verfügbare oder verifizierte Nachweis-Metadaten sichtbar.",
     noProofsTitle: "Noch keine verfügbaren Nachweise",
     noProofsBody: "Platzhalter für Versanddokumentation, Lagermedien, Marktplatzberichte und Seriennummernprüfung erscheinen nach der Prüfung durch den Manager.",
-    availableProofMetadata: "Verfügbare Nachweis-Metadaten."
+    availableProofMetadata: "Verfügbare Nachweis-Metadaten.",
+    contactContext: (code: string) => `Hallo, ich habe eine Frage zum Geschäft ${code}.`
   },
   zh: {
     eyebrow: "资金配置透明度",
@@ -198,7 +203,8 @@ const STRINGS = {
     proofPlaceholdersDesc: "此处仅显示可用或已核实的凭证元数据。",
     noProofsTitle: "暂无可用凭证",
     noProofsBody: "发货文件、仓储影像、电商平台报告及序列号核实的占位项将在经理审核后显示。",
-    availableProofMetadata: "可用的凭证元数据。"
+    availableProofMetadata: "可用的凭证元数据。",
+    contactContext: (code: string) => `您好，我想咨询项目 ${code}。`
   }
 } as const;
 type Strings = typeof STRINGS.en;
@@ -207,12 +213,7 @@ const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<st
 export function InvestorAllocationDetailPage({ locale, investor, allocation }: { locale: Locale; investor: Investor; allocation: AllocationDetail }) {
   const t = getStrings(locale);
   const fmt = createAdminFormatters(locale);
-  // F6: pre-fill the "Contact manager" Telegram message with this allocation's
-  // reference so the manager immediately knows the subject.
-  const contactContext =
-    locale === "ru"
-      ? `Здравствуйте, у меня вопрос по аллокации ${allocation.supplyCode}.`
-      : `Hello, I have a question about allocation ${allocation.supplyCode}.`;
+  const contactContext = t.contactContext(allocation.supplyCode);
   return (
     <InvestorShell locale={locale} investor={investor} active="allocations" eyebrow={t.eyebrow} title={allocation.supplyCode} description={t.description} contactContext={contactContext}>
       <div className="mb-6">
@@ -236,9 +237,9 @@ export function InvestorAllocationDetailPage({ locale, investor, allocation }: {
             <ProofLine label={t.started} value={fmt.date(allocation.startedAt)} />
             <ProofLine label={t.completed} value={fmt.date(allocation.completedAt)} />
             <ProofLine label={t.proofHealth} value={allocation.proofHealth ? `${enumLabel("proofCompletenessState", allocation.proofHealth.state, locale)} · ${allocation.proofHealth.score}%` : t.underManagerReview} />
-            <ProofLine label={t.evidenceSummary} value={allocation.proofHealth?.investorSafeSummary || t.evidenceCoverageReview} />
+            <ProofLine label={t.evidenceSummary} value={allocation.proofHealth ? localizeProofSummary(locale, allocation.proofHealth.state, allocation.proofHealth.score) : t.evidenceCoverageReview} />
             <ProofLine label={t.riskVisibility} value={allocation.riskHealth ? `${enumLabel("riskLevel", allocation.riskHealth.level, locale)} · ${allocation.riskHealth.score}/100` : t.underManagerReview} />
-            <ProofLine label={t.riskSummary} value={allocation.riskHealth?.summary || t.operationalRiskReview} />
+            <ProofLine label={t.riskSummary} value={allocation.riskHealth ? localizeRiskSummary(locale, allocation.riskHealth.level) : t.operationalRiskReview} />
           </CardContent>
         </Card>
 

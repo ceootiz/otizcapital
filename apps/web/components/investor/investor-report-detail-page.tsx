@@ -3,6 +3,7 @@ import { ArrowLeft, FileText } from "lucide-react";
 import type { Investor } from "@prisma/client";
 import { createAdminFormatters, enumLabel, type Locale } from "@otiz/lib";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
+import { localizeInventoryProgress, localizePayoutStatus, localizeProofSummary, localizeReconciliationNotice, localizeRiskSummary } from "@/lib/investor-health-copy";
 import { InvestorShell } from "./investor-pages";
 
 const STRINGS = {
@@ -474,15 +475,15 @@ export function InvestorReportDetailPage({ locale, investor, report }: { locale:
                 <ReportLine label={t.estimatedResult} value={allocation.estimatedResult || t.notEstimated} />
                 <ReportLine label={t.payoutState} value={enumLabel("payoutStatus", allocation.payoutStatus, locale)} />
                 <ReportLine label={t.proofHealth} value={allocation.proofCompleteness ? `${enumLabel("proofCompletenessState", allocation.proofCompleteness.state, locale)} · ${allocation.proofCompleteness.score}%` : t.underManagerReview} />
-                <ReportLine label={t.evidenceSummary} value={allocation.proofCompleteness?.investorSafeSummary || t.evidenceUnderReview} />
+                <ReportLine label={t.evidenceSummary} value={allocation.proofCompleteness ? localizeProofSummary(locale, allocation.proofCompleteness.state, allocation.proofCompleteness.score) : t.evidenceUnderReview} />
                 <ReportLine label={t.reconciliation} value={allocation.reconciliation ? `${enumLabel("reconciliationState", allocation.reconciliation.status, locale)} · ${allocation.reconciliation.score}%` : t.underManagerReview} />
-                <ReportLine label={t.inventoryProgress} value={allocation.reconciliation?.inventoryProgressSummary || t.inventoryUnderReview} />
+                <ReportLine label={t.inventoryProgress} value={allocation.reconciliation ? localizeInventoryProgress(locale, allocation.reconciliation.inventoryProgressSummary) : t.inventoryUnderReview} />
                 <ReportLine label={t.capitalReturned} value={allocation.reconciliation ? formatMoney(allocation.reconciliation.capitalReturned, allocation.currency) : t.underReview} />
-                <ReportLine label={t.payoutStatus} value={allocation.reconciliation?.payoutStatus || t.notReady} />
+                <ReportLine label={t.payoutStatus} value={allocation.reconciliation ? localizePayoutStatus(locale, allocation.reconciliation.payoutStatus) : t.notReady} />
                 <ReportLine label={t.riskVisibility} value={allocation.risk ? `${enumLabel("riskLevel", allocation.risk.level, locale)} · ${allocation.risk.score}/100` : t.underManagerReview} />
-                <ReportLine label={t.riskSummary} value={allocation.risk?.summary || t.riskUnderReview} />
+                <ReportLine label={t.riskSummary} value={allocation.risk ? localizeRiskSummary(locale, allocation.risk.level) : t.riskUnderReview} />
               </div>
-              {allocation.reconciliation?.exceptionNotice ? <div className="mt-4 rounded-[1.35rem] border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm leading-6 text-amber-700 dark:text-gold-100">{allocation.reconciliation.exceptionNotice}</div> : null}
+              {allocation.reconciliation?.exceptionNotice ? <div className="mt-4 rounded-[1.35rem] border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm leading-6 text-amber-700 dark:text-gold-100">{localizeReconciliationNotice(locale, allocation.reconciliation.status)}</div> : null}
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <ProofBreakdown locale={locale} title={t.availableAllocationProofs} summary={allocation.proofSummaryBreakdown.available} emptyText={t.noAvailableAllocationProofs} />
                 <ProofBreakdown locale={locale} title={t.verifiedAllocationProofs} summary={allocation.proofSummaryBreakdown.verified} emptyText={t.noVerifiedAllocationProofs} />

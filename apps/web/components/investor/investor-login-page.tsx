@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Lock } from "lucide-react";
 import type { Locale } from "@otiz/lib";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@otiz/ui";
@@ -127,7 +126,6 @@ function isValidEmail(value: string) {
 
 export function InvestorLoginPage({ locale }: { locale: Locale }) {
   const t = getStrings(locale);
-  const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
@@ -164,8 +162,7 @@ export function InvestorLoginPage({ locale }: { locale: Locale }) {
         throw new Error(t.errorFallback);
       }
 
-      router.push(`/${locale}/investor/dashboard`);
-      router.refresh();
+      window.location.replace(`/${locale}/investor/dashboard`);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t.errorFallback);
     } finally {
