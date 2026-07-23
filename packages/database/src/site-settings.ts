@@ -13,6 +13,7 @@ export const PRODUCT_FEATURE_KEYS = [
   "investor-live-refresh",
   "investor-deposit-tracker",
   "investor-allocation-filters",
+  "investor-calendar",
   "display-currency",
   "referral-share",
   "performance-charts",
