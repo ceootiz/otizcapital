@@ -16,23 +16,38 @@ export async function generateMetadata(props: { params: Promise<{ locale: Locale
   return { title: `${page.title} | OTIZ CAPITAL`, description: page.description };
 }
 
-export default async function InvestorAllocationsRoute(props: { params: Promise<{ locale: Locale }> }) {
+export default async function InvestorAllocationsRoute(props: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const params = await props.params;
   if (!isLocale(params.locale)) {
     notFound();
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const [data, comparisonEnabled] = await Promise.all([
+  const query = await props.searchParams;
+  const [data, comparisonEnabled, filtersEnabled] = await Promise.all([
     getInvestorDashboardData(investor),
-    isProductFeatureEnabled("deal-comparison")
+    isProductFeatureEnabled("deal-comparison"),
+    isProductFeatureEnabled("investor-allocation-filters")
   ]);
   const page = getInvestorStrings(params.locale).pages.allocations;
 
   return (
     <InvestorShell locale={params.locale} investor={investor} active="allocations" eyebrow={page.eyebrow} title={page.title} description={page.description}>
       {comparisonEnabled ? <div className="mb-6"><InvestorDealComparison locale={params.locale} allocations={data.allocations} /></div> : null}
-      <InvestorAllocationsPage locale={params.locale} data={data} />
+      <InvestorAllocationsPage
+        locale={params.locale}
+        data={data}
+        filtersEnabled={filtersEnabled}
+        filters={{
+          query: typeof query.q === "string" ? query.q : "",
+          status: typeof query.status === "string" ? query.status : "all",
+          risk: typeof query.risk === "string" ? query.risk : "all",
+          sort: typeof query.sort === "string" ? query.sort : "updated_desc"
+        }}
+      />
     </InvestorShell>
   );
 }

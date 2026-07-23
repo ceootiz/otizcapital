@@ -21,6 +21,7 @@ const FEATURES: Array<{ key: ProductFeatureKey; group: number; labels: Record<Lo
   { key: "notification-center", group: 0, labels: { en: "Notification center", ru: "Центр уведомлений", de: "Benachrichtigungen", es: "Centro de notificaciones", zh: "通知中心" } },
   { key: "investor-live-refresh", group: 0, labels: { en: "Live investor updates", ru: "Автообновление кабинета", de: "Live-Aktualisierung", es: "Actualización automática", zh: "投资者页面自动更新" } },
   { key: "investor-deposit-tracker", group: 0, labels: { en: "Deposit review and tracking", ru: "Проверка и статусы пополнений", de: "Einzahlungsprüfung und Status", es: "Revisión y seguimiento de depósitos", zh: "入金确认与跟踪" } },
+  { key: "investor-allocation-filters", group: 0, labels: { en: "Deal filters and sorting", ru: "Фильтры и сортировка сделок", de: "Geschäftsfilter und Sortierung", es: "Filtros y orden de operaciones", zh: "项目筛选与排序" } },
   { key: "display-currency", group: 0, labels: { en: "Display currency", ru: "Валюта отображения", de: "Anzeigewährung", es: "Moneda de visualización", zh: "显示货币" } },
   { key: "referral-share", group: 0, labels: { en: "Referral QR and sharing", ru: "Реферальный QR и отправка", de: "Empfehlungs-QR und Teilen", es: "QR y compartir referidos", zh: "推荐二维码与分享" } },
   { key: "reinvest-preference", group: 0, labels: { en: "Reinvestment preference", ru: "Настройка реинвестирования", de: "Reinvestitionspräferenz", es: "Preferencia de reinversión", zh: "再投资偏好" } },

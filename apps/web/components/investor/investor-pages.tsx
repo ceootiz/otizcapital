@@ -661,15 +661,62 @@ export function InvestorDepositPage({ locale, addresses, trackerEnabled = false 
   );
 }
 
-export function InvestorAllocationsPage({ locale, data }: { locale: Locale; data: InvestorDashboardData }) {
+const ALLOCATION_FILTER_COPY = {
+  en: { search: "Search by deal or product", status: "Status", risk: "Risk", sort: "Sort", apply: "Apply", all: "All", active: "Active", completed: "Completed", loss: "Needs attention", standard: "Standard", monitored: "Monitored", elevated: "Elevated", updatedDesc: "Recently updated", amountDesc: "Capital: high to low", amountAsc: "Capital: low to high", returnDesc: "Result: high to low", noMatches: "No deals match these filters." },
+  ru: { search: "Поиск по сделке или товару", status: "Статус", risk: "Риск", sort: "Сортировка", apply: "Применить", all: "Все", active: "В работе", completed: "Завершены", loss: "Требуют внимания", standard: "Стандартный", monitored: "Под наблюдением", elevated: "Повышенный", updatedDesc: "Сначала обновлённые", amountDesc: "Капитал: по убыванию", amountAsc: "Капитал: по возрастанию", returnDesc: "Результат: по убыванию", noMatches: "По выбранным фильтрам сделок нет." },
+  de: { search: "Nach Geschäft oder Produkt suchen", status: "Status", risk: "Risiko", sort: "Sortierung", apply: "Anwenden", all: "Alle", active: "Aktiv", completed: "Abgeschlossen", loss: "Aufmerksamkeit nötig", standard: "Standard", monitored: "Beobachtet", elevated: "Erhöht", updatedDesc: "Zuletzt aktualisiert", amountDesc: "Kapital: absteigend", amountAsc: "Kapital: aufsteigend", returnDesc: "Ergebnis: absteigend", noMatches: "Keine Geschäfte entsprechen diesen Filtern." },
+  es: { search: "Buscar por operación o producto", status: "Estado", risk: "Riesgo", sort: "Orden", apply: "Aplicar", all: "Todas", active: "Activas", completed: "Completadas", loss: "Requieren atención", standard: "Estándar", monitored: "Supervisadas", elevated: "Elevado", updatedDesc: "Actualizadas recientemente", amountDesc: "Capital: mayor a menor", amountAsc: "Capital: menor a mayor", returnDesc: "Resultado: mayor a menor", noMatches: "Ninguna operación coincide con estos filtros." },
+  zh: { search: "按项目或产品搜索", status: "状态", risk: "风险", sort: "排序", apply: "应用", all: "全部", active: "进行中", completed: "已完成", loss: "需要关注", standard: "标准", monitored: "观察中", elevated: "较高", updatedDesc: "最近更新", amountDesc: "资金：从高到低", amountAsc: "资金：从低到高", returnDesc: "结果：从高到低", noMatches: "没有符合筛选条件的项目。" }
+} as const;
+
+type AllocationFilters = { query: string; status: string; risk: string; sort: string };
+
+export function InvestorAllocationsPage({
+  locale,
+  data,
+  filtersEnabled = false,
+  filters = { query: "", status: "all", risk: "all", sort: "updated_desc" }
+}: {
+  locale: Locale;
+  data: InvestorDashboardData;
+  filtersEnabled?: boolean;
+  filters?: AllocationFilters;
+}) {
   const t = getInvestorStrings(locale);
+  const filterCopy = ALLOCATION_FILTER_COPY[locale] ?? ALLOCATION_FILTER_COPY.en;
+  const source = filtersEnabled ? data.allocations : data.activeAllocations;
+  const normalizedQuery = filters.query.trim().toLocaleLowerCase(locale);
+  const filtered = source.filter((allocation) => {
+    const matchesQuery = !normalizedQuery || `${allocation.supplyId} ${allocation.product}`.toLocaleLowerCase(locale).includes(normalizedQuery);
+    const matchesStatus =
+      filters.status === "all" ||
+      (filters.status === "active" && !["completed", "paid_out", "loss"].includes(allocation.currentStage)) ||
+      (filters.status === "completed" && ["completed", "paid_out"].includes(allocation.currentStage)) ||
+      (filters.status === "loss" && allocation.currentStage === "loss");
+    const matchesRisk = filters.risk === "all" || allocation.riskLevel === filters.risk;
+    return matchesQuery && matchesStatus && matchesRisk;
+  }).sort((left, right) => {
+    if (filters.sort === "amount_desc") return right.investedAmount - left.investedAmount;
+    if (filters.sort === "amount_asc") return left.investedAmount - right.investedAmount;
+    if (filters.sort === "return_desc") return (right.comparisonResult ?? Number.NEGATIVE_INFINITY) - (left.comparisonResult ?? Number.NEGATIVE_INFINITY);
+    return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+  });
 
   return (
     <div className="grid gap-4">
-      {data.activeAllocations.length === 0 ? (
-        <InvestorEmptyState title={t.alloc.noActiveTitle} description={t.alloc.noActiveDesc} />
+      {filtersEnabled ? (
+        <form method="GET" className="grid gap-3 rounded-[1.35rem] border border-border bg-card p-4 dark:border-white/10 dark:bg-graphite-900/[0.72] md:grid-cols-[minmax(12rem,1fr)_auto_auto_auto_auto] md:items-end">
+          <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{filterCopy.search}</span><input name="q" defaultValue={filters.query} className="h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-gold-200/45 dark:border-white/10 dark:bg-black/20" /></label>
+          <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{filterCopy.status}</span><select name="status" defaultValue={filters.status} className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10"><option value="all">{filterCopy.all}</option><option value="active">{filterCopy.active}</option><option value="completed">{filterCopy.completed}</option><option value="loss">{filterCopy.loss}</option></select></label>
+          <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{filterCopy.risk}</span><select name="risk" defaultValue={filters.risk} className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10"><option value="all">{filterCopy.all}</option><option value="standard">{filterCopy.standard}</option><option value="monitored">{filterCopy.monitored}</option><option value="elevated">{filterCopy.elevated}</option></select></label>
+          <label className="grid gap-2"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{filterCopy.sort}</span><select name="sort" defaultValue={filters.sort} className="h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground dark:border-white/10"><option value="updated_desc">{filterCopy.updatedDesc}</option><option value="amount_desc">{filterCopy.amountDesc}</option><option value="amount_asc">{filterCopy.amountAsc}</option><option value="return_desc">{filterCopy.returnDesc}</option></select></label>
+          <button type="submit" className="min-h-11 rounded-full bg-foreground px-5 text-sm font-semibold text-background">{filterCopy.apply}</button>
+        </form>
+      ) : null}
+      {filtered.length === 0 ? (
+        <InvestorEmptyState title={t.alloc.noActiveTitle} description={filtersEnabled ? filterCopy.noMatches : t.alloc.noActiveDesc} />
       ) : (
-        data.activeAllocations.map((allocation) => <AllocationCard key={allocation.id} locale={locale} allocation={allocation} />)
+        filtered.map((allocation) => <AllocationCard key={allocation.id} locale={locale} allocation={allocation} />)
       )}
     </div>
   );
