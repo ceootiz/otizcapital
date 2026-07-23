@@ -163,6 +163,12 @@ export function isPositiveMoney(value: string) {
   return toMoneyNumber(value) > 0;
 }
 
+export function isWithdrawalAmountAvailable(requested: unknown, available: unknown) {
+  const requestedAmount = toMoneyNumber(requested);
+  const availableAmount = toMoneyNumber(available);
+  return requestedAmount > 0 && requestedAmount <= availableAmount;
+}
+
 export function maskWithdrawalDestination(value: unknown) {
   if (typeof value !== "string") return null;
   const normalized = value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim();
@@ -286,12 +292,15 @@ export async function createWithdrawalRequest(input: {
   destinationMasked?: string | null;
   investorNote?: string | null;
 }) {
+  const amount = toMoneyNumber(input.amount);
+  const currency = (input.currency || "USD").toUpperCase();
   const [investor, access] = await Promise.all([
     prisma.investor.findUnique({ where: { id: input.investorId } }),
     getInvestorWithdrawalLockStatus(input.investorId)
   ]);
   if (!investor) return { ok: false as const, status: 404 as const, error: "Investor not found." };
   if (!isPositiveMoney(input.amount)) return { ok: false as const, status: 422 as const, error: "Withdrawal amount must be greater than 0." };
+  if (currency !== "USD") return { ok: false as const, status: 422 as const, error: "Only USD withdrawals are supported." };
   if (access.locked) {
     return {
       ok: false as const,
@@ -300,19 +309,42 @@ export async function createWithdrawalRequest(input: {
     };
   }
 
-  const request = await prisma.withdrawalRequest.create({
-    data: {
-      investorId: investor.id,
-      amount: String(toMoneyNumber(input.amount)),
-      currency: input.currency || "USD",
-      method: input.method || null,
-      destinationMasked: maskWithdrawalDestination(input.destinationMasked),
-      investorNote: input.investorNote || null,
-      status: "REQUESTED"
+  return prisma.$transaction(async (transaction) => {
+    await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"withdrawal:" + investor.id}))`;
+    const [withdrawalRequests, allocations] = await Promise.all([
+      transaction.withdrawalRequest.findMany({ where: { investorId: investor.id } }),
+      transaction.allocation.findMany({
+        where: { investorId: investor.id },
+        select: { investorId: true, status: true, actualProfit: true }
+      })
+    ]);
+    const summary = buildInvestorPayoutSummary({ investorId: investor.id, withdrawalRequests, allocations });
+    if (!isWithdrawalAmountAvailable(amount, summary.availableForWithdrawal)) {
+      return { ok: false as const, status: 422 as const, error: "Withdrawal amount exceeds the available balance." };
     }
-  });
 
-  return { ok: true as const, request };
+    const request = await transaction.withdrawalRequest.create({
+      data: {
+        investorId: investor.id,
+        amount: String(amount),
+        currency,
+        method: input.method || null,
+        destinationMasked: maskWithdrawalDestination(input.destinationMasked),
+        investorNote: input.investorNote || null,
+        status: "REQUESTED"
+      }
+    });
+    await transaction.auditLog.create({
+      data: {
+        actor: `investor:${investor.id}`,
+        action: "CREATE_WITHDRAWAL_REQUEST",
+        entityType: "WithdrawalRequest",
+        entityId: request.id,
+        afterJson: JSON.stringify({ status: request.status, amount: request.amount, currency: request.currency })
+      }
+    });
+    return { ok: true as const, request };
+  });
 }
 
 export async function getInvestorWithdrawalRequests(investorId: string) {
@@ -397,22 +429,33 @@ export async function cancelWithdrawalRequest(input: { id: string; actor: string
 }
 
 export async function cancelInvestorWithdrawalRequest(input: { id: string; investorId: string }) {
-  const existing = await prisma.withdrawalRequest.findFirst({
-    where: { id: input.id, investorId: input.investorId }
+  return prisma.$transaction(async (transaction) => {
+    const existing = await transaction.withdrawalRequest.findFirst({
+      where: { id: input.id, investorId: input.investorId }
+    });
+    if (!existing) return { ok: false as const, status: 404 as const, error: "Withdrawal request not found." };
+    if (!canInvestorCancelWithdrawal(existing.status)) {
+      return { ok: false as const, status: 409 as const, error: "Only a request awaiting review can be cancelled directly." };
+    }
+    const changed = await transaction.withdrawalRequest.updateMany({
+      where: { id: existing.id, investorId: input.investorId, status: "REQUESTED" },
+      data: { status: "CANCELLED" }
+    });
+    if (changed.count !== 1) {
+      return { ok: false as const, status: 409 as const, error: "This withdrawal request is already being processed." };
+    }
+    const request = await transaction.withdrawalRequest.findUnique({ where: { id: existing.id } });
+    if (!request) return { ok: false as const, status: 404 as const, error: "Withdrawal request not found." };
+    await transaction.auditLog.create({
+      data: {
+        actor: `investor:${input.investorId}`,
+        action: "INVESTOR_CANCEL_WITHDRAWAL_REQUEST",
+        entityType: "WithdrawalRequest",
+        entityId: request.id,
+        beforeJson: JSON.stringify({ status: existing.status, scheduledFor: existing.scheduledFor, amount: existing.amount }),
+        afterJson: JSON.stringify({ status: request.status, scheduledFor: request.scheduledFor, amount: request.amount })
+      }
+    });
+    return { ok: true as const, request };
   });
-  if (!existing) return { ok: false as const, status: 404 as const, error: "Withdrawal request not found." };
-  if (!canInvestorCancelWithdrawal(existing.status)) {
-    return { ok: false as const, status: 409 as const, error: "Only a request awaiting review can be cancelled directly." };
-  }
-  const request = await prisma.withdrawalRequest.update({
-    where: { id: existing.id },
-    data: { status: "CANCELLED" }
-  });
-  await writeWithdrawalAudit({
-    actor: `investor:${input.investorId}`,
-    action: "INVESTOR_CANCEL_WITHDRAWAL_REQUEST",
-    before: existing,
-    after: request
-  });
-  return { ok: true as const, request };
 }

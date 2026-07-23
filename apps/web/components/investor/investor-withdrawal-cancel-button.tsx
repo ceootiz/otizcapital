@@ -31,6 +31,8 @@ export function InvestorWithdrawalCancelButton({ locale, withdrawalId }: { local
         return;
       }
       startTransition(() => router.refresh());
+    } catch {
+      setError(copy.error);
     } finally {
       setSubmitting(false);
     }

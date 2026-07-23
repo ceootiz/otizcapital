@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInvestorPayoutSummary, calculateWithdrawalLockStatus, canInvestorCancelWithdrawal, filterInvestorWithdrawalRequests, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
+import { buildInvestorPayoutSummary, calculateWithdrawalLockStatus, canInvestorCancelWithdrawal, filterInvestorWithdrawalRequests, isWithdrawalAmountAvailable, maskWithdrawalDestination, type WithdrawalRequestRecord } from "./withdrawals";
 
 const baseDate = new Date("2026-05-10T00:00:00.000Z");
 
@@ -76,6 +76,12 @@ describe("withdrawal requests", () => {
     expect(canInvestorCancelWithdrawal("APPROVED")).toBe(false);
     expect(canInvestorCancelWithdrawal("SCHEDULED")).toBe(false);
     expect(canInvestorCancelWithdrawal("PAID")).toBe(false);
+  });
+
+  it("rejects withdrawal amounts above the available balance", () => {
+    expect(isWithdrawalAmountAvailable("1000", "1000")).toBe(true);
+    expect(isWithdrawalAmountAvailable("1000.01", "1000")).toBe(false);
+    expect(isWithdrawalAmountAvailable("0", "1000")).toBe(false);
   });
 
   it("keeps withdrawals locked during the 90-day holding period", () => {
