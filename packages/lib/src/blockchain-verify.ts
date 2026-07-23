@@ -8,6 +8,9 @@
 
 export type VerificationResult = {
   verified: boolean;
+  transactionConfirmed?: boolean;
+  destinationMatches?: boolean;
+  amountMatches?: boolean;
   // On-chain transferred amount in the asset's native unit (BTC, or the token
   // amount for USDT). Undefined when the chosen API does not expose an amount.
   amount?: number;
@@ -71,22 +74,32 @@ async function fetchJson(url: string): Promise<{ ok: boolean; status: number; js
 }
 
 // --- BTC (Blockstream) -----------------------------------------------------
-async function verifyBtc(txHash: string, explorerUrl: string): Promise<VerificationResult> {
+async function verifyBtc(txHash: string, explorerUrl: string, expectedAddresses: string[]): Promise<VerificationResult> {
   const { ok, status, json } = await fetchJson(`https://blockstream.info/api/tx/${encodeURIComponent(txHash)}`);
   if (status === 404) return { verified: false, error: "Transaction not found", explorerUrl };
   if (!ok || !json || typeof json !== "object") return { verified: false, error: "API unavailable", explorerUrl };
 
   const confirmed = Boolean(json.status?.confirmed);
-  // Total output value across the tx (satoshis → BTC). This is the whole tx, not
-  // necessarily the amount credited to our address, so treat it as informational.
-  const totalSats = Array.isArray(json.vout)
-    ? json.vout.reduce((sum: number, out: any) => sum + (Number(out?.value) || 0), 0)
+  const addressSet = new Set(expectedAddresses.map((address) => address.trim()).filter(Boolean));
+  const matchedSats = Array.isArray(json.vout)
+    ? json.vout.reduce(
+        (sum: number, out: any) =>
+          addressSet.has(String(out?.scriptpubkey_address || "").trim()) ? sum + (Number(out?.value) || 0) : sum,
+        0
+      )
     : 0;
+  const destinationMatches = matchedSats > 0;
   return {
-    verified: confirmed,
-    amount: totalSats > 0 ? totalSats / 1e8 : undefined,
+    verified: false,
+    transactionConfirmed: confirmed,
+    destinationMatches,
+    amount: matchedSats > 0 ? matchedSats / 1e8 : undefined,
     assetSymbol: "BTC",
-    error: confirmed ? undefined : "Transaction not yet confirmed",
+    error: !confirmed
+      ? "Transaction not yet confirmed"
+      : !destinationMatches
+        ? "OTIZ deposit address was not found in transaction outputs"
+        : "BTC amount cannot be compared with the USD deposit claim automatically",
     explorerUrl
   };
 }
@@ -104,14 +117,31 @@ async function verifyEvm(txHash: string, apiBase: string, apiKey: string | undef
     return { verified: false, error: "API rate limited (set API key)", explorerUrl };
   }
   const receiptStatus = json.result?.status;
-  if (receiptStatus === "1") return { verified: true, explorerUrl };
+  if (receiptStatus === "1") {
+    return {
+      verified: false,
+      transactionConfirmed: true,
+      error: "Transaction succeeded, but destination and amount were not verified",
+      explorerUrl
+    };
+  }
   if (receiptStatus === "0") return { verified: false, error: "Transaction failed on-chain", explorerUrl };
   // No receipt yet / unknown hash.
   return { verified: false, error: "Transaction not found or pending", explorerUrl };
 }
 
 // --- TronScan (TRC20) ------------------------------------------------------
-async function verifyTron(txHash: string, explorerUrl: string): Promise<VerificationResult> {
+function amountsMatch(actual: number | undefined, expected: number | undefined) {
+  if (actual === undefined || expected === undefined || !Number.isFinite(actual) || !Number.isFinite(expected)) return false;
+  return Math.abs(actual - expected) <= Math.max(0.01, expected * 0.000001);
+}
+
+async function verifyTron(
+  txHash: string,
+  explorerUrl: string,
+  expectedAmount: number | undefined,
+  expectedAddresses: string[]
+): Promise<VerificationResult> {
   const { ok, json } = await fetchJson(`https://apilist.tronscanapi.com/api/transaction-info?hash=${encodeURIComponent(txHash)}`);
   if (!ok || !json || typeof json !== "object" || Object.keys(json).length === 0) {
     return { verified: false, error: "Transaction not found", explorerUrl };
@@ -129,11 +159,24 @@ async function verifyTron(txHash: string, explorerUrl: string): Promise<Verifica
     if (Number.isFinite(raw)) amount = raw / 10 ** decimals;
     assetSymbol = typeof transfer.symbol === "string" ? transfer.symbol : "USDT";
   }
+  const destination = String(transfer?.to_address || transfer?.toAddress || "").trim();
+  const destinationMatches = expectedAddresses.some((address) => address.trim() === destination);
+  const amountMatches = amountsMatch(amount, expectedAmount);
+  const transactionConfirmed = confirmed && success;
   return {
-    verified: confirmed && success,
+    verified: transactionConfirmed && destinationMatches && amountMatches,
+    transactionConfirmed,
+    destinationMatches,
+    amountMatches,
     amount,
     assetSymbol,
-    error: confirmed && success ? undefined : "Transaction not confirmed or unsuccessful",
+    error: !transactionConfirmed
+      ? "Transaction not confirmed or unsuccessful"
+      : !destinationMatches
+        ? "Transaction destination does not match an active OTIZ deposit address"
+        : !amountMatches
+          ? "Transaction amount does not match the deposit claim"
+          : undefined,
     explorerUrl
   };
 }
@@ -143,7 +186,8 @@ async function verifyTron(txHash: string, explorerUrl: string): Promise<Verifica
 export async function verifyTransaction(
   txHash: string,
   network: string,
-  _expectedAmount?: number
+  expectedAmount?: number,
+  expectedAddresses: string[] = []
 ): Promise<VerificationResult> {
   const explorerUrl = explorerUrlFor(network, txHash);
   const trimmed = (txHash || "").trim();
@@ -152,14 +196,14 @@ export async function verifyTransaction(
   try {
     switch (network) {
       case "BTC":
-        return await verifyBtc(trimmed, explorerUrl);
+        return await verifyBtc(trimmed, explorerUrl, expectedAddresses);
       case "ETH":
       case "USDT ERC20":
         return await verifyEvm(trimmed, "https://api.etherscan.io/api", process.env.ETHERSCAN_API_KEY, explorerUrl);
       case "USDT BEP20":
         return await verifyEvm(trimmed, "https://api.bscscan.com/api", process.env.BSCSCAN_API_KEY, explorerUrl);
       case "USDT TRC20":
-        return await verifyTron(trimmed, explorerUrl);
+        return await verifyTron(trimmed, explorerUrl, expectedAmount, expectedAddresses);
       default:
         return { verified: false, error: `Unsupported network: ${network}`, explorerUrl };
     }

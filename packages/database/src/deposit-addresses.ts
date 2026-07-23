@@ -32,6 +32,13 @@ export async function listActiveDepositAddresses() {
   });
 }
 
+export async function listActiveDepositAddressesForNetwork(network: string) {
+  return prisma.depositAddress.findMany({
+    where: { isActive: true, network },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
+  });
+}
+
 export async function listAllDepositAddresses() {
   return prisma.depositAddress.findMany({
     orderBy: [{ sortOrder: "asc" }, { currency: "asc" }, { createdAt: "asc" }]

@@ -46,13 +46,17 @@ export async function POST(request: Request) {
   const txHash = sanitizeString(payload.txHash, 200) || null;
   const note = sanitizeString(payload.note, 1000) || null;
 
-  const record = await createDepositNotification({
+  const created = await createDepositNotification({
     investorId: auth.investor.id,
     amount,
     network,
     txHash,
     note
   });
+  if (created.duplicateTx || !created.record) {
+    return NextResponse.json({ ok: false, code: "DUPLICATE_TX", error: "DUPLICATE_TX" }, { status: 409 });
+  }
+  const record = created.record;
 
   // Admin-facing operational event (best-effort — the claim row itself is the
   // durable admin queue, so a failed event must not fail the claim).

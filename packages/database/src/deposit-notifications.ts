@@ -12,6 +12,10 @@ export const DEPOSIT_NETWORKS = ["BTC", "ETH", "USDT TRC20", "USDT ERC20", "USDT
 export const DEPOSIT_VERIFICATION_STATUSES = ["VERIFIED", "FAILED", "SKIPPED", "API_ERROR"] as const;
 export type DepositVerificationStatus = (typeof DEPOSIT_VERIFICATION_STATUSES)[number];
 
+export function normalizeDepositTransactionHash(value: string | null) {
+  return value?.trim().toLowerCase() || null;
+}
+
 export type SerializedDepositNotification = {
   id: string;
   investorId: string;
@@ -61,15 +65,29 @@ export async function createDepositNotification(input: {
   txHash: string | null;
   note: string | null;
 }) {
-  return prisma.depositNotification.create({
+  const txHash = normalizeDepositTransactionHash(input.txHash);
+  if (txHash) {
+    const duplicate = await prisma.depositNotification.findFirst({
+      where: {
+        network: input.network,
+        txHash: { equals: txHash, mode: "insensitive" },
+        status: { in: ["PENDING", "CONFIRMED"] }
+      },
+      select: { id: true }
+    });
+    if (duplicate) return { record: null, duplicateTx: true as const };
+  }
+
+  const record = await prisma.depositNotification.create({
     data: {
       investorId: input.investorId,
       amount: new Prisma.Decimal(input.amount),
       network: input.network,
-      txHash: input.txHash,
+      txHash,
       note: input.note
     }
   });
+  return { record, duplicateTx: false as const };
 }
 
 export async function listDepositNotificationsForInvestor(investorId: string) {
@@ -105,6 +123,26 @@ export async function reviewDepositNotification(input: {
 }) {
   return prisma.$transaction(async (transaction) => {
     const reviewedAt = new Date();
+    const existing = await transaction.depositNotification.findUnique({ where: { id: input.id } });
+    if (!existing) return { updated: false, record: null, duplicateTx: false };
+    if (existing.status !== "PENDING") return { updated: false, record: existing, duplicateTx: false };
+
+    const normalizedHash = normalizeDepositTransactionHash(existing.txHash);
+    if (input.status === "CONFIRMED" && normalizedHash) {
+      const lockKey = `deposit:${existing.network}:${normalizedHash}`;
+      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
+      const duplicate = await transaction.depositNotification.findFirst({
+        where: {
+          id: { not: existing.id },
+          network: existing.network,
+          txHash: { equals: normalizedHash, mode: "insensitive" },
+          status: "CONFIRMED"
+        },
+        select: { id: true }
+      });
+      if (duplicate) return { updated: false, record: existing, duplicateTx: true };
+    }
+
     const result = await transaction.depositNotification.updateMany({
       where: { id: input.id, status: "PENDING" },
       data: {
@@ -165,6 +203,6 @@ export async function reviewDepositNotification(input: {
       });
     }
 
-    return { updated: result.count > 0, record };
+    return { updated: result.count > 0, record, duplicateTx: false };
   });
 }

@@ -28,6 +28,7 @@ const STRINGS = {
     noHash: "No transaction hash — manual verification required",
     verificationFailed: "Automatic verification did not pass. Review the transaction and enable manual confirmation if the funds are visible.",
     manualOverride: "I verified the funds manually",
+    duplicateTransaction: "This transaction was already used for another confirmed deposit.",
     error: "Unable to update this deposit."
   },
   ru: {
@@ -48,6 +49,7 @@ const STRINGS = {
     noHash: "Хэш транзакции не указан — требуется ручная проверка",
     verificationFailed: "Автоматическая проверка не пройдена. Проверьте транзакцию и разрешите ручное подтверждение, только если деньги видны на счёте.",
     manualOverride: "Я проверил поступление вручную",
+    duplicateTransaction: "Эта транзакция уже использована для другого подтверждённого пополнения.",
     error: "Не удалось обновить пополнение."
   }
 } as const;
@@ -103,6 +105,7 @@ export function AdminDepositsPage({ locale, initialDeposits }: { locale: Locale;
         setWarnings((current) => ({ ...current, [deposit.id]: payload.verification as VerificationWarning }));
         return;
       }
+      if (!response.ok && payload.code === "DUPLICATE_TX") throw new Error(t.duplicateTransaction);
       if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || t.error);
       setDeposits((current) => current.map((item) => item.id === deposit.id ? { ...item, ...payload.data, investor: item.investor } : item));
       setWarnings((current) => {

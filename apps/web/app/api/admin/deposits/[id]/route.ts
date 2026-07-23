@@ -3,6 +3,7 @@ import {
   accrueReferralCommission,
   createInvestorNotification,
   getDepositNotificationById,
+  listActiveDepositAddressesForNetwork,
   recordCommissionAccruedEvent,
   reviewDepositNotification,
   serializeDepositNotification,
@@ -55,7 +56,13 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
 
   if (action === "confirm") {
     if (existing.txHash && existing.txHash.trim()) {
-      const result = await verifyTransaction(existing.txHash, existing.network, Number(existing.amount));
+      const activeAddresses = await listActiveDepositAddressesForNetwork(existing.network);
+      const result = await verifyTransaction(
+        existing.txHash,
+        existing.network,
+        Number(existing.amount),
+        activeAddresses.map((entry) => entry.address)
+      );
       verificationStatus = classifyVerification(result);
       verificationData = { ...result, network: existing.network, checkedAt: new Date().toISOString() };
 
@@ -73,7 +80,7 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     }
   }
 
-  const { updated, record } = await reviewDepositNotification({
+  const { updated, record, duplicateTx } = await reviewDepositNotification({
     id: params.id,
     status: action === "confirm" ? "CONFIRMED" : "REJECTED",
     adminNote,
@@ -82,6 +89,12 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
     verificationData
   });
 
+  if (duplicateTx) {
+    return NextResponse.json(
+      { ok: false, code: "DUPLICATE_TX", error: "This transaction was already used for a confirmed deposit." },
+      { status: 409 }
+    );
+  }
   if (!record) {
     return NextResponse.json({ ok: false, error: "Deposit notification not found." }, { status: 404 });
   }
