@@ -130,6 +130,24 @@ const STRINGS = {
     errFallback: "无法发送通知。请重试。"
   }
 } as const;
+
+const EXTRA_COPY = {
+  en: { review: "Review deposit", reviewTitle: "Check before sending", reviewDesc: "Confirm that these details match the transfer you made.", confirm: "Confirm and send", edit: "Edit details", history: "Deposit requests", historyDesc: "Track every additional deposit from submission to confirmation.", loading: "Loading deposit requests...", empty: "No deposit requests yet.", amount: "Amount", submitted: "Submitted", adminNote: "Manager note", status: { PENDING: "Under review", CONFIRMED: "Confirmed", REJECTED: "Rejected" } },
+  ru: { review: "Проверить пополнение", reviewTitle: "Проверьте перед отправкой", reviewDesc: "Убедитесь, что данные совпадают с выполненным переводом.", confirm: "Подтвердить и отправить", edit: "Изменить данные", history: "Заявки на пополнение", historyDesc: "Следите за каждым дополнительным пополнением от отправки до подтверждения.", loading: "Загружаем заявки...", empty: "Заявок на пополнение пока нет.", amount: "Сумма", submitted: "Отправлено", adminNote: "Комментарий менеджера", status: { PENDING: "На проверке", CONFIRMED: "Подтверждено", REJECTED: "Отклонено" } },
+  de: { review: "Einzahlung prüfen", reviewTitle: "Vor dem Senden prüfen", reviewDesc: "Bestätigen Sie, dass diese Angaben Ihrer Überweisung entsprechen.", confirm: "Bestätigen und senden", edit: "Angaben ändern", history: "Einzahlungsanfragen", historyDesc: "Verfolgen Sie jede zusätzliche Einzahlung bis zur Bestätigung.", loading: "Einzahlungsanfragen werden geladen...", empty: "Noch keine Einzahlungsanfragen.", amount: "Betrag", submitted: "Eingereicht", adminNote: "Hinweis des Managers", status: { PENDING: "In Prüfung", CONFIRMED: "Bestätigt", REJECTED: "Abgelehnt" } },
+  es: { review: "Revisar depósito", reviewTitle: "Revise antes de enviar", reviewDesc: "Confirme que estos datos coinciden con la transferencia realizada.", confirm: "Confirmar y enviar", edit: "Editar datos", history: "Solicitudes de depósito", historyDesc: "Siga cada depósito adicional hasta su confirmación.", loading: "Cargando solicitudes...", empty: "Aún no hay solicitudes de depósito.", amount: "Importe", submitted: "Enviado", adminNote: "Nota del gestor", status: { PENDING: "En revisión", CONFIRMED: "Confirmado", REJECTED: "Rechazado" } },
+  zh: { review: "检查入金信息", reviewTitle: "提交前请核对", reviewDesc: "请确认以下信息与您完成的转账一致。", confirm: "确认并提交", edit: "修改信息", history: "入金申请", historyDesc: "查看每笔追加入金从提交到确认的状态。", loading: "正在加载入金申请……", empty: "暂无入金申请。", amount: "金额", submitted: "提交时间", adminNote: "经理备注", status: { PENDING: "审核中", CONFIRMED: "已确认", REJECTED: "已拒绝" } }
+} as const;
+
+type DepositClaim = {
+  id: string;
+  amount: number;
+  network: string;
+  txHash: string | null;
+  status: "PENDING" | "CONFIRMED" | "REJECTED";
+  adminNote: string | null;
+  createdAt: string;
+};
 type Strings = typeof STRINGS.en;
 const getStrings = (locale: Locale): Strings => (STRINGS as unknown as Record<string, Strings>)[locale] ?? STRINGS.en;
 
@@ -137,9 +155,11 @@ const inputClass =
   "h-12 w-full rounded-2xl border border-border bg-muted/30 dark:border-white/10 dark:bg-black/20 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-gold-200/45";
 const labelClass = "text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground";
 
-export function DepositClaimForm({ locale }: { locale: Locale }) {
+export function DepositClaimForm({ locale, trackerEnabled = false }: { locale: Locale; trackerEnabled?: boolean }) {
   const t = getStrings(locale);
+  const extra = EXTRA_COPY[locale] ?? EXTRA_COPY.en;
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isReviewing, setIsReviewing] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
   const [amount, setAmount] = React.useState("");
   const [network, setNetwork] = React.useState<string>(NETWORKS[2]);
@@ -148,23 +168,45 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showHelp, setShowHelp] = React.useState(false);
+  const [claims, setClaims] = React.useState<DepositClaim[]>([]);
+  const [claimsLoading, setClaimsLoading] = React.useState(trackerEnabled);
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const amountNumber = Number(amount.replace(",", "."));
+
+  const loadClaims = React.useCallback(async () => {
+    if (!trackerEnabled) return;
+    setClaimsLoading(true);
+    try {
+      const response = await fetch("/api/investor/deposits", { method: "GET", cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; data?: DepositClaim[] } | null;
+      if (response.ok && payload?.ok && Array.isArray(payload.data)) setClaims(payload.data);
+    } finally {
+      setClaimsLoading(false);
+    }
+  }, [trackerEnabled]);
+
+  React.useEffect(() => {
+    void loadClaims();
+  }, [loadClaims]);
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
     const parsedAmount = Number(amount.replace(",", "."));
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setError(t.errAmount);
       return;
     }
+    setIsReviewing(true);
+  }
 
+  async function confirmSubmit() {
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/investor/deposits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parsedAmount, network, txHash: txHash.trim(), note: note.trim() })
+        body: JSON.stringify({ amount: amountNumber, network, txHash: txHash.trim(), note: note.trim() })
       });
       const payload = (await response.json()) as { ok: boolean; error?: string };
       if (!response.ok || !payload.ok) {
@@ -172,9 +214,11 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
       }
       setSubmitted(true);
       setIsOpen(false);
+      setIsReviewing(false);
       setAmount("");
       setTxHash("");
       setNote("");
+      await loadClaims();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : t.errFallback);
     } finally {
@@ -183,6 +227,7 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
   }
 
   return (
+    <div className="grid gap-6">
     <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
       <CardHeader>
         <CardTitle>{t.title}</CardTitle>
@@ -206,6 +251,23 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
             <Send className="size-4" />
             {t.open}
           </Button>
+        ) : isReviewing ? (
+          <div className="grid gap-4">
+            <div>
+              <p className="font-semibold text-foreground">{extra.reviewTitle}</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{extra.reviewDesc}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20"><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{extra.amount}</p><p className="mt-2 font-semibold text-foreground">USD {amountNumber.toLocaleString(locale)}</p></div>
+              <div className="rounded-2xl border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20"><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.network}</p><p className="mt-2 font-semibold text-foreground">{network}</p></div>
+              <div className="rounded-2xl border border-border bg-muted/30 p-4 sm:col-span-2 dark:border-white/10 dark:bg-black/20"><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{t.txHash}</p><p className="mt-2 break-all text-sm text-foreground">{txHash.trim() || "—"}</p></div>
+            </div>
+            {error ? <p className="rounded-2xl border border-red-300/25 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-200">{error}</p> : null}
+            <div className="flex flex-wrap gap-3">
+              <Button type="button" disabled={isSubmitting} onClick={() => void confirmSubmit()}>{isSubmitting ? t.submitting : extra.confirm}</Button>
+              <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setIsReviewing(false)}>{extra.edit}</Button>
+            </div>
+          </div>
         ) : (
           <form className="grid gap-4" onSubmit={onSubmit}>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -265,12 +327,31 @@ export function DepositClaimForm({ locale }: { locale: Locale }) {
               <p className="rounded-2xl border border-gold-200/20 bg-gold-300/20 dark:bg-gold-200/10 p-4 text-sm text-amber-700 dark:text-gold-100">{error}</p>
             ) : null}
             <div className="flex flex-wrap gap-3">
-              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? t.submitting : t.submit}</Button>
+              <Button type="submit" disabled={isSubmitting}>{extra.review}</Button>
               <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setIsOpen(false)}>{t.cancel}</Button>
             </div>
           </form>
         )}
       </CardContent>
     </Card>
+    {trackerEnabled ? (
+      <Card className="rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+        <CardHeader><CardTitle>{extra.history}</CardTitle><CardDescription>{extra.historyDesc}</CardDescription></CardHeader>
+        <CardContent className="grid gap-3">
+          {claimsLoading ? <p className="text-sm text-muted-foreground">{extra.loading}</p> : claims.length === 0 ? <p className="text-sm text-muted-foreground">{extra.empty}</p> : claims.map((claim) => (
+            <div key={claim.id} className="grid gap-3 rounded-[1.35rem] border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20 sm:grid-cols-[1fr_auto] sm:items-start">
+              <div>
+                <p className="font-semibold text-foreground">USD {claim.amount.toLocaleString(locale)} · {claim.network}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{extra.submitted}: {new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(claim.createdAt))}</p>
+                {claim.txHash ? <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{claim.txHash}</p> : null}
+                {claim.adminNote ? <p className="mt-2 text-sm text-muted-foreground">{extra.adminNote}: {claim.adminNote}</p> : null}
+              </div>
+              <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground dark:border-white/10">{extra.status[claim.status] ?? claim.status}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    ) : null}
+    </div>
   );
 }

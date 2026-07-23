@@ -11,6 +11,7 @@ export const PRODUCT_FEATURE_KEYS = [
   "support-requests",
   "notification-center",
   "investor-live-refresh",
+  "investor-deposit-tracker",
   "display-currency",
   "referral-share",
   "performance-charts",

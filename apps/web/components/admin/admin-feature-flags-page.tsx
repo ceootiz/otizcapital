@@ -20,6 +20,7 @@ const FEATURES: Array<{ key: ProductFeatureKey; group: number; labels: Record<Lo
   { key: "onboarding-status", group: 0, labels: { en: "Onboarding status", ru: "Статус онбординга", de: "Onboarding-Status", es: "Estado de incorporación", zh: "入驻状态" } },
   { key: "notification-center", group: 0, labels: { en: "Notification center", ru: "Центр уведомлений", de: "Benachrichtigungen", es: "Centro de notificaciones", zh: "通知中心" } },
   { key: "investor-live-refresh", group: 0, labels: { en: "Live investor updates", ru: "Автообновление кабинета", de: "Live-Aktualisierung", es: "Actualización automática", zh: "投资者页面自动更新" } },
+  { key: "investor-deposit-tracker", group: 0, labels: { en: "Deposit review and tracking", ru: "Проверка и статусы пополнений", de: "Einzahlungsprüfung und Status", es: "Revisión y seguimiento de depósitos", zh: "入金确认与跟踪" } },
   { key: "display-currency", group: 0, labels: { en: "Display currency", ru: "Валюта отображения", de: "Anzeigewährung", es: "Moneda de visualización", zh: "显示货币" } },
   { key: "referral-share", group: 0, labels: { en: "Referral QR and sharing", ru: "Реферальный QR и отправка", de: "Empfehlungs-QR und Teilen", es: "QR y compartir referidos", zh: "推荐二维码与分享" } },
   { key: "reinvest-preference", group: 0, labels: { en: "Reinvestment preference", ru: "Настройка реинвестирования", de: "Reinvestitionspräferenz", es: "Preferencia de reinversión", zh: "再投资偏好" } },

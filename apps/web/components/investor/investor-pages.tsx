@@ -640,7 +640,7 @@ function InvestorWelcome({ locale, name, addresses }: { locale: Locale; name: st
   );
 }
 
-export function InvestorDepositPage({ locale, addresses }: { locale: Locale; addresses: SerializedDepositAddress[] }) {
+export function InvestorDepositPage({ locale, addresses, trackerEnabled = false }: { locale: Locale; addresses: SerializedDepositAddress[]; trackerEnabled?: boolean }) {
   const t = getInvestorStrings(locale);
 
   return (
@@ -656,7 +656,7 @@ export function InvestorDepositPage({ locale, addresses }: { locale: Locale; add
       ) : (
         <InvestorDepositAddresses locale={locale} addresses={addresses} />
       )}
-      <DepositClaimForm locale={locale} />
+      <DepositClaimForm locale={locale} trackerEnabled={trackerEnabled} />
     </div>
   );
 }
