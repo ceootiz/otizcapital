@@ -27,7 +27,6 @@ export function InvestorPrivacyToggle({ locale }: { locale: Locale }) {
     const saved = window.localStorage.getItem(STORAGE_KEY) === "hidden";
     setHidden(saved);
     applyPrivacy(saved);
-    return () => document.documentElement.classList.remove(ROOT_CLASS);
   }, []);
 
   function toggle() {

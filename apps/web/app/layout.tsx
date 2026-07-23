@@ -56,12 +56,17 @@ const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement;
 // Degrades silently when the Network Information API is unavailable.
 const CONNECTION_INIT_SCRIPT = `(() => { try { const c = navigator.connection; if (c && (c.effectiveType === '2g' || c.effectiveType === 'slow-2g')) { document.documentElement.classList.add('reduce-motion'); } } catch (e) {} })();`;
 
+// Applies the investor's visual privacy preference before the first paint so
+// money amounts never flash while the client-side toggle is hydrating.
+const PRIVACY_INIT_SCRIPT = `(() => { try { if (localStorage.getItem('otiz-investor-privacy') === 'hidden') { document.documentElement.classList.add('otiz-investor-privacy'); } } catch (e) {} })();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: CONNECTION_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PRIVACY_INIT_SCRIPT }} />
       </head>
       <body className={`${sans.variable} ${display.variable} font-sans`}>
         <PwaRegister />
