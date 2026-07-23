@@ -29,9 +29,10 @@ export default async function InvestorHistoryRoute(
   }
 
   const investor = await requireInvestorSession(params.locale);
-  const [statementsEnabled, performanceEnabled, totals] = await Promise.all([
+  const [statementsEnabled, performanceEnabled, contextualSupportEnabled, totals] = await Promise.all([
     isProductFeatureEnabled("account-statements"),
     isProductFeatureEnabled("performance-charts"),
+    isProductFeatureEnabled("contextual-support"),
     getInvestorPaymentTotals(investor.id)
   ]);
   const page = getInvestorStrings(params.locale).pages.history;
@@ -44,6 +45,6 @@ export default async function InvestorHistoryRoute(
   ]);
 
   return <InvestorShell locale={params.locale} investor={investor} active="history" eyebrow={page.eyebrow} title={page.title} description={page.description}>
-    <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} performanceEnabled={performanceEnabled} performanceEntries={performanceLedger?.entries ?? []} />
+    <InvestorMoneyMovementPage locale={params.locale} ledger={ledger} totals={totals} filters={{ type, from, to }} statementsEnabled={statementsEnabled} performanceEnabled={performanceEnabled} contextualSupportEnabled={contextualSupportEnabled} performanceEntries={performanceLedger?.entries ?? []} />
   </InvestorShell>;
 }

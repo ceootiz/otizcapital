@@ -9,6 +9,7 @@ export const PRODUCT_FEATURE_KEYS = [
   "money-movement",
   "onboarding-status",
   "support-requests",
+  "contextual-support",
   "notification-center",
   "investor-live-refresh",
   "investor-deposit-tracker",

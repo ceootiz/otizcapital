@@ -3,7 +3,7 @@ import { PRODUCT_FEATURE_KEYS, isProductFeatureKey, parseProductFeatureFlagData 
 
 describe("product feature flag registry", () => {
   it("contains one key for every approved capability except the control page itself", () => {
-    expect(PRODUCT_FEATURE_KEYS).toHaveLength(28);
+    expect(PRODUCT_FEATURE_KEYS).toHaveLength(29);
     expect(new Set(PRODUCT_FEATURE_KEYS).size).toBe(PRODUCT_FEATURE_KEYS.length);
   });
 
@@ -23,6 +23,7 @@ describe("product feature flag registry", () => {
     expect(state["support-requests"]).toBe(false);
     expect("unknown" in state).toBe(false);
     expect(isProductFeatureKey("money-movement")).toBe(true);
+    expect(isProductFeatureKey("contextual-support")).toBe(true);
     expect(isProductFeatureKey("unknown")).toBe(false);
   });
 });

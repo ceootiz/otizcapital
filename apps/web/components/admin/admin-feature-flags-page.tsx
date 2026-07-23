@@ -33,6 +33,7 @@ const FEATURES: Array<{ key: ProductFeatureKey; group: number; labels: Record<Lo
   { key: "bulk-actions", group: 1, labels: { en: "Bulk actions", ru: "Массовые действия", de: "Sammelaktionen", es: "Acciones masivas", zh: "批量操作" } },
   { key: "audit-log", group: 1, labels: { en: "Global audit log", ru: "Общий журнал действий", de: "Globales Audit-Protokoll", es: "Registro global de auditoría", zh: "全局审计日志" } },
   { key: "support-requests", group: 2, labels: { en: "Investor support requests", ru: "Обращения инвесторов", de: "Investorenanfragen", es: "Solicitudes de inversores", zh: "投资者支持请求" } },
+  { key: "contextual-support", group: 2, labels: { en: "Questions from specific records", ru: "Вопросы по конкретным записям", de: "Fragen zu einzelnen Einträgen", es: "Preguntas sobre registros concretos", zh: "针对具体记录的提问" } },
   { key: "support-queue", group: 2, labels: { en: "Support queue", ru: "Очередь поддержки", de: "Support-Warteschlange", es: "Cola de soporte", zh: "支持队列" } },
   { key: "document-requests", group: 2, labels: { en: "Document requests", ru: "Запросы документов", de: "Dokumentenanfragen", es: "Solicitudes de documentos", zh: "文件请求" } },
   { key: "investor-document-upload", group: 2, labels: { en: "Investor document upload", ru: "Загрузка документов инвестором", de: "Dokumentenupload durch Investoren", es: "Carga de documentos del inversor", zh: "投资者文件上传" } },
