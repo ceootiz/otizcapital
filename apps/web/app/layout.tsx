@@ -60,10 +60,16 @@ const CONNECTION_INIT_SCRIPT = `(() => { try { const c = navigator.connection; i
 // money amounts never flash while the client-side toggle is hydrating.
 const PRIVACY_INIT_SCRIPT = `(() => { try { if (localStorage.getItem('otiz-investor-privacy') === 'hidden') { document.documentElement.classList.add('otiz-investor-privacy'); } } catch (e) {} })();`;
 
+// The root layout must own <html>, while locale pages remain statically
+// generated below it. Set the DOM language before body paint from the explicit
+// locale path without making the entire application request-dynamic.
+const LOCALE_INIT_SCRIPT = `(() => { try { const segment = location.pathname.split('/').filter(Boolean)[0]; const locales = ['en','ru','de','es','zh']; document.documentElement.lang = locales.includes(segment) ? (segment === 'zh' ? 'zh-CN' : segment) : 'en'; } catch (e) {} })();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: LOCALE_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: CONNECTION_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: PRIVACY_INIT_SCRIPT }} />
