@@ -14,7 +14,9 @@
     "verify:quick": "pnpm test && pnpm typecheck",
     "prisma": "prisma",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "db:baseline:test": "bash scripts/validate-postgres-baseline.sh",
+    "db:drift:report": "bash scripts/report-prisma-drift.sh"
   },
   "devDependencies": {
     "prisma": "^6.19.0",

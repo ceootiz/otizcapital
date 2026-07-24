@@ -10,6 +10,24 @@ jobs:
   verify:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: otiz
+          POSTGRES_PASSWORD: otiz_test_password
+          POSTGRES_DB: otiz_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U otiz -d otiz_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql://otiz:otiz_test_password@127.0.0.1:5432/otiz_test?schema=public
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +45,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate PostgreSQL baseline
+        run: pnpm db:baseline:test
 
       - name: Verify
         run: pnpm verify
