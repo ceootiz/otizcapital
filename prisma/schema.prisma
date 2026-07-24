@@ -504,6 +504,7 @@ model LedgerEntry {
 }
 
 enum MoneyOperationType {
+  DEPOSIT_CLAIM
   DEPOSIT_CONFIRMATION
   ALLOCATION_FUNDING
   PROFIT_CREDIT
@@ -539,6 +540,7 @@ model MoneyOperation {
   reason         String?
   failureCode    String?
   metadataJson   String?
+  resultJson     String?
   committedAt    DateTime?
   reversedAt     DateTime?
   createdAt      DateTime             @default(now())

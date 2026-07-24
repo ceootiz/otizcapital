@@ -39,3 +39,4 @@ export * from "./referral-notifications";
 export * from "./investor-wallets";
 export * from "./promo-codes";
 export * from "./money-operations";
+export * from "./money-command";
