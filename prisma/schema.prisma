@@ -143,6 +143,7 @@ model Investor {
   referralClicksMade          ReferralClick[]        @relation("InvestorReferralClicks")
   referralCommissionsEarned   ReferralCommission[]   @relation("InvestorReferralCommissions")
   referralCommissionsReceived ReferralCommission[]   @relation("ReferredInvestorCommissions")
+  moneyOperations             MoneyOperation[]
 
   @@index([status])
   @@index([email])
@@ -465,6 +466,7 @@ model LedgerEntry {
   allocationId             String?
   investorId               String?
   monthlyReportId          String?
+  moneyOperationId         String?
   entryType                String
   amount                   String
   currency                 String         @default("USD")
@@ -487,16 +489,68 @@ model LedgerEntry {
   allocation               Allocation?    @relation(fields: [allocationId], references: [id])
   investor                 Investor?      @relation(fields: [investorId], references: [id])
   monthlyReport            MonthlyReport? @relation(fields: [monthlyReportId], references: [id])
+  moneyOperation           MoneyOperation? @relation(fields: [moneyOperationId], references: [id], onDelete: Restrict)
 
   @@index([ledgerType])
   @@index([allocationId])
   @@index([investorId])
   @@index([monthlyReportId])
+  @@index([moneyOperationId])
   @@index([occurredAt])
   @@index([sourceType, sourceId])
   @@index([reversesLedgerEntryId])
   @@index([correctedByLedgerEntryId])
   @@index([isReversal])
+}
+
+enum MoneyOperationType {
+  DEPOSIT_CONFIRMATION
+  ALLOCATION_FUNDING
+  PROFIT_CREDIT
+  REINVESTMENT
+  WITHDRAWAL_REQUEST
+  WITHDRAWAL_APPROVAL
+  WITHDRAWAL_SCHEDULE
+  WITHDRAWAL_PAYMENT
+  WITHDRAWAL_CANCELLATION
+  REFERRAL_COMMISSION
+  MANUAL_ADJUSTMENT
+}
+
+enum MoneyOperationStatus {
+  PENDING
+  COMMITTED
+  FAILED
+  REVERSED
+}
+
+model MoneyOperation {
+  id             String               @id @default(cuid())
+  investorId     String
+  operationType  MoneyOperationType
+  status         MoneyOperationStatus @default(PENDING)
+  amount         Decimal              @db.Decimal(36, 18)
+  currency       String
+  sourceKey      String
+  idempotencyKey String?
+  requestHash    String?
+  correlationId  String               @unique
+  actor          String
+  reason         String?
+  failureCode    String?
+  metadataJson   String?
+  committedAt    DateTime?
+  reversedAt     DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  investor       Investor             @relation(fields: [investorId], references: [id], onDelete: Restrict)
+  ledgerEntries  LedgerEntry[]
+
+  @@unique([investorId, operationType, sourceKey])
+  @@unique([investorId, operationType, idempotencyKey])
+  @@index([investorId, status])
+  @@index([operationType, status])
+  @@index([createdAt])
 }
 
 model AuditLog {

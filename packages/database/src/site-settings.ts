@@ -34,7 +34,8 @@ export const PRODUCT_FEATURE_KEYS = [
   "bulk-actions",
   "tasks",
   "manager-workload",
-  "audit-log"
+  "audit-log",
+  "canonical-money-ledger"
 ] as const;
 
 export type ProductFeatureKey = (typeof PRODUCT_FEATURE_KEYS)[number];
