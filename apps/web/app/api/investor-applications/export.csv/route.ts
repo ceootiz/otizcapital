@@ -14,6 +14,7 @@ import {
   type InvestorApplicationSort,
   type ReinvestInterest
 } from "@otiz/database";
+import { safeCsvCell } from "@/lib/csv";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +49,6 @@ function sanitizeString(value: unknown, maxLength = 500) {
 
 function isOneOf<T extends readonly string[]>(value: string, allowed: T): value is T[number] {
   return allowed.includes(value);
-}
-
-function csvCell(value: string | number | null | undefined) {
-  const raw = value === null || value === undefined ? "" : String(value);
-  return `"${raw.replace(/"/g, '""')}"`;
 }
 
 export async function GET(request: Request) {
@@ -109,7 +105,7 @@ export async function GET(request: Request) {
     record.nextActionAt?.toISOString() ?? null,
     record.managerNotes
   ]);
-  const csv = [csvHeaders.join(","), ...rows.map((row) => row.map(csvCell).join(","))].join("\n");
+  const csv = [csvHeaders.join(","), ...rows.map((row) => row.map(safeCsvCell).join(","))].join("\n");
 
   return new Response(csv, {
     headers: {

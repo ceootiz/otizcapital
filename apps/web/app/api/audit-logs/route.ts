@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isProductFeatureEnabled, listAuditLogs, searchAuditLogs, serializeAuditLog } from "@otiz/database";
 import { getAdminSession } from "@/lib/admin-session";
+import { safeCsvCell } from "@/lib/csv";
 
 function sanitizeString(value: unknown, maxLength = 120) {
   if (typeof value !== "string") {
@@ -52,11 +53,10 @@ export async function GET(request: Request) {
   });
 
   if (format === "csv") {
-    const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const lines = [
       ["createdAt", "actor", "action", "entityType", "entityId", "beforeJson", "afterJson"],
       ...result.rows.map((row) => [row.createdAt.toISOString(), row.actor, row.action, row.entityType, row.entityId, row.beforeJson ?? "", row.afterJson ?? ""])
-    ].map((row) => row.map(csvCell).join(","));
+    ].map((row) => row.map(safeCsvCell).join(","));
     return new Response(`\uFEFF${lines.join("\n")}`, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
