@@ -170,6 +170,7 @@ export function DepositClaimForm({ locale, trackerEnabled = false }: { locale: L
   const [showHelp, setShowHelp] = React.useState(false);
   const [claims, setClaims] = React.useState<DepositClaim[]>([]);
   const [claimsLoading, setClaimsLoading] = React.useState(trackerEnabled);
+  const idempotencyKey = React.useRef(`deposit-claim:${crypto.randomUUID()}`);
 
   const amountNumber = Number(amount.replace(",", "."));
 
@@ -205,13 +206,14 @@ export function DepositClaimForm({ locale, trackerEnabled = false }: { locale: L
     try {
       const response = await fetch("/api/investor/deposits", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current },
         body: JSON.stringify({ amount: amountNumber, network, txHash: txHash.trim(), note: note.trim() })
       });
       const payload = (await response.json()) as { ok: boolean; error?: string };
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error === "AMOUNT_INVALID" ? t.errAmount : t.errFallback);
       }
+      idempotencyKey.current = `deposit-claim:${crypto.randomUUID()}`;
       setSubmitted(true);
       setIsOpen(false);
       setIsReviewing(false);

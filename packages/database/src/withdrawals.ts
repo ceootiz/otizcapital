@@ -1,4 +1,5 @@
 import { prisma } from "./client";
+import { hashMoneyCommandPayload } from "./money-command";
 
 export const WITHDRAWAL_REQUEST_STATUSES = ["REQUESTED", "APPROVED", "SCHEDULED", "PAID", "REJECTED", "CANCELLED"] as const;
 export const WITHDRAWAL_LOCK_DAYS = 90;
@@ -286,6 +287,7 @@ async function getMutableWithdrawalRequest(id: string) {
 
 export async function createWithdrawalRequest(input: {
   investorId: string;
+  idempotencyKey: string;
   amount: string;
   currency?: string;
   method?: string | null;
@@ -294,6 +296,13 @@ export async function createWithdrawalRequest(input: {
 }) {
   const amount = toMoneyNumber(input.amount);
   const currency = (input.currency || "USD").toUpperCase();
+  const requestHash = hashMoneyCommandPayload({
+    amount: String(amount),
+    currency,
+    method: input.method || null,
+    destinationMasked: maskWithdrawalDestination(input.destinationMasked),
+    investorNote: input.investorNote || null
+  });
   const [investor, access] = await Promise.all([
     prisma.investor.findUnique({ where: { id: input.investorId } }),
     getInvestorWithdrawalLockStatus(input.investorId)
@@ -311,6 +320,20 @@ export async function createWithdrawalRequest(input: {
 
   return prisma.$transaction(async (transaction) => {
     await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"withdrawal:" + investor.id}))`;
+    const replay = await transaction.withdrawalRequest.findUnique({
+      where: {
+        investorId_idempotencyKey: {
+          investorId: investor.id,
+          idempotencyKey: input.idempotencyKey
+        }
+      }
+    });
+    if (replay) {
+      if (replay.requestHash !== requestHash) {
+        return { ok: false as const, status: 409 as const, error: "The request key was already used with different withdrawal details." };
+      }
+      return { ok: true as const, request: replay, replayed: true as const };
+    }
     const [withdrawalRequests, allocations] = await Promise.all([
       transaction.withdrawalRequest.findMany({ where: { investorId: investor.id } }),
       transaction.allocation.findMany({
@@ -326,6 +349,8 @@ export async function createWithdrawalRequest(input: {
     const request = await transaction.withdrawalRequest.create({
       data: {
         investorId: investor.id,
+        idempotencyKey: input.idempotencyKey,
+        requestHash,
         amount: String(amount),
         currency,
         method: input.method || null,
@@ -343,7 +368,7 @@ export async function createWithdrawalRequest(input: {
         afterJson: JSON.stringify({ status: request.status, amount: request.amount, currency: request.currency })
       }
     });
-    return { ok: true as const, request };
+    return { ok: true as const, request, replayed: false as const };
   });
 }
 

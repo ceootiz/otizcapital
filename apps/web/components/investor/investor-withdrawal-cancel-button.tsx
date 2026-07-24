@@ -24,7 +24,10 @@ export function InvestorWithdrawalCancelButton({ locale, withdrawalId }: { local
     setError("");
     setSubmitting(true);
     try {
-      const response = await fetch(`/api/investor/withdrawals/${encodeURIComponent(withdrawalId)}/cancel`, { method: "POST" });
+      const response = await fetch(`/api/investor/withdrawals/${encodeURIComponent(withdrawalId)}/cancel`, {
+        method: "POST",
+        headers: { "Idempotency-Key": `withdrawal-cancel:${withdrawalId}` }
+      });
       const body = (await response.json().catch(() => null)) as { ok?: boolean } | null;
       if (!response.ok || !body?.ok) {
         setError(copy.error);

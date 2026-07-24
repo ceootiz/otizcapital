@@ -3,6 +3,7 @@ import {
   createWithdrawalRequest,
   getInvestorWalletById,
   getInvestorWithdrawalRequests,
+  normalizeIdempotencyKey,
   serializeInvestorWithdrawalRequest
 } from "@otiz/database";
 import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
@@ -24,6 +25,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
+  const idempotencyKey = normalizeIdempotencyKey(request.headers.get("idempotency-key"));
+  if (!idempotencyKey) {
+    return NextResponse.json({ ok: false, error: "A valid Idempotency-Key is required." }, { status: 422 });
+  }
   const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!payload) return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 422 });
 
@@ -43,6 +48,7 @@ export async function POST(request: Request) {
 
   const result = await createWithdrawalRequest({
     investorId: auth.investor.id,
+    idempotencyKey,
     amount: sanitizeString(payload.amount, 32),
     currency: sanitizeString(payload.currency || "USD", 8) || "USD",
     method,
@@ -51,5 +57,8 @@ export async function POST(request: Request) {
   });
 
   if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
-  return NextResponse.json({ ok: true, data: serializeInvestorWithdrawalRequest(result.request) }, { status: 201 });
+  return NextResponse.json(
+    { ok: true, data: serializeInvestorWithdrawalRequest(result.request), replayed: result.replayed },
+    { status: result.replayed ? 200 : 201 }
+  );
 }

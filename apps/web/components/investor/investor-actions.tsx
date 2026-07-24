@@ -360,6 +360,7 @@ export function InvestorWithdrawalForm({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [submitted, setSubmitted] = React.useState(false);
+  const idempotencyKey = React.useRef(`withdrawal-request:${crypto.randomUUID()}`);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -428,7 +429,7 @@ export function InvestorWithdrawalForm({
     try {
       const response = await fetch("/api/investor/withdrawals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current },
         body: JSON.stringify({
           amount: String(numericAmount),
           walletId,
@@ -437,6 +438,7 @@ export function InvestorWithdrawalForm({
       });
       const body = (await response.json()) as { ok: boolean; error?: string };
       if (!response.ok || !body.ok) throw new Error(body.error || t.errGeneric);
+      idempotencyKey.current = `withdrawal-request:${crypto.randomUUID()}`;
       setSubmitted(true);
       router.refresh();
     } catch (submitError) {

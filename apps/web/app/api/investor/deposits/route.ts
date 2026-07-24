@@ -4,6 +4,7 @@ import {
   createDepositNotification,
   createNotificationEventRecord,
   listDepositNotificationsForInvestor,
+  normalizeIdempotencyKey,
   serializeDepositNotification
 } from "@otiz/database";
 import { investorApiErrorResponse, requireInvestorApi } from "@/lib/investor-api-auth";
@@ -29,6 +30,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const auth = await requireInvestorApi();
   if (!auth.ok) return investorApiErrorResponse(auth);
+  const idempotencyKey = normalizeIdempotencyKey(request.headers.get("idempotency-key"));
+  if (!idempotencyKey) {
+    return NextResponse.json({ ok: false, error: "A valid Idempotency-Key is required." }, { status: 422 });
+  }
 
   const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!payload) return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 422 });
@@ -48,11 +53,15 @@ export async function POST(request: Request) {
 
   const created = await createDepositNotification({
     investorId: auth.investor.id,
+    idempotencyKey,
     amount,
     network,
     txHash,
     note
   });
+  if (created.idempotencyConflict) {
+    return NextResponse.json({ ok: false, code: "IDEMPOTENCY_CONFLICT", error: "IDEMPOTENCY_CONFLICT" }, { status: 409 });
+  }
   if (created.duplicateTx || !created.record) {
     return NextResponse.json({ ok: false, code: "DUPLICATE_TX", error: "DUPLICATE_TX" }, { status: 409 });
   }
@@ -61,6 +70,9 @@ export async function POST(request: Request) {
   // Admin-facing operational event (best-effort — the claim row itself is the
   // durable admin queue, so a failed event must not fail the claim).
   try {
+    if (created.replayed) {
+      return NextResponse.json({ ok: true, data: serializeDepositNotification(record), replayed: true });
+    }
     await createNotificationEventRecord({
       type: "DEPOSIT_CLAIMED",
       channel: "INTERNAL",
@@ -80,5 +92,5 @@ export async function POST(request: Request) {
     console.error("[otiz] DEPOSIT_CLAIMED event failed:", eventError);
   }
 
-  return NextResponse.json({ ok: true, data: serializeDepositNotification(record) }, { status: 201 });
+  return NextResponse.json({ ok: true, data: serializeDepositNotification(record), replayed: false }, { status: 201 });
 }

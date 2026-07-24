@@ -1,6 +1,7 @@
 import { Prisma, type DepositNotification } from "@prisma/client";
 import { prisma } from "./client";
 import { calculateCapitalAfterConfirmedDeposit } from "./investor-balance";
+import { hashMoneyCommandPayload } from "./money-command";
 
 // Investor-submitted "I sent a deposit" claims, reviewed by the admin.
 
@@ -60,34 +61,69 @@ export async function getDepositNotificationById(id: string) {
 
 export async function createDepositNotification(input: {
   investorId: string;
+  idempotencyKey: string;
   amount: number;
   network: string;
   txHash: string | null;
   note: string | null;
 }) {
   const txHash = normalizeDepositTransactionHash(input.txHash);
-  if (txHash) {
-    const duplicate = await prisma.depositNotification.findFirst({
-      where: {
-        network: input.network,
-        txHash: { equals: txHash, mode: "insensitive" },
-        status: { in: ["PENDING", "CONFIRMED"] }
-      },
-      select: { id: true }
-    });
-    if (duplicate) return { record: null, duplicateTx: true as const };
-  }
-
-  const record = await prisma.depositNotification.create({
-    data: {
-      investorId: input.investorId,
-      amount: new Prisma.Decimal(input.amount),
-      network: input.network,
-      txHash,
-      note: input.note
-    }
+  const requestHash = hashMoneyCommandPayload({
+    amount: input.amount,
+    network: input.network,
+    txHash,
+    note: input.note
   });
-  return { record, duplicateTx: false as const };
+  return prisma.$transaction(async (transaction) => {
+    await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"deposit-claim:" + input.investorId}))`;
+    const replay = await transaction.depositNotification.findUnique({
+      where: {
+        investorId_idempotencyKey: {
+          investorId: input.investorId,
+          idempotencyKey: input.idempotencyKey
+        }
+      }
+    });
+    if (replay) {
+      if (replay.requestHash !== requestHash) {
+        return { record: null, duplicateTx: false as const, idempotencyConflict: true as const, replayed: false as const };
+      }
+      return { record: replay, duplicateTx: false as const, idempotencyConflict: false as const, replayed: true as const };
+    }
+    if (txHash) {
+      const duplicate = await transaction.depositNotification.findFirst({
+        where: {
+          network: input.network,
+          txHash: { equals: txHash, mode: "insensitive" },
+          status: { in: ["PENDING", "CONFIRMED"] }
+        },
+        select: { id: true }
+      });
+      if (duplicate) return { record: null, duplicateTx: true as const, idempotencyConflict: false as const, replayed: false as const };
+    }
+
+    const record = await transaction.depositNotification.create({
+      data: {
+        investorId: input.investorId,
+        idempotencyKey: input.idempotencyKey,
+        requestHash,
+        amount: new Prisma.Decimal(input.amount),
+        network: input.network,
+        txHash,
+        note: input.note
+      }
+    });
+    await transaction.auditLog.create({
+      data: {
+        actor: `investor:${input.investorId}`,
+        action: "CREATE_DEPOSIT_CLAIM",
+        entityType: "DepositNotification",
+        entityId: record.id,
+        afterJson: JSON.stringify({ amount: input.amount, network: input.network, txHash })
+      }
+    });
+    return { record, duplicateTx: false as const, idempotencyConflict: false as const, replayed: false as const };
+  });
 }
 
 export async function listDepositNotificationsForInvestor(investorId: string) {

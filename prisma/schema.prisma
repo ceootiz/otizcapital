@@ -191,6 +191,8 @@ model InvestorFileReport {
 model DepositNotification {
   id         String    @id @default(cuid())
   investorId String
+  idempotencyKey String?
+  requestHash String?
   amount     Decimal
   network    String
   txHash     String?
@@ -209,6 +211,7 @@ model DepositNotification {
   @@index([investorId])
   @@index([status])
   @@index([createdAt])
+  @@unique([investorId, idempotencyKey])
 }
 
 // Structured payment rows extracted from uploaded XLSX reports. One row per
@@ -290,6 +293,8 @@ model InvestorNotification {
 model WithdrawalRequest {
   id                String    @id @default(cuid())
   investorId        String
+  idempotencyKey    String?
+  requestHash       String?
   amount            String
   currency          String    @default("USD")
   status            String    @default("REQUESTED")
@@ -310,6 +315,7 @@ model WithdrawalRequest {
   @@index([investorId])
   @@index([status])
   @@index([scheduledFor])
+  @@unique([investorId, idempotencyKey])
 }
 
 // Saved withdrawal destinations for an investor (max 5, enforced in code).
