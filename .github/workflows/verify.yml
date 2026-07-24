@@ -49,5 +49,8 @@ jobs:
       - name: Validate PostgreSQL baseline
         run: pnpm db:baseline:test
 
+      - name: Prove PostgreSQL money concurrency and rollback
+        run: pnpm test:postgres
+
       - name: Verify
         run: pnpm verify

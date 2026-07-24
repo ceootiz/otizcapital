@@ -9,6 +9,7 @@
     "lint": "pnpm --filter @otiz/web lint",
     "typecheck": "pnpm --filter @otiz/web typecheck",
     "test": "vitest run",
+    "test:postgres": "vitest run packages/database/src/money-command.postgres.test.ts",
     "smoke:incidents": "bash scripts/smoke-incident-checkpoint.sh",
     "verify": "pnpm test && pnpm lint && pnpm typecheck && pnpm build",
     "verify:quick": "pnpm test && pnpm typecheck",
