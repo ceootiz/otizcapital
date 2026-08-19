@@ -62,6 +62,15 @@ model InvestorApplication {
   telegram                String?
   email                   String?
   country                 String
+  countryCode             String?
+  legalJurisdiction       String    @default("REVIEW_REQUIRED")
+  legalRegion             String?
+  preferredLocale         String    @default("en")
+  jurisdictionStatus      String    @default("UNVERIFIED") // UNVERIFIED | VERIFIED | REVIEW_REQUIRED
+  jurisdictionSource      String?
+  jurisdictionEvidenceRef String?
+  jurisdictionVerifiedBy  String?
+  jurisdictionVerifiedAt  DateTime?
   preferredContactMethod  String
   plannedAllocationAmount Int
   preferredDepositMethod  String
@@ -89,6 +98,7 @@ model InvestorApplication {
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   investor                Investor? @relation(fields: [investorId], references: [id])
+  jurisdictionEvidence    JurisdictionEvidence[]
 
   @@index([status])
   @@index([priority])
@@ -96,6 +106,8 @@ model InvestorApplication {
   @@index([nextActionAt])
   @@index([createdAt])
   @@index([email])
+  @@index([countryCode])
+  @@index([legalJurisdiction])
   @@index([investorId])
 }
 
@@ -106,6 +118,15 @@ model Investor {
   telegram                    String?
   status                      String                 @default("ACTIVE")
   sourceApplicationId         String?
+  countryCode                 String?
+  legalJurisdiction           String                 @default("REVIEW_REQUIRED")
+  legalRegion                 String?
+  preferredLocale             String                 @default("en")
+  jurisdictionStatus          String                 @default("UNVERIFIED")
+  jurisdictionSource          String?
+  jurisdictionEvidenceRef     String?
+  jurisdictionVerifiedBy      String?
+  jurisdictionVerifiedAt      DateTime?
   totalCapital                String                 @default("0")
   reinvestEnabled             Boolean                @default(false)
   // Per-investor annual yield rate override (percent, e.g. 60 = 60%/yr), set
@@ -144,10 +165,13 @@ model Investor {
   referralCommissionsEarned   ReferralCommission[]   @relation("InvestorReferralCommissions")
   referralCommissionsReceived ReferralCommission[]   @relation("ReferredInvestorCommissions")
   moneyOperations             MoneyOperation[]
+  jurisdictionEvidence        JurisdictionEvidence[]
 
   @@index([status])
   @@index([email])
   @@index([sourceApplicationId])
+  @@index([countryCode])
+  @@index([legalJurisdiction])
   @@index([referredByArbitrageId])
   @@index([referredByInvestorId])
 }
@@ -241,18 +265,81 @@ model InvestorPayment {
 // stored inline as base64. `status` is PENDING_SIGNATURE until the investor
 // e-signs (checkbox acknowledgement), then SIGNED with `signedAt` set.
 model InvestorDocument {
-  id         String    @id @default(cuid())
-  investorId String
-  type       String // "AGREEMENT"
-  fileName   String
-  fileData   String // base64-encoded PDF
-  status     String    @default("PENDING_SIGNATURE") // PENDING_SIGNATURE | SIGNED
-  signedAt   DateTime?
-  createdAt  DateTime  @default(now())
-  investor   Investor  @relation(fields: [investorId], references: [id])
+  id              String                 @id @default(cuid())
+  investorId      String
+  templateId      String?
+  type            String // "AGREEMENT"
+  fileName        String
+  fileData        String // base64-encoded PDF
+  status          String                 @default("PENDING_SIGNATURE") // PENDING_SIGNATURE | SIGNED
+  jurisdiction    String?
+  locale          String?
+  templateVersion Int?
+  contentHash     String?
+  issuedAt        DateTime?
+  signedAt        DateTime?
+  createdAt       DateTime               @default(now())
+  investor        Investor               @relation(fields: [investorId], references: [id])
+  template        LegalDocumentTemplate? @relation(fields: [templateId], references: [id], onDelete: Restrict)
 
   @@index([investorId])
+  @@index([templateId])
+  @@index([jurisdiction, locale])
   @@index([status])
+  @@index([createdAt])
+}
+
+// Binding legal copy is managed independently from public website content.
+// Only APPROVED templates may be issued. An issued InvestorDocument stores a
+// snapshot plus template/version metadata so later edits cannot rewrite history.
+model LegalDocumentTemplate {
+  id                   String             @id @default(cuid())
+  documentType         String
+  jurisdiction         String
+  locale               String
+  regionalScope        String             @default("")
+  version              Int
+  title                String
+  bodyJson             String
+  sourceReferencesJson String
+  status               String             @default("DRAFT") // DRAFT | APPROVED | ARCHIVED
+  approvedBy           String?
+  approvedAt           DateTime?
+  effectiveFrom        DateTime?
+  effectiveUntil       DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  issuedDocuments      InvestorDocument[]
+
+  @@unique([documentType, jurisdiction, locale, regionalScope, version])
+  @@index([documentType, jurisdiction, locale, regionalScope, status])
+  @@index([effectiveFrom, effectiveUntil])
+}
+
+// Immutable evidence trail for a jurisdiction decision. Network location,
+// browser language, and timezone may be recorded as weak signals, but only a
+// VERIFIED manual/KYC/residence record can authorize legal-document issuance.
+model JurisdictionEvidence {
+  id             String               @id @default(cuid())
+  applicationId  String?
+  investorId     String?
+  evidenceType   String
+  countryCode    String
+  legalRegion    String?
+  jurisdiction   String
+  status         String               @default("OBSERVED") // OBSERVED | VERIFIED | REJECTED
+  evidenceRef    String?
+  signalJson     String?
+  reason         String?
+  recordedBy     String
+  verifiedAt     DateTime?
+  createdAt      DateTime             @default(now())
+  application    InvestorApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  investor       Investor?            @relation(fields: [investorId], references: [id], onDelete: SetNull)
+
+  @@index([applicationId, status])
+  @@index([investorId, status])
+  @@index([countryCode, jurisdiction])
   @@index([createdAt])
 }
 

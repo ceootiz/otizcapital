@@ -12,6 +12,7 @@ import {
   getApplicationPriorityReasons,
   getApplicationSlaState,
   getCrmViews,
+  resolveLegalJurisdiction,
   priorityReasonLabel,
   slaBadgeLabel,
   type AdminFormatters,
@@ -45,6 +46,15 @@ type AdminApplication = {
   telegram: string | null;
   email: string | null;
   country: string;
+  countryCode: string | null;
+  legalJurisdiction: string;
+  legalRegion: string | null;
+  preferredLocale: string;
+  jurisdictionStatus: string;
+  jurisdictionSource: string | null;
+  jurisdictionEvidenceRef: string | null;
+  jurisdictionVerifiedBy: string | null;
+  jurisdictionVerifiedAt: string | null;
   preferredContactMethod: string;
   plannedAllocationAmount: number;
   preferredDepositMethod: string;
@@ -204,6 +214,15 @@ type InvestorAccessCredentials = {
 type CreateInvestorResult = {
   application: AdminApplication;
   credentials: InvestorAccessCredentials | null;
+};
+
+type JurisdictionVerificationPayload = {
+  countryCode: string;
+  jurisdiction: "EU" | "US" | "RU" | "CN";
+  legalRegion: string | null;
+  evidenceType: "RESIDENCE_DOCUMENT" | "KYC_REVIEW" | "ADMIN_REVIEW";
+  evidenceRef: string;
+  reason: string | null;
 };
 
 type CrmDraft = {
@@ -1162,6 +1181,19 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
     }
   }
 
+  async function verifyJurisdiction(application: AdminApplication, verification: JurisdictionVerificationPayload) {
+    const response = await fetch(`/api/investor-applications/${application.id}/jurisdiction`, {
+      method: "POST",
+      headers: getAdminMutationHeaders(),
+      body: JSON.stringify(verification)
+    });
+    const payload = (await response.json()) as { ok: boolean; data?: AdminApplication; error?: string };
+    if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error || "Unable to verify jurisdiction.");
+    setApplications((current) => current.map((item) => item.id === payload.data?.id ? payload.data : item));
+    await loadAuditLogs(application.id);
+    return payload.data;
+  }
+
   function resetFilters() {
     setActiveView("all");
     setStatus("ALL");
@@ -1423,6 +1455,7 @@ export function AdminApplicationsPage({ locale }: { locale: Locale }) {
             onPatchApplication={patchApplication}
             onSaveCrmDraft={saveCrmDraft}
             onCreateInvestor={createInvestorFromApplication}
+            onVerifyJurisdiction={verifyJurisdiction}
             crmConfig={crmConfig}
             locale={locale}
             />
@@ -1794,6 +1827,7 @@ function ApplicationDetail({
   onPatchApplication,
   onSaveCrmDraft,
   onCreateInvestor,
+  onVerifyJurisdiction,
   crmConfig,
   locale
 }: {
@@ -1805,6 +1839,7 @@ function ApplicationDetail({
   onPatchApplication: (application: AdminApplication, payload: ApplicationPatchPayload, successMessage: string) => Promise<AdminApplication>;
   onSaveCrmDraft: (application: AdminApplication, draft: CrmDraft) => Promise<AdminApplication>;
   onCreateInvestor: (application: AdminApplication) => Promise<CreateInvestorResult>;
+  onVerifyJurisdiction: (application: AdminApplication, verification: JurisdictionVerificationPayload) => Promise<AdminApplication>;
   crmConfig: CrmConfig;
   locale: Locale;
 }) {
@@ -1936,6 +1971,8 @@ function ApplicationDetail({
           locale={locale}
         />
 
+        <JurisdictionReviewPanel application={application} locale={locale} onVerify={onVerifyJurisdiction} />
+
         <div className="rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-4">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.quickActions}</p>
           <div className="flex flex-wrap gap-2">
@@ -2045,6 +2082,63 @@ function ApplicationDetail({
       />
     </>
   );
+}
+
+const JURISDICTION_COPY = {
+  en: { title: "Legal jurisdiction", description: "IP, VPN, browser language, and timezone do not verify residence. Confirm against a reviewed source before account creation.", country: "Verified country code", jurisdiction: "Jurisdiction", region: "US state / region", evidenceType: "Evidence type", evidenceRef: "Evidence reference", reason: "Review note", verify: "Verify jurisdiction", verifying: "Verifying...", verified: "Verified", unverified: "Verification required", saved: "Jurisdiction verified." },
+  ru: { title: "Юридическая юрисдикция", description: "IP, VPN, язык браузера и часовой пояс не подтверждают место проживания. Перед созданием аккаунта проверьте источник.", country: "Код подтверждённой страны", jurisdiction: "Юрисдикция", region: "Штат США / регион", evidenceType: "Тип подтверждения", evidenceRef: "Ссылка или номер подтверждения", reason: "Комментарий проверки", verify: "Подтвердить юрисдикцию", verifying: "Подтверждаем...", verified: "Подтверждено", unverified: "Требуется проверка", saved: "Юрисдикция подтверждена." },
+  de: { title: "Rechtlicher Geltungsbereich", description: "IP, VPN, Browsersprache und Zeitzone belegen keinen Wohnsitz. Vor Kontoerstellung ist eine geprüfte Quelle erforderlich.", country: "Bestätigter Ländercode", jurisdiction: "Rechtsraum", region: "US-Bundesstaat / Region", evidenceType: "Nachweisart", evidenceRef: "Nachweisreferenz", reason: "Prüfvermerk", verify: "Rechtsraum bestätigen", verifying: "Wird bestätigt...", verified: "Bestätigt", unverified: "Prüfung erforderlich", saved: "Rechtsraum bestätigt." },
+  es: { title: "Jurisdicción legal", description: "La IP, la VPN, el idioma y la zona horaria no acreditan residencia. Verifique una fuente antes de crear la cuenta.", country: "Código de país verificado", jurisdiction: "Jurisdicción", region: "Estado de EE. UU. / región", evidenceType: "Tipo de prueba", evidenceRef: "Referencia de la prueba", reason: "Nota de revisión", verify: "Verificar jurisdicción", verifying: "Verificando...", verified: "Verificada", unverified: "Requiere verificación", saved: "Jurisdicción verificada." },
+  zh: { title: "法律司法辖区", description: "IP、VPN、浏览器语言和时区不能证明居住地。创建账户前必须核验来源。", country: "已核验国家代码", jurisdiction: "司法辖区", region: "美国州 / 地区", evidenceType: "证明类型", evidenceRef: "证明编号或链接", reason: "审核备注", verify: "确认司法辖区", verifying: "正在确认…", verified: "已确认", unverified: "需要审核", saved: "司法辖区已确认。" }
+} as const;
+
+function JurisdictionReviewPanel({ application, locale, onVerify }: {
+  application: AdminApplication;
+  locale: Locale;
+  onVerify: (application: AdminApplication, verification: JurisdictionVerificationPayload) => Promise<AdminApplication>;
+}) {
+  const t = (JURISDICTION_COPY as unknown as Record<string, typeof JURISDICTION_COPY.en>)[locale] ?? JURISDICTION_COPY.en;
+  const [countryCode, setCountryCode] = React.useState(application.countryCode || "");
+  const inferred = resolveLegalJurisdiction(countryCode);
+  const [jurisdiction, setJurisdiction] = React.useState<JurisdictionVerificationPayload["jurisdiction"]>(
+    (["EU", "US", "RU", "CN"].includes(application.legalJurisdiction) ? application.legalJurisdiction : inferred === "REVIEW_REQUIRED" ? "EU" : inferred) as JurisdictionVerificationPayload["jurisdiction"]
+  );
+  const [legalRegion, setLegalRegion] = React.useState(application.legalRegion || "");
+  const [evidenceType, setEvidenceType] = React.useState<JurisdictionVerificationPayload["evidenceType"]>("RESIDENCE_DOCUMENT");
+  const [evidenceRef, setEvidenceRef] = React.useState(application.jurisdictionEvidenceRef || "");
+  const [reason, setReason] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [notice, setNotice] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setCountryCode(application.countryCode || "");
+    setLegalRegion(application.legalRegion || "");
+    setEvidenceRef(application.jurisdictionEvidenceRef || "");
+  }, [application.id, application.countryCode, application.legalRegion, application.jurisdictionEvidenceRef]);
+
+  async function submit() {
+    setBusy(true); setNotice(null);
+    try {
+      await onVerify(application, { countryCode: countryCode.toUpperCase(), jurisdiction, legalRegion: legalRegion || null, evidenceType, evidenceRef, reason: reason || null });
+      setNotice(t.saved);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Error");
+    } finally { setBusy(false); }
+  }
+
+  const field = "h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground outline-none dark:border-white/10 dark:bg-black/20";
+  return <div className="rounded-[1.35rem] border border-border bg-muted/30 p-4 dark:border-white/10 dark:bg-black/20">
+    <div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-foreground">{t.title}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t.description}</p></div><Badge>{application.jurisdictionStatus === "VERIFIED" ? t.verified : t.unverified}</Badge></div>
+    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <input className={field} value={countryCode} onChange={(event) => { const value = event.target.value.slice(0, 2).toUpperCase(); setCountryCode(value); const next = resolveLegalJurisdiction(value); if (next !== "REVIEW_REQUIRED") setJurisdiction(next); }} placeholder={t.country} aria-label={t.country} />
+      <select className={field} value={jurisdiction} onChange={(event) => setJurisdiction(event.target.value as JurisdictionVerificationPayload["jurisdiction"])} aria-label={t.jurisdiction}>{["EU", "US", "RU", "CN"].map((value) => <option key={value}>{value}</option>)}</select>
+      <input className={field} value={legalRegion} onChange={(event) => setLegalRegion(event.target.value.toUpperCase())} placeholder={t.region} aria-label={t.region} />
+      <select className={field} value={evidenceType} onChange={(event) => setEvidenceType(event.target.value as JurisdictionVerificationPayload["evidenceType"])} aria-label={t.evidenceType}><option value="RESIDENCE_DOCUMENT">RESIDENCE DOCUMENT</option><option value="KYC_REVIEW">KYC REVIEW</option><option value="ADMIN_REVIEW">ADMIN REVIEW</option></select>
+      <input className={field} value={evidenceRef} onChange={(event) => setEvidenceRef(event.target.value)} placeholder={t.evidenceRef} aria-label={t.evidenceRef} />
+      <input className={field} value={reason} onChange={(event) => setReason(event.target.value)} placeholder={t.reason} aria-label={t.reason} />
+    </div>
+    <div className="mt-4 flex flex-wrap items-center gap-3"><Button type="button" size="sm" disabled={busy || !countryCode || !evidenceRef} onClick={() => void submit()}>{busy ? t.verifying : t.verify}</Button>{notice ? <p className="text-xs text-muted-foreground">{notice}</p> : null}</div>
+  </div>;
 }
 
 function NotificationEventsPanel({ events, locale }: { events: NotificationEvent[]; locale: Locale }) {

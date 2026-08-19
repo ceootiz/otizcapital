@@ -30,6 +30,8 @@ export * from "./investor-calendar";
 export * from "./investor-account-requests";
 export * from "./investor-file-reports";
 export * from "./investor-documents";
+export * from "./legal-document-templates";
+export * from "./jurisdiction-evidence";
 export * from "./password-reset-tokens";
 export * from "./investor-payments";
 export * from "./admin-dashboard";

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import PDFDocument from "pdfkit";
+import type { LegalAgreementTemplateBody } from "@otiz/lib";
 
 // Cyrillic-capable fonts vendored into the app; read at runtime and shipped to
 // the serverless function via next.config outputFileTracingIncludes. Mirrors the
@@ -25,15 +26,8 @@ export type AgreementPdfInput = {
   email: string;
   plannedAllocation: string; // formatted, e.g. "$50,000"
   date: string; // formatted agreement date
+  template: LegalAgreementTemplateBody;
 };
-
-const TERMS: string[] = [
-  "1. Период удержания. Инвестированный капитал закрепляется на срок не менее 90 (девяноста) дней с даты первой аллокации. В течение этого периода вывод средств недоступен, что позволяет управляющей команде завершить операционные торговые циклы.",
-  "2. Ежемесячная отчётность. Инвестор получает ежемесячные операционные отчёты в личном кабинете. Отчёты отражают состояние аллокаций, результаты циклов и заметки по выплатам после проверки менеджером.",
-  "3. Процесс вывода. По истечении периода удержания инвестор может подать запрос на вывод. Каждый запрос проходит ручную проверку менеджера; сроки выплат планируются управляющей стороной и обычно составляют 3–5 рабочих дней с момента одобрения.",
-  "4. Раскрытие рисков. Результаты аллокаций зависят от исполнения реальных торговых операций. Доходность не гарантируется, и инвестор принимает риск частичной или полной потери капитала. Ничто в настоящем документе не является гарантией прибыли.",
-  "5. Согласие. Подписывая настоящее соглашение в личном кабинете, инвестор подтверждает, что ознакомился с изложенными условиями, принимает их и предоставляет свои данные добровольно."
-];
 
 export function buildAgreementPdf(input: AgreementPdfInput): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -58,9 +52,9 @@ export function buildAgreementPdf(input: AgreementPdfInput): Promise<Buffer> {
       // Header
       doc.font("Head").fontSize(13).fillColor(GOLD).text("OTIZ CAPITAL", { characterSpacing: 2 });
       doc.moveDown(0.4);
-      doc.font("Head").fontSize(24).fillColor(INK).text("OTIZ Capital — Инвестиционное соглашение");
+      doc.font("Head").fontSize(24).fillColor(INK).text(input.template.heading);
       doc.moveDown(0.4);
-      doc.font("Body").fontSize(9).fillColor(MUTED).text(`Дата: ${input.date}`);
+      doc.font("Body").fontSize(9).fillColor(MUTED).text(`${input.template.dateLabel}: ${input.date}`);
       doc.moveDown(0.8);
       rule();
       doc.moveDown(0.9);
@@ -71,18 +65,18 @@ export function buildAgreementPdf(input: AgreementPdfInput): Promise<Buffer> {
         doc.font("Body").fontSize(12).fillColor(INK).text(value || "—");
         doc.moveDown(0.5);
       };
-      kv("Инвестор", input.fullName);
+      kv(input.template.investorLabel, input.fullName);
       kv("Email", input.email);
-      kv("Планируемая аллокация", input.plannedAllocation);
+      kv(input.template.allocationLabel, input.plannedAllocation);
 
       doc.moveDown(0.6);
       rule();
       doc.moveDown(0.9);
 
       // Terms
-      doc.font("Head").fontSize(11).fillColor(GOLD).text("УСЛОВИЯ", { characterSpacing: 1.2 });
+      doc.font("Head").fontSize(11).fillColor(GOLD).text(input.template.termsHeading, { characterSpacing: 1.2 });
       doc.moveDown(0.6);
-      for (const paragraph of TERMS) {
+      for (const paragraph of input.template.terms) {
         if (doc.y > doc.page.height - 140) doc.addPage();
         doc.font("Body").fontSize(10.5).fillColor(INK).text(paragraph, { width: contentWidth, align: "left", lineGap: 2 });
         doc.moveDown(0.7);
@@ -93,17 +87,14 @@ export function buildAgreementPdf(input: AgreementPdfInput): Promise<Buffer> {
       doc.moveDown(1.2);
       rule();
       doc.moveDown(1.2);
-      doc.font("Body").fontSize(9).fillColor(MUTED).text("ПОДПИСЬ ИНВЕСТОРА", { characterSpacing: 0.8 });
+      doc.font("Body").fontSize(9).fillColor(MUTED).text(input.template.signatureLabel, { characterSpacing: 0.8 });
       doc.moveDown(1.6);
       const lineY = doc.y;
       doc.strokeColor(INK).lineWidth(1).moveTo(left, lineY).lineTo(left + 240, lineY).stroke();
       doc.moveDown(0.4);
       doc.font("Body").fontSize(10).fillColor(INK).text(input.fullName);
       doc.moveDown(1.2);
-      doc.font("Body").fontSize(8).fillColor(MUTED).text(
-        "Электронное подписание в личном кабинете OTIZ Capital приравнивается к собственноручной подписи. Доходность не гарантируется.",
-        { width: contentWidth }
-      );
+      doc.font("Body").fontSize(8).fillColor(MUTED).text(input.template.signatureNotice, { width: contentWidth });
 
       doc.end();
     } catch (error) {

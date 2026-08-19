@@ -301,6 +301,10 @@ export async function createInvestorFromApprovedApplication(input: {
       return { ok: false as const, status: 422 as const, error: "Approved application must include an email to create investor access." };
     }
 
+    if (application.jurisdictionStatus !== "VERIFIED" || !application.countryCode || application.legalJurisdiction === "REVIEW_REQUIRED") {
+      return { ok: false as const, status: 422 as const, error: "Legal jurisdiction must be verified before creating investor access." };
+    }
+
     if (application.investor) {
       return {
         ok: true as const,
@@ -347,6 +351,15 @@ export async function createInvestorFromApprovedApplication(input: {
           telegram: application.telegram,
           status: "ACTIVE",
           sourceApplicationId: application.id,
+          countryCode: application.countryCode,
+          legalJurisdiction: application.legalJurisdiction,
+          legalRegion: application.legalRegion,
+          preferredLocale: application.preferredLocale,
+          jurisdictionStatus: application.jurisdictionStatus,
+          jurisdictionSource: application.jurisdictionSource,
+          jurisdictionEvidenceRef: application.jurisdictionEvidenceRef,
+          jurisdictionVerifiedBy: application.jurisdictionVerifiedBy,
+          jurisdictionVerifiedAt: application.jurisdictionVerifiedAt,
           totalCapital: String(application.plannedAllocationAmount),
           reinvestEnabled: application.reinvestInterest === "yes",
           lastReportAt: null,

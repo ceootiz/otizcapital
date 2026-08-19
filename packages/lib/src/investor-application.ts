@@ -14,6 +14,7 @@ export type InvestorApplication = {
   telegram: string;
   email: string;
   country: string;
+  countryCode: string;
   preferredContactMethod: PreferredContactMethod;
   plannedAllocationAmount: string;
   preferredDepositMethod: PreferredDepositMethod;

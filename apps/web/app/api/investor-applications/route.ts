@@ -22,6 +22,7 @@ import {
   type InvestorApplicationSort,
   type ReinvestInterest
 } from "@otiz/database";
+import { isSupportedLegalLocale, normalizeCountryCode, resolveLegalJurisdiction } from "@otiz/lib";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,10 @@ type ValidationResult =
         telegram: string | null;
         email: string | null;
         country: string;
+        countryCode: string;
+        legalJurisdiction: string;
+        preferredLocale: string;
+        locationSignals: { browserLanguage: string | null; timeZone: string | null };
         preferredContactMethod: string;
         plannedAllocationAmount: number;
         preferredDepositMethod: string;
@@ -98,6 +103,10 @@ function validatePayload(payload: unknown): ValidationResult {
   const telegram = sanitizeString(source.telegram, 80);
   const email = sanitizeString(source.email, 180).toLowerCase();
   const country = sanitizeString(source.country, 100);
+  const countryCode = normalizeCountryCode(source.countryCode);
+  const preferredLocale = isSupportedLegalLocale(source.locale) ? source.locale : "en";
+  const browserLanguage = sanitizeString(source.browserLanguage, 40) || null;
+  const timeZone = sanitizeString(source.timeZone, 80) || null;
   const preferredContactMethod = sanitizeString(source.preferredContactMethod, 40);
   const plannedAllocationAmount = parseAmount(source.plannedAllocationAmount);
   const preferredDepositMethod = sanitizeString(source.preferredDepositMethod, 40);
@@ -110,6 +119,7 @@ function validatePayload(payload: unknown): ValidationResult {
 
   if (!fullName) errors.fullName = "Full name is required.";
   if (!country) errors.country = "Country is required.";
+  if (!countryCode) errors.country = "Select a valid country from the list.";
   if (!telegram && !email) errors.contact = "Email or Telegram is required.";
   if (email && !/^\S+@\S+\.\S+$/.test(email)) errors.email = "A valid email is required.";
   if (!isOneOf(preferredContactMethod, CONTACT_METHODS)) errors.preferredContactMethod = "Preferred contact method is invalid.";
@@ -131,6 +141,10 @@ function validatePayload(payload: unknown): ValidationResult {
       telegram: telegram || null,
       email: email || null,
       country,
+      countryCode: countryCode!,
+      legalJurisdiction: resolveLegalJurisdiction(countryCode),
+      preferredLocale,
+      locationSignals: { browserLanguage, timeZone },
       preferredContactMethod,
       plannedAllocationAmount,
       preferredDepositMethod,

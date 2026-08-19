@@ -15,6 +15,7 @@ export type AdminNavigationSection =
   | "referrals"
   | "promo-codes"
   | "content"
+  | "legal-documents"
   | "contact-settings"
   | "feature-flags"
   | "audit-log"
@@ -34,6 +35,7 @@ const ADMIN_NAVIGATION_ITEMS: Array<{ key: AdminNavigationSection; href: (locale
   { key: "referrals", href: (locale) => `/${locale}/admin/referrals` },
   { key: "promo-codes", href: (locale) => `/${locale}/admin/promo-codes` },
   { key: "content", href: (locale) => `/${locale}/admin/content` },
+  { key: "legal-documents", href: (locale) => `/${locale}/admin/legal` },
   { key: "contact-settings", href: (locale) => `/${locale}/admin/settings/contact` },
   { key: "feature-flags", href: (locale) => `/${locale}/admin/settings/features` },
   { key: "audit-log", href: (locale) => `/${locale}/admin/audit-log` },
@@ -55,6 +57,7 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     referrals: "Referrals",
     "promo-codes": "Promo codes",
     content: "Content",
+    "legal-documents": "Legal documents",
     "contact-settings": "Contact",
     "feature-flags": "Features",
     "audit-log": "Audit log",
@@ -74,6 +77,7 @@ const NAV_LABELS: Record<string, Record<AdminNavigationSection, string>> = {
     referrals: "Рефералы",
     "promo-codes": "Промокоды",
     content: "Контент",
+    "legal-documents": "Юрисдикции",
     "contact-settings": "Контакты",
     "feature-flags": "Функции",
     "audit-log": "Журнал действий",

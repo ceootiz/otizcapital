@@ -25,6 +25,13 @@ export type CreateInvestorApplicationInput = {
   telegram?: string | null;
   email?: string | null;
   country: string;
+  countryCode: string;
+  legalJurisdiction: string;
+  preferredLocale: string;
+  locationSignals?: {
+    browserLanguage?: string | null;
+    timeZone?: string | null;
+  };
   preferredContactMethod: string;
   plannedAllocationAmount: number;
   preferredDepositMethod: string;
@@ -80,6 +87,9 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
         telegram: input.telegram || null,
         email: input.email || null,
         country: input.country,
+        countryCode: input.countryCode,
+        legalJurisdiction: input.legalJurisdiction,
+        preferredLocale: input.preferredLocale,
         preferredContactMethod: input.preferredContactMethod,
         plannedAllocationAmount: input.plannedAllocationAmount,
         preferredDepositMethod: input.preferredDepositMethod,
@@ -91,6 +101,22 @@ export async function createInvestorApplicationRecord(input: CreateInvestorAppli
         referredByArbitrageId: input.referredByArbitrageId ?? null,
         referredByInvestorId: input.referredByInvestorId ?? null,
         promoCode: input.promoCode ?? null
+      }
+    });
+
+    await transaction.jurisdictionEvidence.create({
+      data: {
+        applicationId: application.id,
+        evidenceType: "SELF_DECLARED",
+        countryCode: input.countryCode,
+        jurisdiction: input.legalJurisdiction,
+        status: "OBSERVED",
+        signalJson: JSON.stringify({
+          browserLanguage: input.locationSignals?.browserLanguage ?? null,
+          timeZone: input.locationSignals?.timeZone ?? null,
+          note: "Browser and network-derived values are adaptation signals only and never verify jurisdiction."
+        }),
+        recordedBy: "applicant"
       }
     });
 
@@ -554,6 +580,15 @@ export function serializeInvestorApplication(record: {
   telegram: string | null;
   email: string | null;
   country: string;
+  countryCode?: string | null;
+  legalJurisdiction?: string;
+  legalRegion?: string | null;
+  preferredLocale?: string;
+  jurisdictionStatus?: string;
+  jurisdictionSource?: string | null;
+  jurisdictionEvidenceRef?: string | null;
+  jurisdictionVerifiedBy?: string | null;
+  jurisdictionVerifiedAt?: Date | null;
   preferredContactMethod: string;
   plannedAllocationAmount: number;
   preferredDepositMethod: string;
@@ -590,6 +625,15 @@ export function serializeInvestorApplication(record: {
     telegram: record.telegram,
     email: record.email,
     country: record.country,
+    countryCode: record.countryCode ?? null,
+    legalJurisdiction: record.legalJurisdiction ?? "REVIEW_REQUIRED",
+    legalRegion: record.legalRegion ?? null,
+    preferredLocale: record.preferredLocale ?? "en",
+    jurisdictionStatus: record.jurisdictionStatus ?? "UNVERIFIED",
+    jurisdictionSource: record.jurisdictionSource ?? null,
+    jurisdictionEvidenceRef: record.jurisdictionEvidenceRef ?? null,
+    jurisdictionVerifiedBy: record.jurisdictionVerifiedBy ?? null,
+    jurisdictionVerifiedAt: record.jurisdictionVerifiedAt?.toISOString() ?? null,
     preferredContactMethod: record.preferredContactMethod,
     plannedAllocationAmount: record.plannedAllocationAmount,
     preferredDepositMethod: record.preferredDepositMethod,

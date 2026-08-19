@@ -41,6 +41,7 @@ const initialForm: FormState = {
   telegram: "",
   email: "",
   country: "",
+  countryCode: "",
   preferredContactMethod: "telegram",
   plannedAllocationAmount: "",
   preferredDepositMethod: "usdt",
@@ -221,7 +222,14 @@ export function ApplicationPage({
                           value={form.country}
                           error={errors.country}
                           options={countryOptions}
-                          onSelect={(name) => updateField("country", name)}
+                          onInputChange={(name) => {
+                            updateField("country", name);
+                            updateField("countryCode", "");
+                          }}
+                          onSelect={(option) => {
+                            updateField("country", option.name);
+                            updateField("countryCode", option.code);
+                          }}
                         />
                       </div>
                       <div className="grid gap-4 sm:grid-cols-2">
@@ -418,13 +426,15 @@ function CountrySelect({
   value,
   error,
   options,
+  onInputChange,
   onSelect
 }: {
   label: string;
   value: string;
   error?: string;
   options: CountryOption[];
-  onSelect: (name: string) => void;
+  onInputChange: (name: string) => void;
+  onSelect: (option: CountryOption) => void;
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -458,8 +468,8 @@ function CountrySelect({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
 
-  function handleSelect(name: string) {
-    onSelect(name);
+  function handleSelect(option: CountryOption) {
+    onSelect(option);
     setQuery(null);
     setOpen(false);
   }
@@ -473,6 +483,7 @@ function CountrySelect({
           value={inputValue}
           onChange={(event) => {
             setQuery(event.target.value);
+            onInputChange(event.target.value);
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
@@ -492,7 +503,7 @@ function CountrySelect({
                 <button
                   key={option.code}
                   type="button"
-                  onClick={() => handleSelect(option.name)}
+                  onClick={() => handleSelect(option)}
                   className="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted/50 dark:hover:bg-white/[0.06]"
                 >
                   {option.name}

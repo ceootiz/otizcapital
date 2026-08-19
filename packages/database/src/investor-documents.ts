@@ -15,13 +15,16 @@ export type SerializedInvestorDocument = {
   type: string;
   fileName: string;
   status: string;
+  jurisdiction: string | null;
+  locale: string | null;
+  templateVersion: number | null;
   signedAt: string | null;
   createdAt: string;
 };
 
 // fileData (base64) is omitted — only the download route reads it.
 export function serializeInvestorDocument(
-  record: Pick<InvestorDocument, "id" | "investorId" | "type" | "fileName" | "status" | "signedAt" | "createdAt">
+  record: Pick<InvestorDocument, "id" | "investorId" | "type" | "fileName" | "status" | "jurisdiction" | "locale" | "templateVersion" | "signedAt" | "createdAt">
 ): SerializedInvestorDocument {
   return {
     id: record.id,
@@ -29,6 +32,9 @@ export function serializeInvestorDocument(
     type: record.type,
     fileName: record.fileName,
     status: record.status,
+    jurisdiction: record.jurisdiction,
+    locale: record.locale,
+    templateVersion: record.templateVersion,
     signedAt: record.signedAt ? record.signedAt.toISOString() : null,
     createdAt: record.createdAt.toISOString()
   };
@@ -41,25 +47,57 @@ export async function createInvestorDocument(
     fileName: string;
     fileData: string;
     status?: string;
+    templateId?: string;
+    jurisdiction?: string;
+    locale?: string;
+    templateVersion?: number;
+    contentHash?: string;
+    actor?: string;
   },
   client: Prisma.TransactionClient | typeof prisma = prisma
 ) {
-  return client.investorDocument.create({
+  const document = await client.investorDocument.create({
     data: {
       investorId: input.investorId,
       type: input.type,
       fileName: input.fileName,
       fileData: input.fileData,
-      status: input.status ?? INVESTOR_DOCUMENT_STATUS.PENDING
+      status: input.status ?? INVESTOR_DOCUMENT_STATUS.PENDING,
+      templateId: input.templateId,
+      jurisdiction: input.jurisdiction,
+      locale: input.locale,
+      templateVersion: input.templateVersion,
+      contentHash: input.contentHash,
+      issuedAt: input.templateId ? new Date() : undefined
     }
   });
+  if (input.actor) {
+    await client.auditLog.create({
+      data: {
+        actor: input.actor,
+        action: "ISSUE_INVESTOR_DOCUMENT",
+        entityType: "InvestorDocument",
+        entityId: document.id,
+        afterJson: JSON.stringify({
+          investorId: document.investorId,
+          type: document.type,
+          templateId: document.templateId,
+          jurisdiction: document.jurisdiction,
+          locale: document.locale,
+          templateVersion: document.templateVersion,
+          contentHash: document.contentHash
+        })
+      }
+    });
+  }
+  return document;
 }
 
 export async function listInvestorDocuments(investorId: string) {
   return prisma.investorDocument.findMany({
     where: { investorId },
     orderBy: { createdAt: "desc" },
-    select: { id: true, investorId: true, type: true, fileName: true, status: true, signedAt: true, createdAt: true }
+    select: { id: true, investorId: true, type: true, fileName: true, status: true, jurisdiction: true, locale: true, templateVersion: true, signedAt: true, createdAt: true }
   });
 }
 
@@ -87,6 +125,6 @@ export async function getLatestAgreementForInvestor(investorId: string) {
   return prisma.investorDocument.findFirst({
     where: { investorId, type: "AGREEMENT" },
     orderBy: { createdAt: "desc" },
-    select: { id: true, investorId: true, type: true, fileName: true, status: true, signedAt: true, createdAt: true }
+    select: { id: true, investorId: true, type: true, fileName: true, status: true, jurisdiction: true, locale: true, templateVersion: true, signedAt: true, createdAt: true }
   });
 }

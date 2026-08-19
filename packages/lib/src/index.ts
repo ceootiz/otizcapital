@@ -8,6 +8,7 @@ export * from "./application-sla";
 export * from "./admin-i18n";
 export * from "./content-merge";
 export * from "./countries";
+export * from "./legal-jurisdiction";
 export * from "./blockchain-verify";
 export * from "./investor-application";
 export * from "./i18n";
