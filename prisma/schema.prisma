@@ -311,8 +311,8 @@ model LegalDocumentTemplate {
   updatedAt            DateTime           @updatedAt
   issuedDocuments      InvestorDocument[]
 
-  @@unique([documentType, jurisdiction, locale, regionalScope, version])
-  @@index([documentType, jurisdiction, locale, regionalScope, status])
+  @@unique([documentType, jurisdiction, locale, regionalScope, version], map: "LegalDocumentTemplate_scope_version_key")
+  @@index([documentType, jurisdiction, locale, regionalScope, status], map: "LegalDocumentTemplate_scope_status_idx")
   @@index([effectiveFrom, effectiveUntil])
 }
 

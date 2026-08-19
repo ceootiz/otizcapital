@@ -72,8 +72,8 @@ CREATE INDEX "InvestorApplication_countryCode_idx" ON "InvestorApplication"("cou
 CREATE INDEX "InvestorApplication_legalJurisdiction_idx" ON "InvestorApplication"("legalJurisdiction");
 CREATE INDEX "Investor_countryCode_idx" ON "Investor"("countryCode");
 CREATE INDEX "Investor_legalJurisdiction_idx" ON "Investor"("legalJurisdiction");
-CREATE UNIQUE INDEX "LegalDocumentTemplate_documentType_jurisdiction_locale_regionalScope_version_key" ON "LegalDocumentTemplate"("documentType", "jurisdiction", "locale", "regionalScope", "version");
-CREATE INDEX "LegalDocumentTemplate_documentType_jurisdiction_locale_regionalScope_status_idx" ON "LegalDocumentTemplate"("documentType", "jurisdiction", "locale", "regionalScope", "status");
+CREATE UNIQUE INDEX "LegalDocumentTemplate_scope_version_key" ON "LegalDocumentTemplate"("documentType", "jurisdiction", "locale", "regionalScope", "version");
+CREATE INDEX "LegalDocumentTemplate_scope_status_idx" ON "LegalDocumentTemplate"("documentType", "jurisdiction", "locale", "regionalScope", "status");
 CREATE INDEX "LegalDocumentTemplate_effectiveFrom_effectiveUntil_idx" ON "LegalDocumentTemplate"("effectiveFrom", "effectiveUntil");
 CREATE INDEX "InvestorDocument_templateId_idx" ON "InvestorDocument"("templateId");
 CREATE INDEX "InvestorDocument_jurisdiction_locale_idx" ON "InvestorDocument"("jurisdiction", "locale");
