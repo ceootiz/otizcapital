@@ -182,14 +182,14 @@ model Investor {
 model PasswordResetToken {
   id         String    @id @default(cuid())
   investorId String
-  token      String    @unique
+  tokenHash  String    @unique
   expiresAt  DateTime
   usedAt     DateTime?
   createdAt  DateTime  @default(now())
   investor   Investor  @relation(fields: [investorId], references: [id], onDelete: Cascade)
 
   @@index([investorId])
-  @@index([token])
+  @@index([tokenHash])
 }
 
 // Admin-uploaded XLSX report files (distinct from the text-based MonthlyReport).

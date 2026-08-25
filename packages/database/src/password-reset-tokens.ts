@@ -1,15 +1,26 @@
+import crypto from "node:crypto";
 import type { Investor, PasswordResetToken } from "@prisma/client";
 import { prisma } from "./client";
 
-// Single-use, time-limited password reset tokens for the investor forgot/reset
-// flow. Token strings are generated in the app layer (crypto.randomBytes).
+// Single-use, time-limited password reset tokens. Only a deterministic digest
+// is persisted, so a database read cannot be turned into a working reset link.
+
+export function hashPasswordResetToken(token: string) {
+  return crypto.createHash("sha256").update(token, "utf8").digest("hex");
+}
 
 export async function createPasswordResetToken(input: {
   investorId: string;
   token: string;
   expiresAt: Date;
 }) {
-  return prisma.passwordResetToken.create({ data: input });
+  return prisma.passwordResetToken.create({
+    data: {
+      investorId: input.investorId,
+      tokenHash: hashPasswordResetToken(input.token),
+      expiresAt: input.expiresAt
+    }
+  });
 }
 
 // Returns the token row (with its investor) or null. The caller decides the
@@ -18,7 +29,7 @@ export async function getPasswordResetToken(
   token: string
 ): Promise<(PasswordResetToken & { investor: Investor }) | null> {
   return prisma.passwordResetToken.findUnique({
-    where: { token },
+    where: { tokenHash: hashPasswordResetToken(token) },
     include: { investor: true }
   });
 }
@@ -33,9 +44,10 @@ export async function consumePasswordResetToken(input: {
 }) {
   return prisma.$transaction(async (transaction) => {
     const usedAt = new Date();
+    const tokenHash = hashPasswordResetToken(input.token);
     const consumed = await transaction.passwordResetToken.updateMany({
       where: {
-        token: input.token,
+        tokenHash,
         investorId: input.investorId,
         usedAt: null,
         expiresAt: { gt: usedAt }
