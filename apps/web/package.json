@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "OTIZ_BUILD_REQUIRE_DATABASE=1 node ../../scripts/verify-build-database.mjs && OTIZ_BUILD_REQUIRE_DATABASE=1 next build",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

@@ -8,12 +8,14 @@ import {
   type HomeDictionary,
   type Locale
 } from "@otiz/lib";
+import { requiresDatabaseDuringBuild } from "@/lib/build-database-policy";
 
 /**
  * Reads the raw JSON override for a (scope, locale) from the database.
- * Returns null when no row exists or the query fails, so callers fall back to
- * the compiled TypeScript defaults. Wrapped in React cache() so metadata and
- * page render in the same request share a single query.
+ * Returns null when no row exists. Runtime database failures retain the
+ * compiled defaults, while release builds fail closed instead of silently
+ * shipping stale public content. Wrapped in React cache() so metadata and page
+ * render in the same request share a single query.
  */
 export const loadSiteContentOverride = cache(async (scope: ContentScope, locale: Locale): Promise<string | null> => {
   try {
@@ -22,7 +24,12 @@ export const loadSiteContentOverride = cache(async (scope: ContentScope, locale:
       select: { dataJson: true }
     });
     return row?.dataJson ?? null;
-  } catch {
+  } catch (error) {
+    if (requiresDatabaseDuringBuild()) {
+      throw new Error(`[otiz-build] Unable to read ${scope}:${locale} site content from the database.`, { cause: error });
+    }
+
+    console.error(`[otiz-runtime] Unable to read ${scope}:${locale} site content; using compiled defaults.`, error);
     return null;
   }
 });
