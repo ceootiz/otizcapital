@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
+import { headers, type UnsafeUnwrappedHeaders } from "next/headers";
 import { findInvestorById } from "@otiz/database";
 import { clearInvestorSession, getValidatedInvestorSession } from "@/lib/investor-session";
 import { hitRateLimit } from "@/lib/rate-limit";
+import { isTrustedRequestOrigin } from "@/lib/request-origin";
 
 // Shared gate for investor API routes: DB-validated session + active investor +
 // a 60 requests/minute per-session rate limit.
 export async function requireInvestorApi() {
+  const requestHeaders = headers() as unknown as UnsafeUnwrappedHeaders;
+  if (!isTrustedRequestOrigin(
+    requestHeaders.get("origin"),
+    requestHeaders.get("x-forwarded-host") || requestHeaders.get("host"),
+    requestHeaders.get("x-forwarded-proto")
+  )) {
+    return { ok: false as const, status: 403 as const, error: "Invalid request origin." };
+  }
+
   const session = await getValidatedInvestorSession();
   if (!session) return { ok: false as const, status: 401 as const, error: "Unauthorized." };
 
