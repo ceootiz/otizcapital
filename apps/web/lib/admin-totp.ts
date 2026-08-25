@@ -9,6 +9,14 @@ export function isAdminTotpEnabled() {
   return Boolean(process.env.ADMIN_TOTP_SECRET);
 }
 
+export function getAdminTotpConfigurationError() {
+  if (process.env.NODE_ENV === "production" && !process.env.ADMIN_TOTP_SECRET) {
+    return "ADMIN_TOTP_SECRET is required in production.";
+  }
+
+  return null;
+}
+
 export function verifyAdminTotp(code: string): boolean {
   const secret = process.env.ADMIN_TOTP_SECRET;
   if (!secret || !code) return false;

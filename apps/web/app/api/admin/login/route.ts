@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAuditLogEntry } from "@otiz/database";
 import { createAdminSession, getAdminLoginConfigurationError, verifyAdminPassword } from "@/lib/admin-session";
 import { checkAdminLoginRateLimit, recordAdminLoginFailure, resetAdminLoginRateLimit } from "@/lib/admin-rate-limit";
-import { isAdminTotpEnabled, verifyAdminTotp } from "@/lib/admin-totp";
+import { getAdminTotpConfigurationError, isAdminTotpEnabled, verifyAdminTotp } from "@/lib/admin-totp";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const configurationError = getAdminLoginConfigurationError();
+  const configurationError = getAdminLoginConfigurationError() || getAdminTotpConfigurationError();
 
   if (configurationError) {
     console.error(`[otiz-admin] ${configurationError}`);
@@ -53,7 +53,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: LOGIN_ERROR }, { status: 401 });
   }
 
-  // Second factor (only when ADMIN_TOTP_SECRET is configured).
+  // Production cannot reach this point without a configured TOTP secret.
+  // Development remains password-only unless a local secret is supplied.
   if (isAdminTotpEnabled()) {
     const totpCode = typeof payload.totpCode === "string" ? payload.totpCode.trim() : "";
 
