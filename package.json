@@ -22,7 +22,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:baseline:test": "bash scripts/validate-postgres-baseline.sh",
-    "db:drift:report": "bash scripts/report-prisma-drift.sh"
+    "db:drift:report": "bash scripts/report-prisma-drift.sh",
+    "security:audit": "pnpm audit --prod --audit-level high"
   },
   "devDependencies": {
     "prisma": "^6.19.0",
@@ -35,9 +36,11 @@
   },
   "pnpm": {
     "overrides": {
-      "brace-expansion@>=3.0.0 <5.0.7": "5.0.7",
-      "fast-uri@>=3.0.0 <=3.1.3": "3.1.4",
-      "postcss@<8.5.18": "8.5.18",
+      "brace-expansion@>=3.0.0 <5.0.9": "5.0.9",
+      "deepmerge-ts@<8.0.0": "8.0.0",
+      "fast-uri@>=3.0.0 <3.1.5": "3.1.5",
+      "nanoid@<3.3.18": "3.3.18",
+      "postcss@<8.5.23": "8.5.23",
       "sharp@<0.35.0": "0.35.0"
     }
   }
