@@ -33,6 +33,7 @@ See `02-reference-analysis.md` and `03-content-map.md`.
 | `pnpm typecheck` | **Passed** |
 | `pnpm build` | **Passed:** Next.js production build and 39 generated static pages |
 | `pnpm verify` | **Passed** with the results above |
+| GitHub Actions PR verification | **Passed:** run `40365307448`; workflow now provisions PostgreSQL from the checked-in Prisma schema |
 | Desktop/mobile route smoke | **Passed:** 45/45 page files returned HTTP 200; no browser page exceptions |
 | Responsive layout | **Passed:** no horizontal overflow at 320, 375, 390, 430, 768, 1024, 1440, and 1920 px on `/ru`, and at 390 px on all 45 page routes |
 | Mobile navigation | **Passed:** menu opened in Playwright |
@@ -53,16 +54,17 @@ The Russian homepage screenshots were visually compared against the supplied Coi
 ## Preview and publication
 
 - Branch: `redesign/coinsphere-adaptation`.
+- Pull request: [#1 — Redesign OTIZ landing page with commerce visual system](https://github.com/ceootiz/otizcapital/pull/1), open; CI passed.
 - Base commit: `e454952757da853e4ae1829fcc03160de56496d8`.
 - Hosted preview URL: **none confirmed**.
 - External deployment: **not performed**.
-- Repository inspection found no `vercel.json`, Vercel CLI, or deployment environment bindings. A GitHub PR may trigger an existing repository integration, but this has not yet been confirmed.
+- Repository inspection found no `vercel.json`, Vercel CLI, deployment environment bindings, or GitHub deployment records. The GitHub deployments API returned no deployments, so no preview URL is available. No production deployment was performed.
 
 ## Outstanding work
 
 ### Critical
 
-- No hosted preview or publication is available yet. Next step: confirm/create a GitHub PR and check whether its CI provides a deployment URL; otherwise configure the project’s supported preview/deployment integration. Do not claim a live URL until verified.
+- No hosted preview or publication is available yet. Next step: configure the project's supported preview/deployment integration. The open PR is reviewable and its CI passed, but it does not publish a preview.
 
 ### Serious
 

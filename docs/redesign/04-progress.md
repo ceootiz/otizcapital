@@ -98,12 +98,12 @@
 
 ## Stage 8 — Preview and publication
 
-**Status:** blocked pending deployment mechanism discovery.
+**Status:** implementation branch and pull request ready; hosted preview/publication blocked by missing deployment integration.
 
-**Done:** checked repository deployment files, local tooling, and environment binding names. No Vercel CLI, `vercel.json`, or deployment variables were found. GitHub CLI authentication is available and a branch is ready, but no preview deployment has been confirmed.
+**Done:** checked repository deployment files, local tooling, environment binding names, and GitHub deployment records. No Vercel CLI, `vercel.json`, deployment variables, or deployment records were found. Created PR #1 (`https://github.com/ceootiz/otizcapital/pull/1`) and added a PostgreSQL service to CI so the repository verification can run against the checked-in schema.
 
-**Verified:** local production build and route smoke only; no external URL or deploy status exists.
+**Verified:** GitHub Actions run `40365307448` passed after the CI database setup change. No external URL or deployment status exists; the repository deployments API returned an empty list.
 
 **Problems:** public preview and final publication are not yet complete.
 
-**Next:** check whether creating a GitHub pull request triggers an existing hosted preview. If no deployment integration exists, report the precise configuration/access needed; do not invent a preview URL.
+**Next:** configure the repository's supported preview/deployment integration and complete authenticated route acceptance. Do not invent a preview URL.
