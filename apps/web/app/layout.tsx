@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 // Applies the theme before paint so there is no light/dark flash. Priority:
 // (1) the visitor's explicit saved choice is never overridden; (2) otherwise the
 // OS `prefers-color-scheme`; (3) if matchMedia is unavailable, default to dark.
-const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement; const stored = localStorage.getItem('otiz-theme'); let dark; if (stored === 'light') { dark = false; } else if (stored === 'dark') { dark = true; } else if (window.matchMedia) { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } else { dark = true; } if (dark) { root.classList.add('dark'); root.style.colorScheme = 'dark'; } else { root.classList.remove('dark'); root.style.colorScheme = 'light'; } } catch (e) {} })();`;
+const THEME_INIT_SCRIPT = `(() => { try { const root = document.documentElement; const stored = localStorage.getItem('otiz-theme'); const dark = stored !== 'light'; if (dark) { root.classList.add('dark'); root.style.colorScheme = 'dark'; } else { root.classList.remove('dark'); root.style.colorScheme = 'light'; } } catch (e) {} })();`;
 
 // On 2g / slow-2g connections, tag <html> so CSS can drop animations/transitions.
 // Degrades silently when the Network Information API is unavailable.
