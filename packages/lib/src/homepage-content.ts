@@ -174,7 +174,7 @@ const english: HomeDictionary = {
   hero: {
     headline: "Invest in Real Electronics Commerce",
     subheadline:
-      "OTIZ CAPITAL allocates capital into tangible electronics inventory, marketplace sales cycles, logistics, and audited operational reporting.",
+      "OTIZ CAPITAL allocates capital into tangible electronics inventory, marketplace sales cycles, logistics, and operational reporting.",
     cta: "Become Investor",
     secondary: "Review transparency model",
     dashboardTitle: "Commerce allocation desk",

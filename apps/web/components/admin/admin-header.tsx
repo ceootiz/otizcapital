@@ -110,7 +110,7 @@ export function AdminHeader({ locale }: { locale: Locale }) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border dark:border-white/10 bg-background/85 backdrop-blur-xl">
+    <header className="otiz-admin-header sticky top-0 z-50 border-b border-border dark:border-white/10 bg-background/85 backdrop-blur-xl">
       <div className="container">
         <div className="flex h-14 items-center justify-between gap-4">
           <Link href={`/${locale}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">

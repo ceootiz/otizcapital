@@ -13,7 +13,7 @@ export function ArbitrageShell({
   maxWidth?: string;
 }) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,175,95,0.13),transparent_34rem),radial-gradient(circle_at_88%_6%,rgba(255,255,255,0.07),transparent_30rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <div className="relative mx-auto flex min-h-screen w-full flex-col px-5 py-10 sm:px-8">

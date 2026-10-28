@@ -79,7 +79,7 @@ export function AdminLoginPage({ locale }: { locale: Locale }) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
+    <main className="otiz-auth-shell relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,95,0.18),transparent_34rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <div className="container relative z-10 max-w-xl">

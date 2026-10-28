@@ -164,6 +164,31 @@ html.dark .glass-panel {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 28px 90px -56px rgba(0,0,0,.95);
 }
 
+html.dark .otiz-card {
+  background-image: linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%), linear-gradient(180deg, #151311, #0c0b0a);
+  border-color: rgba(255,255,255,.09);
+  box-shadow: inset 0 1px rgba(255,255,255,.04), 0 24px 60px -35px rgba(0,0,0,.9);
+}
+html.dark input:focus-visible, html.dark textarea:focus-visible, html.dark select:focus-visible {
+  outline: 2px solid #ff861f;
+  outline-offset: 2px;
+}
+html.dark .otiz-app-shell, html.dark .otiz-auth-shell {
+  background: radial-gradient(ellipse at 50% -15%, rgba(255,120,16,.16), transparent 48%), #080808;
+}
+html.dark .otiz-page-heading {
+  overflow: hidden;
+  background-image: radial-gradient(ellipse at 100% 0%, rgba(255,126,20,.17), transparent 38%), linear-gradient(130deg,#181512,#0c0b0a);
+  border-color: rgba(255,150,65,.16);
+}
+html.dark .otiz-page-nav { background: #10100f; border-color: rgba(255,255,255,.08); }
+html.dark .otiz-admin-header { background: rgba(9,8,7,.94); border-color: rgba(255,145,49,.17); }
+html.dark .otiz-auth-shell .otiz-card { border-color: rgba(255,145,49,.2); box-shadow: 0 32px 100px rgba(0,0,0,.5), 0 0 80px rgba(255,120,20,.06); }
+.otiz-app-shell .font-display, .otiz-auth-shell .font-display { font-family: var(--font-sans), ui-sans-serif, sans-serif; letter-spacing: -.05em; }
+.otiz-readiness .grid > * { min-width: 0; }
+.otiz-readiness p { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .otiz-readiness button { max-width: 100%; height: auto; min-height: 3rem; white-space: normal; } }
+
 .home-page-shell {
   min-height: 100vh;
   padding: clamp(12px, 3.1vw, 46px);
@@ -218,7 +243,7 @@ html.dark .glass-panel {
 .home-widget-cycle { grid-column: 1; grid-row: 1 / span 2; padding: 20px 17px; }
 .home-widget-search { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: 34px 1fr 18px; align-items: center; gap: 7px; padding: 15px; }
 .home-widget-logistics { grid-column: 2; grid-row: 2; display: flex; align-items: center; gap: 12px; padding: 17px; }
-.home-widget-featured { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; justify-content: flex-end; padding: 21px; border-color: rgba(255,143,57,.55); background: linear-gradient(148deg,#ff7817,#d9550d 76%,#a43b0c); box-shadow: 0 24px 72px rgba(211,78,11,.23); }
+.home-widget-featured { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; justify-content: flex-end; padding: 21px; border-color: rgba(255,143,57,.55); background: linear-gradient(0deg,rgba(30,8,0,.94),transparent 63%),url('/images/commerce-hero.png') center/cover; box-shadow: 0 24px 72px rgba(211,78,11,.23); }
 .home-widget-channel { grid-column: 4; grid-row: 1; display: flex; align-items: center; gap: 12px; padding: 16px; }
 .home-widget-report { grid-column: 4; grid-row: 2; padding: 15px 17px; }
 .home-widget-materials { grid-column: 5; grid-row: 1 / span 2; padding: 19px; }
@@ -233,8 +258,8 @@ html.dark .glass-panel {
 .home-widget-arrow { width: 15px; height: 15px; color: #9e968f; }
 .home-category-chips { grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 8px; }
 .home-category-chips span { padding: 4px 7px; border-radius: 999px; background: rgba(255,255,255,.045); color: #b4ada6; font-size: 8px; }
-.home-featured-orbit { position: absolute; top: 16px; left: 50%; width: 142px; height: 142px; transform: translateX(-50%); border: 1px solid rgba(255,255,255,.24); border-radius: 50%; box-shadow: 0 0 44px rgba(255,255,255,.1),inset 0 0 32px rgba(255,255,255,.12); }
-.home-featured-icon { position: absolute; top: 41px; left: 50%; display: grid; width: 91px; height: 104px; transform: translateX(-50%) rotate(4deg); place-items: center; border: 1px solid rgba(255,255,255,.56); border-radius: 17px; background: linear-gradient(145deg,rgba(255,245,230,.8),rgba(124,42,8,.35)); color: #3c1c0b; box-shadow: 0 18px 42px rgba(56,20,3,.25); }
+.home-featured-orbit { display: none; }
+.home-featured-icon { display: none; }
 .home-featured-icon svg { width: 48px; height: 48px; stroke-width: 1.2; }
 .home-featured-label { position: relative; z-index: 1; color: rgba(255,255,255,.74); font-size: 8px; letter-spacing: .16em; }
 .home-widget-featured h3 { position: relative; z-index: 1; margin-top: 7px; color: #fff; font-size: 17px; font-weight: 550; letter-spacing: -.045em; line-height: 1.2; }
@@ -256,6 +281,35 @@ html.dark .glass-panel {
 .home-operation-icon { display: inline-flex; width: 43px; height: 43px; align-items: center; justify-content: center; border: 1px solid rgba(255,130,28,.22); border-radius: 14px; background: rgba(255,130,28,.09); color: #ff9140; }
 .home-operation-icon svg { width: 19px; height: 19px; }
 .home-frame .font-display { font-family: var(--font-sans),ui-sans-serif,sans-serif; }
+.home-content-section { border-top: 1px solid rgba(255,255,255,.045); }
+html.dark .home-content-section { background-color: #090909; background-image: radial-gradient(ellipse at 50% 0%,rgba(255,120,16,.045),transparent 45%); }
+.home-section-heading::before { content: ""; display: block; width: 32px; height: 2px; margin-bottom: 8px; background: #ff821c; box-shadow: 0 0 18px rgba(255,130,28,.7); }
+.home-section-heading h2 { font-weight: 400; }
+.home-frame .otiz-card { transition: border-color .25s ease, transform .25s ease; }
+@media (hover: hover) { .home-frame .otiz-card:hover { border-color: rgba(255,130,28,.3); transform: translateY(-3px); } }
+
+/* The first screen uses a staggered composition like the reference: cards sit
+   on different baselines, above a floor that disappears into the darkness. */
+@media (min-width: 1051px) {
+  .home-hero { min-height: 1060px; padding-top: 156px; background: #050505; }
+  .home-hero-glow { background: none; }
+  .home-hero-title { max-width: 800px; font-size: clamp(48px, 4.2vw, 62px); font-weight: 400; letter-spacing: -.055em; line-height: 1.03; }
+  .home-hero-description { max-width: 570px; line-height: 1.45; }
+  .home-dashboard { margin-top: 125px; }
+  .home-dashboard-grid { grid-template-rows: repeat(12, 30px); gap: 12px 18px; }
+  .home-widget-cycle { grid-row: 3 / 11; }
+  .home-widget-search { grid-row: 2 / 6; }
+  .home-widget-logistics { grid-row: 6 / 11; }
+  .home-widget-featured { grid-row: 1 / 9; }
+  .home-widget-channel { grid-row: 2 / 7; }
+  .home-widget-report { grid-row: 7 / 11; }
+  .home-widget-materials { grid-row: 3 / 9; }
+  .home-side-light { top: 155px; width: 39%; height: 310px; opacity: 1; background: radial-gradient(ellipse at 0% 50%, rgba(255,126,14,.55), rgba(255,126,14,.13) 35%, transparent 70%); }
+  .home-side-light::before, .home-side-light::after { height: 2px; background: linear-gradient(90deg, #fff3dc, #ff9d3f 25%, transparent 95%); box-shadow: 0 0 8px #ffb269, 0 0 30px #ff790d, 0 0 70px #f66b00; transform-origin: left center; }
+  .home-side-light::before { top: 18%; transform: rotate(17deg); }
+  .home-side-light::after { top: 85%; transform: rotate(-17deg); opacity: .9; }
+  .home-perspective-grid { bottom: 250px; height: 360px; opacity: .8; }
+}
 
 @media (max-width: 1050px) {
   .home-hero { min-height: 850px; }
@@ -280,7 +334,7 @@ html.dark .glass-panel {
   .home-widget-cycle { grid-column: 1 / -1; grid-row: auto; min-height: 194px; }
   .home-widget-search { grid-column: 1; grid-row: auto; min-height: 130px; grid-template-columns: 28px 1fr 14px; padding: 12px; }
   .home-widget-logistics { grid-column: 2; grid-row: auto; min-height: 130px; padding: 12px; }
-  .home-widget-featured { grid-column: 1; grid-row: auto; min-height: 195px; padding: 14px; }
+  .home-widget-featured { grid-column: 1 / -1; grid-row: auto; order: -1; min-height: 245px; padding: 20px; background-position: center 48%; }
   .home-widget-channel { grid-column: 2; grid-row: auto; min-height: 195px; align-items: flex-start; flex-direction: column; padding: 14px; }
   .home-widget-report { grid-column: 1 / -1; grid-row: auto; min-height: 132px; padding: 14px; }
   .home-widget-materials { display: none; }

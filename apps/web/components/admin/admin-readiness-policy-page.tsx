@@ -395,7 +395,7 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
   }
 
   return (
-    <main className="min-h-screen bg-background px-5 py-8 text-foreground micro-noise md:px-8">
+    <main className="otiz-app-shell otiz-readiness min-h-screen bg-background px-5 py-8 text-foreground micro-noise md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="flex flex-col gap-5 rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-white/[0.04] p-6 shadow-2xl shadow-black/30 backdrop-blur md:flex-row md:items-end md:justify-between">
           <div>
@@ -408,7 +408,7 @@ export function AdminReadinessPolicyPage({ locale, activePolicy, policies: initi
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[0.95fr_1.35fr]">
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">

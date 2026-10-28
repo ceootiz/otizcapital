@@ -39,7 +39,7 @@ const STRINGS = {
     totalSimpleLabel: "Total without reinvestment",
     totalCompoundLabel: "Total with reinvestment",
     reinvestGainLabel: "Reinvestment gain",
-    securityHeading: "Why this is secure",
+    securityHeading: "Understanding the model",
     secRealTitle: "Real goods",
     secRealDesc: "Capital is tied to physical devices, not speculation.",
     secReportTitle: "Operational reporting",
@@ -62,11 +62,11 @@ const STRINGS = {
     totalSimpleLabel: "Итого без реинвеста",
     totalCompoundLabel: "Итого с реинвестом",
     reinvestGainLabel: "Выгода от реинвеста",
-    securityHeading: "Почему это надёжно",
+    securityHeading: "Что важно учитывать",
     secRealTitle: "Реальный товар",
-    secRealDesc: "Капитал привязан к физическим устройствам, а не к спекуляциям.",
+    secRealDesc: "Средства направляются на торговые операции согласно условиям предложения.",
     secReportTitle: "Операционная отчётность",
-    secReportDesc: "Ежемесячные отчёты с подтверждением движения товара.",
+    secReportDesc: "Состав отчётности определяется условиями предложения.",
     secReviewTitle: "Ручная проверка",
     secReviewDesc: "Каждый инвестор проходит ручную проверку.",
     secWithdrawTitle: "Контролируемый вывод",
@@ -85,7 +85,7 @@ const STRINGS = {
     totalSimpleLabel: "Total sin reinversión",
     totalCompoundLabel: "Total con reinversión",
     reinvestGainLabel: "Ganancia por reinversión",
-    securityHeading: "Por qué es seguro",
+    securityHeading: "Qué tener en cuenta",
     secRealTitle: "Mercancía real",
     secRealDesc: "El capital está vinculado a dispositivos físicos, no a la especulación.",
     secReportTitle: "Informes operativos",
@@ -108,7 +108,7 @@ const STRINGS = {
     totalSimpleLabel: "Gesamt ohne Reinvestition",
     totalCompoundLabel: "Gesamt mit Reinvestition",
     reinvestGainLabel: "Gewinn durch Reinvestition",
-    securityHeading: "Warum dies sicher ist",
+    securityHeading: "Was zu beachten ist",
     secRealTitle: "Reale Waren",
     secRealDesc: "Das Kapital ist an physische Geräte gebunden, nicht an Spekulation.",
     secReportTitle: "Operative Berichterstattung",
@@ -131,7 +131,7 @@ const STRINGS = {
     totalSimpleLabel: "不复投总额",
     totalCompoundLabel: "复投总额",
     reinvestGainLabel: "复投收益",
-    securityHeading: "为何安全",
+    securityHeading: "需要了解的事项",
     secRealTitle: "真实商品",
     secRealDesc: "资本与实体设备挂钩，而非投机。",
     secReportTitle: "运营报告",
@@ -232,7 +232,7 @@ export function CalculatorPage({ locale, annualRate }: { locale: Locale; annualR
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_12%,rgba(212,175,95,0.16),transparent_36rem),radial-gradient(circle_at_8%_8%,rgba(255,255,255,0.05),transparent_30rem)]" />
       <div className="macro-grid absolute inset-0 opacity-50" />
 

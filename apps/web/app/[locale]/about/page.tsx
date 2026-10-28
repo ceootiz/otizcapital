@@ -29,7 +29,7 @@ const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
     meta: {
       title: "About OTIZ CAPITAL",
       description:
-        "OTIZ CAPITAL is a private commerce capital platform allocating into real electronics inventory, marketplace operations, and audited reporting."
+        "OTIZ CAPITAL is a private commerce capital platform allocating into real electronics inventory, marketplace operations, and operational reporting."
     },
     title: "About OTIZ CAPITAL",
     intro:
@@ -113,7 +113,7 @@ const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
     meta: {
       title: "Acerca de OTIZ CAPITAL",
       description:
-        "OTIZ CAPITAL es una plataforma privada de capital comercial que asigna recursos a inventario real de electrónica, operaciones en marketplaces e informes auditados."
+        "OTIZ CAPITAL es una plataforma privada de capital comercial que asigna recursos a inventario real de electrónica, operaciones en marketplaces e informes operativos."
     },
     title: "Acerca de OTIZ CAPITAL",
     intro:
@@ -155,7 +155,7 @@ const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
     meta: {
       title: "Über OTIZ CAPITAL",
       description:
-        "OTIZ CAPITAL ist eine private Plattform für Handelskapital, die Mittel in reale Elektronikbestände, Marktplatzbetrieb und geprüfte Berichterstattung allokiert."
+        "OTIZ CAPITAL ist eine private Plattform für Handelskapital, die Mittel in reale Elektronikbestände, Marktplatzbetrieb und operative Berichterstattung allokiert."
     },
     title: "Über OTIZ CAPITAL",
     intro:
@@ -197,7 +197,7 @@ const CONTENT: Record<"en" | "ru" | "es" | "de" | "zh", AboutContent> = {
     meta: {
       title: "关于 OTIZ CAPITAL",
       description:
-        "OTIZ CAPITAL 是一家私募商贸资本平台，将资金配置于真实的电子产品库存、电商平台运营及经审计的报告。"
+        "OTIZ CAPITAL 是一家私募商贸资本平台，将资金配置于真实的电子产品库存、电商平台运营及运营报告。"
     },
     title: "关于 OTIZ CAPITAL",
     intro:
@@ -265,7 +265,7 @@ export default function AboutRoute({ params }: { params: { locale: Locale } }) {
   const content = getContent(locale);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_12%,rgba(212,175,95,0.16),transparent_36rem),radial-gradient(circle_at_8%_8%,rgba(255,255,255,0.05),transparent_30rem)]" />
       <div className="macro-grid absolute inset-0 opacity-50" />
 
