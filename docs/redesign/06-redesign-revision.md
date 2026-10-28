@@ -13,5 +13,5 @@ The homepage now uses a staggered card collage, brighter side lighting, a perspe
 ## Remaining limitations
 
 - No Vercel deployment tools or credentials are available in this session, so a hosted preview has not been created.
-- Mobile navigation opened and closed; application submission has not yet been confirmed.
+- Mobile navigation opened and closed. A test application was submitted successfully to the isolated database (HTTP 201); changing the calculator amount updated its results.
 - Route loading is not equivalent to verifying every mutation, modal and populated data state. Further acceptance is needed before production.
