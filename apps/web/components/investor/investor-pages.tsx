@@ -331,7 +331,7 @@ export function InvestorShell({
   const t = getInvestorStrings(locale);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,175,95,0.13),transparent_34rem),radial-gradient(circle_at_88%_6%,rgba(255,255,255,0.07),transparent_30rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
@@ -351,7 +351,7 @@ export function InvestorShell({
             </div>
           </div>
 
-          <Card className="mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
+          <Card className="otiz-page-heading mb-6 rounded-[1.35rem] bg-card dark:bg-graphite-900/[0.72]">
             <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-gold-100">{eyebrow}</p>
@@ -367,7 +367,7 @@ export function InvestorShell({
             </CardContent>
           </Card>
 
-          <div className="mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-2">
+          <div className="otiz-page-nav mb-6 flex gap-2 overflow-x-auto rounded-[1.35rem] border border-border dark:border-white/10 bg-muted/30 dark:bg-black/20 p-2">
             {(Object.keys(t.nav) as InvestorPageKey[]).map((key) => {
               const isActive = key === active;
 

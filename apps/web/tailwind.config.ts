@@ -56,12 +56,12 @@ const config: Config = {
           600: "#363c46"
         },
         gold: {
-          50: "#fbf6e8",
-          100: "#f3e7c5",
-          200: "#e4cc8d",
-          300: "#d4af5f",
-          400: "#bd9141",
-          500: "#987131"
+          50: "#fff4e9",
+          100: "#ffe2c5",
+          200: "#ffc38f",
+          300: "#ff9f55",
+          400: "#ff821c",
+          500: "#d86a17"
         }
       },
       fontFamily: {
@@ -71,10 +71,10 @@ const config: Config = {
       boxShadow: {
         premium: "0 24px 80px -36px rgba(0, 0, 0, 0.85)",
         glass: "inset 0 1px 0 rgba(255,255,255,0.08), 0 30px 90px -50px rgba(0,0,0,0.9)",
-        gold: "0 18px 70px -45px rgba(212, 175, 95, 0.75)"
+        gold: "0 18px 70px -45px rgba(255, 130, 28, 0.62)"
       },
       backgroundImage: {
-        "radial-gold": "radial-gradient(circle at 50% 0%, rgba(212,175,95,0.23), transparent 34rem)",
+        "radial-gold": "radial-gradient(circle at 50% 0%, rgba(255,130,28,0.18), transparent 34rem)",
         "steel-fade": "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))"
       },
       keyframes: {

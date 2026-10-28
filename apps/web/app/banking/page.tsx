@@ -24,10 +24,10 @@ export default function BankingPage() {
         <section className="px-5 pb-12 pt-28 sm:px-8 lg:px-10">
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:min-h-[440px] lg:grid-cols-[0.95fr_1.05fr]">
             <div className="max-w-3xl">
-              <h1 className="text-5xl font-semibold leading-[1.02] text-[#28231d] sm:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-semibold leading-[1.02] text-[#f5f2ef] sm:text-6xl lg:text-7xl">
                 Финансовый навигатор для микробизнеса
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-[#746d62] sm:text-xl sm:leading-9">
+              <p className="mt-7 max-w-2xl text-lg leading-8 text-[#b5aaa1] sm:text-xl sm:leading-9">
                 Попробуйте банк в демо-кабинете до открытия счёта или проверьте, сколько ваш текущий банк реально стоит бизнесу.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -42,13 +42,13 @@ export default function BankingPage() {
           </div>
         </section>
 
-        <section id="fit" className="border-y border-[#e4d7c4] bg-[#fbf6ed] px-5 py-20 sm:px-8 lg:px-10">
+        <section id="fit" className="border-y border-[#302a26] bg-[#121110] px-5 py-20 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-7xl">
             <SectionHeader title="Кому подходит" />
             <div className="mt-10 grid gap-4 md:grid-cols-2">
               {icpItems.map((item) => (
                 <SoftCard key={item} className="p-5" as="article">
-                  <p className="text-lg font-semibold leading-7 text-[#28231d]">{item}</p>
+                  <p className="text-lg font-semibold leading-7 text-[#f5f2ef]">{item}</p>
                 </SoftCard>
               ))}
             </div>
@@ -63,15 +63,15 @@ export default function BankingPage() {
             />
             <div className="grid gap-3 sm:grid-cols-2">
               {painItems.map((item) => (
-                <div key={item} className="rounded-lg border border-[#ded2c1] bg-[#fffaf2] p-5">
-                  <p className="text-base font-semibold text-[#28231d]">{item}</p>
+                <div key={item} className="rounded-lg border border-[#302a26] bg-[#121110] p-5">
+                  <p className="text-base font-semibold text-[#f5f2ef]">{item}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="concept" className="bg-[#f3eadf] px-5 py-20 sm:px-8 lg:px-10">
+        <section id="concept" className="bg-[#121110] px-5 py-20 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
               <SectionHeader
@@ -81,8 +81,8 @@ export default function BankingPage() {
               <SoftCard className="p-6">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {conceptItems.map((item) => (
-                    <div key={item} className="rounded-md border border-[#e1d4c2] bg-[#fffdf8] p-4">
-                      <p className="text-sm font-semibold text-[#4c4033]">{item}</p>
+                    <div key={item} className="rounded-md border border-[#302a26] bg-[#121110] p-4">
+                      <p className="text-sm font-semibold text-[#f5f2ef]">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -105,7 +105,7 @@ export default function BankingPage() {
           </div>
         </section>
 
-        <section id="comparison" className="border-y border-[#e4d7c4] bg-[#fbf6ed] px-5 py-20 sm:px-8 lg:px-10">
+        <section id="comparison" className="border-y border-[#302a26] bg-[#121110] px-5 py-20 sm:px-8 lg:px-10">
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <SectionHeader
               title="Не каталог банков. Симулятор финансовой реальности бизнеса."

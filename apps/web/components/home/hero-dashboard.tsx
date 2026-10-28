@@ -1,104 +1,91 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, PackageCheck, ShieldCheck } from "lucide-react";
-import { type HomeDictionary } from "@otiz/lib";
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@otiz/ui";
-import { CommerceChart } from "./commerce-chart";
+import {
+  ArrowUpRight,
+  Boxes,
+  ClipboardCheck,
+  FileText,
+  PackageCheck,
+  Search,
+  Smartphone,
+  Store,
+  Truck
+} from "lucide-react";
+import type { HomeDictionary, Locale } from "@otiz/lib";
 
-export function HeroDashboard({ dictionary }: { dictionary: HomeDictionary }) {
+const COPY: Record<Locale, { model: string; categories: string; goods: string; channel: string; channelDetail: string; report: string; route: string; notice: string; tags: string[]; logistics: string; logisticsDetail: string; materials: string; materialsDetail: string; labels: string[] }> = {
+  en: { model: "Commerce cycle · model", categories: "Product categories", goods: "Electronics for trade", channel: "Sales channels", channelDetail: "Marketplaces · direct channels", report: "Operational reporting", route: "Procurement to sale", notice: "Illustrative process", tags: ["Phones", "Accessories"], logistics: "Goods in transit", logisticsDetail: "Logistics within a trade cycle", materials: "Cycle materials", materialsDetail: "Availability depends on the project", labels: ["Procurement", "Quality check", "Logistics", "Marketplace sale"] },
+  ru: { model: "Торговый цикл · модель", categories: "Категории товаров", goods: "Электроника для торговли", channel: "Каналы продаж", channelDetail: "Маркетплейсы · прямые каналы", report: "Операционная отчётность", route: "От закупки до продажи", notice: "Схема процесса", tags: ["Смартфоны", "Аксессуары"], logistics: "Движение товара", logisticsDetail: "Логистика в рамках цикла", materials: "Материалы цикла", materialsDetail: "Состав зависит от проекта", labels: ["Закупка", "Проверка", "Логистика", "Продажа"] },
+  es: { model: "Ciclo comercial · modelo", categories: "Categorías de producto", goods: "Electrónica para comercio", channel: "Canales de venta", channelDetail: "Marketplaces · canales directos", report: "Informes operativos", route: "De compra a venta", notice: "Proceso ilustrativo", tags: ["Móviles", "Accesorios"], logistics: "Movimiento de productos", logisticsDetail: "Logística dentro del ciclo", materials: "Materiales del ciclo", materialsDetail: "Disponibilidad según el proyecto", labels: ["Compra", "Control de calidad", "Logística", "Venta en marketplace"] },
+  de: { model: "Handelszyklus · Modell", categories: "Produktkategorien", goods: "Elektronik für den Handel", channel: "Vertriebskanäle", channelDetail: "Marktplätze · Direktvertrieb", report: "Operatives Reporting", route: "Von Beschaffung bis Verkauf", notice: "Beispielprozess", tags: ["Smartphones", "Zubehör"], logistics: "Warenbewegung", logisticsDetail: "Logistik innerhalb des Zyklus", materials: "Zyklusmaterialien", materialsDetail: "Je nach Projekt verfügbar", labels: ["Beschaffung", "Qualitätsprüfung", "Logistik", "Marktplatzverkauf"] },
+  zh: { model: "贸易周期 · 模型", categories: "商品类别", goods: "用于贸易的电子产品", channel: "销售渠道", channelDetail: "电商平台 · 直接渠道", report: "运营报告", route: "从采购到销售", notice: "流程示意", tags: ["智能手机", "配件"], logistics: "商品流转", logisticsDetail: "周期内的物流", materials: "周期材料", materialsDetail: "视具体项目而定", labels: ["采购", "质量检查", "物流", "平台销售"] }
+};
+
+export function HeroDashboard({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   const reduceMotion = useReducedMotion();
+  const copy = COPY[locale] ?? COPY.en;
+  const icons = [Boxes, ClipboardCheck, Truck, Store];
 
   return (
     <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 34, scale: 0.98 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 1.05, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto w-full max-w-xl lg:mx-0"
+      initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.9, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+      className="home-dashboard"
+      aria-label={copy.notice}
     >
-      <div className="absolute -inset-8 rounded-[1.35rem] bg-gold-300/10 blur-3xl" />
-      <Card className="relative overflow-hidden rounded-[1.35rem] border-foreground/30 bg-card/80 dark:border-border">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent dark:via-gold-200/70" />
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <CardTitle className="text-xl">{dictionary.hero.dashboardTitle}</CardTitle>
-              <CardDescription>{dictionary.hero.dashboardSubtitle}</CardDescription>
-            </div>
-            <Badge>{dictionary.dashboard.liveOps}</Badge>
+      <div className="home-dashboard-grid">
+        <article className="home-widget home-widget-cycle">
+          <div className="home-widget-kicker"><span className="home-live-dot" />{copy.model}</div>
+          <h2>{copy.route}</h2>
+          <div className="home-cycle-steps">
+            {copy.labels.map((label, index) => {
+              const Icon = icons[index];
+              return <div className="home-cycle-step" key={label}><span className="home-cycle-icon"><Icon aria-hidden="true" /></span><span>{label}</span></div>;
+            })}
           </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6">
-          <div className="grid grid-cols-2 gap-3">
-            <MetricBlock icon={<ShieldCheck />} label={dictionary.hero.activeAllocations} value="$12.8M" />
-            <MetricBlock icon={<PackageCheck />} label={dictionary.hero.commerceVolume} value="$16.2M" />
-          </div>
-          <div className="rounded-[1.35rem] border border-foreground/30 bg-muted/50 p-4 dark:border-border">
-            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{dictionary.dashboard.trendLabel}</span>
-              <span className="text-gold-300 dark:text-gold-100">{dictionary.dashboard.trendRange}</span>
-            </div>
-            <CommerceChart
-              compact
-              months={dictionary.commerce.chartMonths}
-              capitalLabel={dictionary.dashboard.chartCapital}
-              volumeLabel={dictionary.dashboard.chartVolume}
-            />
-          </div>
-          <div className="flex flex-col gap-3">
-            {dictionary.commerce.allocations.map((row) => (
-              <div key={row.id} className="rounded-2xl border border-foreground/20 bg-muted/30 p-4 dark:border-white/[0.08]">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{row.cycle}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{row.id} · {row.marketplace}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground dark:text-gold-100">
-                    {row.capital}
-                    <ArrowUpRight className="size-3.5" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted/30">
-                    <motion.div
-                      initial={reduceMotion ? false : { width: 0 }}
-                      whileInView={{ width: `${row.progress}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-200"
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground">{row.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Separator />
-          <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-            <div>
-              <p className="font-semibold text-foreground">48.6K</p>
-              <p>{dictionary.hero.deliveredDevices}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-foreground">{dictionary.dashboard.monthlyValue}</p>
-              <p>{dictionary.hero.monthlyReporting}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
+        </article>
 
-function MetricBlock({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-foreground/25 bg-muted/30 p-4 dark:border-border">
-      <div className="mb-5 flex items-center justify-between text-gold-300 dark:text-gold-100">
-        <div className="flex size-9 items-center justify-center rounded-full bg-gold-300/15 [&_svg]:size-4 dark:bg-gold-200/10">{icon}</div>
-        <span className="size-2 rounded-full bg-gold-300 shadow-[0_0_20px_rgba(212,175,95,0.55)] dark:bg-gold-200" />
+        <article className="home-widget home-widget-search">
+          <span className="home-widget-icon"><Search aria-hidden="true" /></span>
+          <div><p>{copy.categories}</p><small>{copy.notice}</small></div>
+          <ArrowUpRight className="home-widget-arrow" aria-hidden="true" />
+          <div className="home-category-chips">{copy.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+        </article>
+
+        <article className="home-widget home-widget-featured">
+          <div className="home-featured-orbit" aria-hidden="true" />
+          <div className="home-featured-icon"><Smartphone aria-hidden="true" /></div>
+          <span className="home-featured-label">OTIZ · COMMERCE</span>
+          <h3>{copy.goods}</h3>
+          <p>{dictionary.hero.dashboardSubtitle}</p>
+        </article>
+
+        <article className="home-widget home-widget-channel">
+          <div className="home-widget-icon"><Store aria-hidden="true" /></div>
+          <div><p>{copy.channel}</p><small>{copy.channelDetail}</small></div>
+          <span className="home-channel-lines"><i /><i /><i /></span>
+        </article>
+
+        <article className="home-widget home-widget-report">
+          <div className="home-report-top"><span className="home-widget-icon"><FileText aria-hidden="true" /></span><ArrowUpRight className="home-widget-arrow" aria-hidden="true" /></div>
+          <p>{copy.report}</p>
+          <small>{dictionary.transparency.subtitle}</small>
+          <a href="#transparency">{dictionary.hero.secondary}</a>
+        </article>
+
+        <article className="home-widget home-widget-logistics">
+          <div className="home-logistics-mark"><PackageCheck aria-hidden="true" /></div>
+          <div><p>{copy.logistics}</p><small>{copy.logisticsDetail}</small></div>
+        </article>
+
+        <article className="home-widget home-widget-materials">
+          <div className="home-materials-cover">{copy.notice}</div>
+          <div><p>{copy.materials}</p><small>{copy.materialsDetail}</small></div>
+          <ul><li><FileText aria-hidden="true" />{copy.report}</li><li><PackageCheck aria-hidden="true" />{copy.logistics}</li></ul>
+        </article>
       </div>
-      <p className="text-2xl font-semibold tracking-[-0.04em] text-foreground">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{label}</p>
-    </div>
+    </motion.div>
   );
 }

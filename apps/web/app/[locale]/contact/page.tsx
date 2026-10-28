@@ -129,7 +129,7 @@ export default function ContactRoute({ params }: { params: { locale: Locale } })
   const content = getContent(locale);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_12%,rgba(212,175,95,0.16),transparent_36rem),radial-gradient(circle_at_8%_8%,rgba(255,255,255,0.05),transparent_30rem)]" />
       <div className="macro-grid absolute inset-0 opacity-50" />
 

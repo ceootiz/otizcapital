@@ -49,19 +49,20 @@ const proofIcons = [Truck, Factory, BarChart3, ShieldCheck, CheckCircle2, Packag
 
 export function HomePage({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   return (
-    <main className="relative overflow-hidden micro-noise">
-      <Header dictionary={dictionary} activeLocale={locale} />
-      <Hero dictionary={dictionary} locale={locale} />
-      <TrustMetrics dictionary={dictionary} locale={locale} />
-      <HowItWorks dictionary={dictionary} />
-      <Transparency dictionary={dictionary} />
-      <LiveOperations dictionary={dictionary} />
-      <WhyRealCommerce dictionary={dictionary} />
-      <InvestorProcess dictionary={dictionary} />
-      <Testimonials dictionary={dictionary} />
-      <FAQ dictionary={dictionary} />
-      <FinalCTA dictionary={dictionary} locale={locale} />
-      <Footer dictionary={dictionary} activeLocale={locale} />
+    <main className="home-page-shell">
+      <div className="home-frame relative overflow-hidden micro-noise">
+        <Header dictionary={dictionary} activeLocale={locale} />
+        <Hero dictionary={dictionary} locale={locale} />
+        <TrustMetrics dictionary={dictionary} locale={locale} />
+        <HowItWorks dictionary={dictionary} />
+        <Transparency dictionary={dictionary} />
+        <LiveOperations dictionary={dictionary} />
+        <WhyRealCommerce dictionary={dictionary} />
+        <InvestorProcess dictionary={dictionary} />
+        <FAQ dictionary={dictionary} />
+        <FinalCTA dictionary={dictionary} locale={locale} />
+        <Footer dictionary={dictionary} activeLocale={locale} />
+      </div>
     </main>
   );
 }
@@ -78,7 +79,7 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
 
   return (
     <>
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-2xl">
+    <header className="home-header absolute inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-2xl">
       <div className="container flex h-20 items-center justify-between gap-6">
         <Link href={`/${activeLocale}`} className="flex items-center gap-3" aria-label="OTIZ CAPITAL home">
           <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-sm font-semibold text-amber-700 shadow-gold dark:bg-gold-200/10 dark:text-gold-100">
@@ -196,38 +197,30 @@ function Header({ dictionary, activeLocale }: { dictionary: HomeDictionary; acti
 
 function Hero({ dictionary, locale }: { dictionary: HomeDictionary; locale: Locale }) {
   const reduceMotion = useReducedMotion();
-  const metrics = [
-    { label: dictionary.hero.activeAllocations, value: "$12.8M" },
-    { label: dictionary.hero.commerceVolume, value: "$16.2M" },
-    { label: dictionary.hero.deliveredDevices, value: "48.6K" },
-    { label: dictionary.hero.monthlyReporting, value: dictionary.dashboard.monthlyValue }
-  ];
+  const headline = dictionary.hero.headline.split(" ");
+  const finalWord = headline.pop();
 
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden pb-20 pt-32 lg:pt-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(212,175,95,0.16),transparent_30rem)] dark:bg-[radial-gradient(circle_at_72%_18%,rgba(212,175,95,0.22),transparent_30rem),linear-gradient(180deg,rgba(5,6,7,0.45),rgba(5,6,7,0.96))]" />
-      <div className="macro-grid absolute inset-0 opacity-70" />
-      <motion.div
-        aria-hidden="true"
-        initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
-        animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-        transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute right-[-12rem] top-16 hidden h-[42rem] w-[42rem] rounded-full border border-border bg-[conic-gradient(from_120deg,rgba(212,175,95,0.22),rgba(255,255,255,0.08),rgba(12,15,20,0.1),rgba(212,175,95,0.2))] opacity-[0.65] blur-[1px] lg:block"
-      />
-      <div className="container relative z-10 grid items-center gap-14 lg:grid-cols-[1fr_0.9fr]">
+    <section className="home-hero relative overflow-hidden">
+      <div className="home-hero-glow absolute inset-0" aria-hidden="true" />
+      <div className="home-side-light home-side-light-left" aria-hidden="true" />
+      <div className="home-side-light home-side-light-right" aria-hidden="true" />
+      <div className="home-perspective-grid" aria-hidden="true" />
+      <div className="container relative z-10 flex flex-col items-center">
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 34 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-3xl"
+          className="home-hero-copy"
         >
-          <h1 className="font-display text-6xl font-medium leading-[0.92] tracking-[-0.065em] text-balance text-foreground sm:text-7xl lg:text-8xl">
-            {dictionary.hero.headline}
+          <div className="home-eyebrow"><span aria-hidden="true" />{dictionary.hero.dashboardSubtitle}</div>
+          <h1 className="home-hero-title text-balance">
+            {headline.join(" ")} <span>{finalWord}</span>
           </h1>
-          <p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">
+          <p className="home-hero-description">
             {dictionary.hero.subheadline}
           </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <div className="home-hero-actions">
             <Button asChild size="lg">
               <a href={`/${locale}/apply`}>
                 {dictionary.hero.cta}
@@ -238,24 +231,9 @@ function Hero({ dictionary, locale }: { dictionary: HomeDictionary; locale: Loca
               <a href="#transparency">{dictionary.hero.secondary}</a>
             </Button>
           </div>
-          <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {metrics.map((metric, index) => (
-              <motion.div
-                key={metric.label}
-                initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-                animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.28 + index * 0.08 }}
-                className="glass-panel rounded-2xl p-4"
-              >
-                <p className="text-xl font-semibold tracking-[-0.04em] text-foreground">{metric.value}</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{metric.label}</p>
-              </motion.div>
-            ))}
-          </div>
         </motion.div>
-        <HeroDashboard dictionary={dictionary} />
+        <HeroDashboard dictionary={dictionary} locale={locale} />
       </div>
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-background" />
     </section>
   );
 }
@@ -274,12 +252,11 @@ function TrustMetrics({ dictionary, locale }: { dictionary: HomeDictionary; loca
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {dictionary.trust.items.map((item, index) => (
           <Reveal key={item.label} delay={index * 0.05}>
-            <Card className="h-full overflow-hidden bg-muted/30">
+            <Card className="home-proof-card h-full overflow-hidden bg-muted/30">
               <CardContent className="p-6">
                 <div className="mb-8 h-px w-full bg-gradient-to-r from-gold-300/70 to-transparent" />
-                <p className="font-display text-4xl font-medium tracking-[-0.05em] text-foreground">{item.value}</p>
-                <p className="mt-4 text-sm font-semibold text-foreground">{item.label}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                <p className="font-display text-xl font-medium tracking-[-0.03em] text-foreground">{item.label}</p>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.detail}</p>
               </CardContent>
             </Card>
           </Reveal>
@@ -344,7 +321,7 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
                       </span>
                       <span className="text-sm text-foreground">{signal}</span>
                       <span className="ml-auto h-px flex-1 bg-foreground/15 dark:bg-white/10" />
-                      <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
+                      <ArrowRight className="size-4 text-amber-700 dark:text-gold-100" aria-hidden="true" />
                     </div>
                   ))}
                 </div>
@@ -386,65 +363,25 @@ function Transparency({ dictionary }: { dictionary: HomeDictionary }) {
 }
 
 function LiveOperations({ dictionary }: { dictionary: HomeDictionary }) {
+  const steps = dictionary.how.steps.slice(1, 5);
   return (
-    <SectionShell id="operations" title={dictionary.live.title} subtitle={dictionary.live.subtitle} className="bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,95,0.09),transparent_34rem)]">
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <Reveal>
-          <Card className="overflow-hidden rounded-[1.35rem]">
-            <CardHeader className="flex-row items-start justify-between gap-6">
-              <div>
-                <CardTitle>{dictionary.live.currentAllocations}</CardTitle>
-                <CardDescription>{dictionary.live.allocationsSubtitle}</CardDescription>
-              </div>
-              <Badge>{dictionary.live.activeCount}</Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-hidden rounded-[1.35rem] border border-border">
-                {dictionary.commerce.allocations.map((row) => (
-                  <div key={row.id} className="grid gap-4 border-b border-border bg-muted/30 p-5 last:border-b-0 md:grid-cols-[1fr_0.75fr_0.5fr] md:items-center">
-                    <div>
-                      <p className="font-semibold text-foreground">{row.cycle}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{row.id} · {row.marketplace}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="size-2 rounded-full bg-gold-200 animate-soft-pulse" />
-                      <span className="text-sm text-muted-foreground">{row.status}</span>
-                    </div>
-                    <div className="text-left md:text-right">
-                      <p className="font-semibold text-foreground">{row.capital}</p>
-                      <p className="text-sm text-muted-foreground">{row.progress}%</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </Reveal>
-        <Reveal delay={0.08}>
-          <Card className="h-full rounded-[1.35rem]">
-            <CardHeader>
-              <CardTitle>{dictionary.live.recentOperations}</CardTitle>
-              <CardDescription>{dictionary.live.eventsSubtitle}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              {dictionary.commerce.operations.map((event) => (
-                <div key={event.title} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <span className="flex size-10 items-center justify-center rounded-full border border-gold-200/25 bg-gold-300/20 text-xs font-semibold text-amber-700 dark:bg-gold-200/10 dark:text-gold-100">
-                      {event.time}
-                    </span>
-                    <span className="mt-3 h-full w-px bg-foreground/15 dark:bg-white/10" />
-                  </div>
-                  <div className="pb-6">
-                    <Badge variant="secondary">{event.state}</Badge>
-                    <h3 className="mt-3 font-semibold tracking-[-0.02em] text-foreground">{event.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{event.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </Reveal>
+    <SectionShell id="operations" title={dictionary.live.title} subtitle={dictionary.live.subtitle}>
+      <div className="home-operations-grid">
+        {steps.map((step, index) => {
+          const Icon = flowIcons[index + 1] ?? CheckCircle2;
+          return (
+            <Reveal key={step.title} delay={index * 0.05}>
+              <Card className="home-operation-card h-full">
+                <CardContent className="p-6">
+                  <span className="home-operation-icon"><Icon aria-hidden="true" /></span>
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-primary">0{index + 1}</p>
+                  <h3 className="mt-3 text-xl font-semibold text-foreground">{step.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{step.body}</p>
+                </CardContent>
+              </Card>
+            </Reveal>
+          );
+        })}
       </div>
     </SectionShell>
   );
@@ -467,7 +404,7 @@ function WhyRealCommerce({ dictionary }: { dictionary: HomeDictionary }) {
                 {dictionary.commerce.proofSignals.slice(0, 4).map((signal) => (
                   <div key={signal} className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 p-4">
                     <span className="text-sm text-foreground">{signal}</span>
-                    <CheckCircle2 className="size-4 text-amber-700 dark:text-gold-100" />
+                    <ArrowRight className="size-4 text-amber-700 dark:text-gold-100" aria-hidden="true" />
                   </div>
                 ))}
               </div>

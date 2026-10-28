@@ -230,7 +230,7 @@ export function InvestorResetPasswordPage({ locale, token }: { locale: Locale; t
   const cardDescription = phase === "success" ? t.successBody : phase === "invalid" ? t.errors[validateError] : phase === "validating" ? t.validating : t.description;
 
   return (
-    <main className="relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
+    <main className="otiz-auth-shell relative flex min-h-screen items-center overflow-hidden bg-background px-4 py-10 text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_48%_0%,rgba(212,175,95,0.16),transparent_34rem),radial-gradient(circle_at_12%_12%,rgba(255,255,255,0.08),transparent_26rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <div className="container relative z-10 max-w-xl">

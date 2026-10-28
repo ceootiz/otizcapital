@@ -225,7 +225,7 @@ export function AdminAllocationsPage({ locale, allocations: initialAllocations, 
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
+    <main className="otiz-app-shell relative min-h-screen overflow-hidden bg-background text-foreground micro-noise">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(212,175,95,0.14),transparent_34rem),radial-gradient(circle_at_86%_10%,rgba(255,255,255,0.07),transparent_28rem)]" />
       <div className="macro-grid absolute inset-0 opacity-45" />
       <section className="relative z-10 py-8 sm:py-10">
